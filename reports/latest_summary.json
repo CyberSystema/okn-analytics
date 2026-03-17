@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-17T05:25:08.076315",
+  "meta": {
+    "generated_at": "2026-03-17T05:24:52.549228",
+    "total_posts": 49,
+    "platforms": [
+      "instagram",
+      "tiktok"
+    ],
+    "date_range": {
+      "earliest": "2025-12-18 13:20:00+00:00",
+      "latest": "2026-03-15 08:46:00+00:00"
+    }
+  },
+  "health": {
+    "status": "strong_growth",
+    "emoji": "\ud83d\ude80",
+    "message": "OKN's social presence is growing well across key metrics.",
+    "signal_score": 1.0
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "content",
+      "message": "On Instagram, your best content type is 'short_video' with 20.5% avg engagement (8 posts). Create more of this."
+    },
+    {
+      "priority": "high",
+      "category": "content",
+      "message": "On TikTok, your best content type is 'short_video' with 9.2% avg engagement (15 posts). Create more of this."
+    },
+    {
+      "priority": "high",
+      "category": "content",
+      "message": "Viral content on Instagram is: short_video. Create more content in these formats."
+    },
+    {
+      "priority": "high",
+      "category": "content",
+      "message": "Viral content on TikTok is: short_video. Create more content in these formats."
+    },
+    {
+      "priority": "medium",
+      "category": "engagement",
+      "message": "Comments-to-likes ratio is low. Try asking questions, running polls, or creating discussion-worthy content."
+    },
+    {
+      "priority": "low",
+      "category": "timing",
+      "message": "Not enough data per time slot to recommend posting hours yet. Keep adding weekly exports."
+    },
+    {
+      "priority": "low",
+      "category": "platform",
+      "message": "Instagram is outperforming industry benchmark by 17.2%! Keep up the great work."
+    },
+    {
+      "priority": "low",
+      "category": "platform",
+      "message": "TikTok is outperforming industry benchmark by 6.7%! Keep up the great work."
+    },
+    {
+      "priority": "low",
+      "category": "growth",
+      "message": "Instagram reach is growing! Keep up the momentum."
+    },
+    {
+      "priority": "low",
+      "category": "growth",
+      "message": "TikTok reach is growing! Keep up the momentum."
+    },
+    {
+      "priority": "low",
+      "category": "methodology",
+      "message": "Note: Instagram engagement rate uses reach as denominator; TikTok uses views. Direct rate comparison between platforms should be interpreted with this in mind."
+    }
+  ]
+}
