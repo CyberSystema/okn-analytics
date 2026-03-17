@@ -13,6 +13,8 @@ import numpy as np
 import logging
 from typing import Dict, Any, List, Tuple
 
+from config import compute_recency_weights
+
 logger = logging.getLogger("okn.models.timing")
 
 
@@ -31,6 +33,9 @@ class PostingTimeModel:
         self.df = self.df.dropna(subset=["published_at"])
         self.df["hour"] = self.df["published_at"].dt.hour
         self.df["day_of_week"] = self.df["published_at"].dt.day_name()
+        # Recency weights
+        if "weight" not in self.df.columns:
+            self.df["weight"] = compute_recency_weights(self.df["published_at"])
 
     def get_optimal_schedule(self, platform: str = None) -> Dict[str, Any]:
         """
@@ -117,7 +122,9 @@ class PostingTimeModel:
         if not top_slots:
             return {"message": "Not enough data to recommend"}
 
-        now = pd.Timestamp.now()
+        now = self.df["published_at"].max()
+        if pd.isna(now):
+            now = pd.Timestamp.now(tz="Asia/Seoul")
         current_day = now.day_name()
         current_hour = now.hour
 
@@ -139,17 +146,20 @@ class PostingTimeModel:
 
     def _confidence_weighted_score(self, engagement_rates: pd.Series, total_n: int) -> float:
         """
-        Calculate engagement score weighted by sample confidence.
+        Calculate engagement score weighted by sample confidence and recency.
 
         Uses Bayesian-inspired adjustment: with small samples,
         pull toward the global mean; with large samples, trust the data.
+        Recency weights give more importance to recent posts.
         """
         n = len(engagement_rates)
         if n == 0:
             return 0.0
 
-        local_mean = engagement_rates.mean()
-        global_mean = self.df["engagement_rate"].mean()
+        # Use recency weights for the mean
+        w = self.df.loc[engagement_rates.index, "weight"].values
+        local_mean = float(np.average(engagement_rates.values, weights=w))
+        global_mean = float(np.average(self.df["engagement_rate"].values, weights=self.df["weight"].values))
 
         # Confidence weight: more data = higher confidence in local mean
         confidence = min(n / 20, 1.0)  # Saturates at n=20

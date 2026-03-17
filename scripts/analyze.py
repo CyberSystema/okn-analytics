@@ -20,7 +20,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
-from config import PLATFORMS, ANALYSIS, CONTENT_CATEGORIES, TIMEZONE
+from config import PLATFORMS, ANALYSIS, CONTENT_CATEGORIES, TIMEZONE, TIMELINE, compute_recency_weights
 
 logger = logging.getLogger("okn.analyze")
 
@@ -51,8 +51,11 @@ class OKNAnalyzer:
             for col in ["day_of_week", "hour", "week", "year_week", "month"]:
                 self.df[col] = None
 
-        # Current week data
-        now = pd.Timestamp.now(tz="UTC")
+        # Current week data — anchored to the most recent date in the data, not today
+        now = self.df["published_at"].max()
+        if pd.isna(now):
+            now = pd.Timestamp.now(tz="Asia/Seoul")
+        self.now = now
         week_ago = now - timedelta(days=7)
         two_weeks_ago = now - timedelta(days=14)
 
@@ -61,6 +64,9 @@ class OKNAnalyzer:
             (self.df["published_at"] >= two_weeks_ago) &
             (self.df["published_at"] < week_ago)
         ]
+
+        # Recency weights — last 90 days get full weight, older data gets less
+        self.df["weight"] = compute_recency_weights(self.df["published_at"], reference_date=now)
 
     def run_all(self) -> Dict[str, Any]:
         """Run all analysis modules and return results."""
@@ -109,16 +115,19 @@ class OKNAnalyzer:
             )
 
             benchmark = ANALYSIS["engagement_benchmarks"].get(platform, 0.03)
+            # Weighted average — last 90 days matter most
+            w = pdf["weight"].values
+            weighted_rate = float(np.average(pdf["engagement_rate"].values, weights=w)) if len(pdf) > 0 else 0.0
 
             overview[platform] = {
                 "total_posts": len(pdf),
                 "posts_this_week": len(pw),
                 "total_reach": int(pdf["reach"].sum()),
                 "total_engagement": int(pdf["engagement_total"].sum()),
-                "avg_engagement_rate": round(pdf["engagement_rate"].mean(), 4),
+                "avg_engagement_rate": round(weighted_rate, 4),
                 "median_engagement_rate": round(pdf["engagement_rate"].median(), 4),
                 "benchmark_engagement": benchmark,
-                "vs_benchmark": round(pdf["engagement_rate"].mean() - benchmark, 4),
+                "vs_benchmark": round(weighted_rate - benchmark, 4),
                 "total_followers_gained": int(pdf["followers_gained"].sum()),
                 "wow_reach_change": wow_reach,
                 "wow_engagement_change": wow_engagement,
@@ -142,15 +151,16 @@ class OKNAnalyzer:
             if len(cdf) < ANALYSIS["min_posts_for_analysis"]:
                 continue
 
+            w = cdf["weight"].values
             content[ctype] = {
                 "count": len(cdf),
-                "avg_reach": int(cdf["reach"].mean()),
-                "avg_engagement": int(cdf["engagement_total"].mean()),
-                "avg_engagement_rate": round(cdf["engagement_rate"].mean(), 4),
-                "avg_likes": int(cdf["likes"].mean()),
-                "avg_comments": int(cdf["comments"].mean()),
-                "avg_shares": int(cdf["shares"].mean()),
-                "avg_saves": int(cdf["saves"].mean()),
+                "avg_reach": int(np.average(cdf["reach"].values, weights=w)),
+                "avg_engagement": int(np.average(cdf["engagement_total"].values, weights=w)),
+                "avg_engagement_rate": round(float(np.average(cdf["engagement_rate"].values, weights=w)), 4),
+                "avg_likes": int(np.average(cdf["likes"].values, weights=w)),
+                "avg_comments": int(np.average(cdf["comments"].values, weights=w)),
+                "avg_shares": int(np.average(cdf["shares"].values, weights=w)),
+                "avg_saves": int(np.average(cdf["saves"].values, weights=w)),
                 "total_reach": int(cdf["reach"].sum()),
                 "platforms": cdf["platform"].unique().tolist(),
             }
@@ -163,11 +173,12 @@ class OKNAnalyzer:
             for ctype in pdf["content_type"].unique():
                 cdf = pdf[pdf["content_type"] == ctype]
                 if len(cdf) >= max(2, ANALYSIS["min_posts_for_analysis"] // 2):
+                    cw = cdf["weight"].values
                     p_ranked.append({
                         "type": ctype,
-                        "engagement_rate": round(cdf["engagement_rate"].mean(), 4),
+                        "engagement_rate": round(float(np.average(cdf["engagement_rate"].values, weights=cw)), 4),
                         "count": len(cdf),
-                        "avg_engagement": int(cdf["engagement_total"].mean()),
+                        "avg_engagement": int(np.average(cdf["engagement_total"].values, weights=cw)),
                     })
             p_ranked.sort(key=lambda x: x["engagement_rate"], reverse=True)
             if p_ranked:
@@ -275,21 +286,22 @@ class OKNAnalyzer:
 
         valid = valid[valid["platform"].isin(platforms_with_hours)]
 
-        # Best hours
-        hourly = valid.groupby("hour").agg(
-            avg_engagement=("engagement_rate", "mean"),
-            avg_reach=("reach", "mean"),
-            post_count=("post_id", "count"),
-        ).round(4)
+        # Best hours (weighted by recency)
+        def _weighted_agg(group):
+            w = group["weight"].values
+            eng = group["engagement_rate"].values
+            reach = group["reach"].values
+            return pd.Series({
+                "avg_engagement": float(np.average(eng, weights=w)) if len(w) > 0 else 0,
+                "avg_reach": float(np.average(reach, weights=w)) if len(w) > 0 else 0,
+                "post_count": len(group),
+            })
 
+        hourly = valid.groupby("hour").apply(_weighted_agg).round(4)
         best_hours = hourly.nlargest(3, "avg_engagement")
 
-        # Best days
-        daily = valid.groupby("day_of_week").agg(
-            avg_engagement=("engagement_rate", "mean"),
-            avg_reach=("reach", "mean"),
-            post_count=("post_id", "count"),
-        ).round(4)
+        # Best days (weighted)
+        daily = valid.groupby("day_of_week").apply(_weighted_agg).round(4)
 
         day_order = ["Monday", "Tuesday", "Wednesday", "Thursday",
                      "Friday", "Saturday", "Sunday"]
@@ -297,28 +309,31 @@ class OKNAnalyzer:
 
         best_days = daily.nlargest(3, "avg_engagement")
 
-        # Per-platform best times
+        # Per-platform best times (weighted)
         platform_timing = {}
         for platform in valid["platform"].unique():
             pdata = valid[valid["platform"] == platform]
             if len(pdata) >= ANALYSIS["min_posts_for_analysis"]:
-                p_hourly = pdata.groupby("hour")["engagement_rate"].mean()
-                p_daily = pdata.groupby("day_of_week")["engagement_rate"].mean()
+                p_hourly = pdata.groupby("hour").apply(_weighted_agg)
+                p_daily = pdata.groupby("day_of_week").apply(_weighted_agg)
 
-                best_h = p_hourly.nlargest(3).index.tolist()
-                best_d = p_daily.nlargest(2).index.tolist()
+                best_h = p_hourly.nlargest(3, "avg_engagement").index.tolist()
+                best_d = p_daily.nlargest(2, "avg_engagement").index.tolist()
 
                 platform_timing[platform] = {
                     "best_hours": best_h,
                     "best_days": best_d,
                 }
 
-        # Heatmap data (day x hour)
+        # Heatmap data (day x hour) — weighted
+        def _weighted_mean(x):
+            w = valid.loc[x.index, "weight"].values
+            return float(np.average(x.values, weights=w)) if len(w) > 0 else 0
         heatmap = valid.pivot_table(
             values="engagement_rate",
             index="day_of_week",
             columns="hour",
-            aggfunc="mean",
+            aggfunc=_weighted_mean,
         ).round(4)
 
         return {
@@ -469,12 +484,13 @@ class OKNAnalyzer:
         platform_avgs = {}
         for platform in platforms:
             pdf = self.df[self.df["platform"] == platform]
+            w = pdf["weight"].values
             platform_avgs[platform] = {
-                "avg_reach": int(pdf["reach"].mean()),
-                "avg_engagement_rate": round(pdf["engagement_rate"].mean(), 4),
-                "avg_likes": int(pdf["likes"].mean()),
-                "avg_comments": int(pdf["comments"].mean()),
-                "avg_shares": int(pdf["shares"].mean()),
+                "avg_reach": int(np.average(pdf["reach"].values, weights=w)),
+                "avg_engagement_rate": round(float(np.average(pdf["engagement_rate"].values, weights=w)), 4),
+                "avg_likes": int(np.average(pdf["likes"].values, weights=w)),
+                "avg_comments": int(np.average(pdf["comments"].values, weights=w)),
+                "avg_shares": int(np.average(pdf["shares"].values, weights=w)),
                 "dominant_content_type": pdf["content_type"].mode().iloc[0] if not pdf["content_type"].mode().empty else "unknown",
             }
 
@@ -489,9 +505,10 @@ class OKNAnalyzer:
             for platform in cdf["platform"].unique():
                 cpdf = cdf[cdf["platform"] == platform]
                 if len(cpdf) >= 2:
+                    cpw = cpdf["weight"].values
                     cp_data[platform] = {
-                        "avg_engagement_rate": round(cpdf["engagement_rate"].mean(), 4),
-                        "avg_reach": int(cpdf["reach"].mean()),
+                        "avg_engagement_rate": round(float(np.average(cpdf["engagement_rate"].values, weights=cpw)), 4),
+                        "avg_reach": int(np.average(cpdf["reach"].values, weights=cpw)),
                         "count": len(cpdf),
                     }
 

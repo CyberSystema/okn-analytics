@@ -188,19 +188,19 @@ class ContentScorer:
     @staticmethod
     def _assign_grade(score: float) -> str:
         """Assign a letter grade based on composite score."""
-        if score >= 85:
+        if score >= 70:
             return "A+"
-        elif score >= 75:
-            return "A"
-        elif score >= 65:
-            return "B+"
         elif score >= 55:
+            return "A"
+        elif score >= 40:
+            return "B+"
+        elif score >= 30:
             return "B"
-        elif score >= 45:
+        elif score >= 20:
             return "C+"
-        elif score >= 35:
+        elif score >= 12:
             return "C"
-        elif score >= 25:
+        elif score >= 6:
             return "D"
         else:
             return "F"

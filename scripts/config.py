@@ -6,7 +6,44 @@ Edit this file to customize behavior, branding, and thresholds.
 """
 
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+import pandas as pd
+
+
+def to_kst(ts):
+    """Convert any timestamp to KST (UTC+9). Works with Series or scalar."""
+    kst = timezone(timedelta(hours=KST_OFFSET_HOURS))
+    if isinstance(ts, pd.Series):
+        ts = pd.to_datetime(ts, errors="coerce", utc=True)
+        return ts.dt.tz_convert(kst)
+    if isinstance(ts, pd.Timestamp):
+        if ts.tzinfo is None:
+            ts = ts.tz_localize("UTC")
+        return ts.tz_convert(kst)
+    return ts
+
+
+def compute_recency_weights(dates: pd.Series, reference_date=None) -> pd.Series:
+    """
+    Compute recency weights for a Series of datetime values.
+    Returns a Series of weights (0.1 to 1.0) based on TIMELINE config.
+    
+    reference_date: the "now" anchor (defaults to max date in the series).
+    """
+    dates = pd.to_datetime(dates, errors="coerce")
+    if reference_date is None:
+        reference_date = dates.max()
+    if pd.isna(reference_date):
+        return pd.Series(1.0, index=dates.index)
+
+    rw = TIMELINE["recency_weights"]
+    days_ago = (reference_date - dates).dt.total_seconds() / 86400
+
+    weights = pd.Series(rw["old_weight"], index=dates.index, dtype=float)
+    weights[days_ago <= rw["medium_days"]] = rw["medium_weight"]
+    weights[days_ago <= rw["recent_days"]] = rw["recent_weight"]
+
+    return weights
 
 # ──────────────────────────────────────────────
 # PATHS
@@ -54,7 +91,7 @@ PLATFORMS = {
         "name": "TikTok",
         "priority": 4,
         "weight": 0.15,
-        "color": "#000000",
+        "color": "#69C9D0",      # TikTok teal
         "icon": "🎵",
     },
 }
@@ -191,7 +228,7 @@ ANALYSIS = {
 # FORECASTING PARAMETERS
 # ──────────────────────────────────────────────
 FORECAST = {
-    "horizon_days": 30,          # How far ahead to forecast
+    "horizon_days": 0,           # 0 = no future projection, only historical trends
     "min_history_weeks": 4,      # Minimum weeks of data needed
     "confidence_interval": 0.80, # 80% confidence interval
 }
@@ -215,7 +252,39 @@ BRANDING = {
 # ──────────────────────────────────────────────
 # TIMEZONE
 # ──────────────────────────────────────────────
-TIMEZONE = "Asia/Seoul"  # KST — primary audience timezone
+TIMEZONE = "Asia/Seoul"  # KST — all timestamps displayed in Korean time
+KST_OFFSET_HOURS = 9     # UTC+9
+
+# ──────────────────────────────────────────────
+# TIMELINE & RECENCY WEIGHTS
+# ──────────────────────────────────────────────
+# OKN social media became consistently active in December 2025.
+# Data before this is sparse/inconsistent and should carry less weight.
+# TikTok account was created on January 6, 2026.
+# "Now" always means the most recent date in the data (not today's date).
+
+TIMELINE = {
+    # When OKN social media became consistently active
+    "active_since": "2025-12-01",
+
+    # Per-platform creation/start dates (ignore data before these)
+    "platform_start": {
+        "instagram": "2025-03-01",   # Had sporadic posts earlier
+        "tiktok":    "2026-01-06",   # Account created this date
+        "youtube":   "2025-01-01",
+        "facebook":  "2025-01-01",
+    },
+
+    # Recency weighting for analysis & ML
+    # Posts in recent window get full weight; older posts get less
+    "recency_weights": {
+        "recent_days":   90,    # Last 90 days = highest priority
+        "recent_weight": 1.0,   # Full weight
+        "medium_days":   180,   # 90-180 days ago
+        "medium_weight": 0.3,   # Reduced weight
+        "old_weight":    0.1,   # Anything older (pre-active era)
+    },
+}
 
 
 def ensure_dirs():

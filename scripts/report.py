@@ -20,6 +20,7 @@ from config import BRANDING, PLATFORMS, ANALYSIS, REPORTS_DIR, CHARTS_DIR, ensur
 
 logger = logging.getLogger("okn.report")
 
+
 def _safe(text, max_len=80):
     """Escape HTML-sensitive characters in text for safe embedding."""
     if not isinstance(text, str):
@@ -28,7 +29,6 @@ def _safe(text, max_len=80):
     if len(text) > max_len:
         text = text[:max_len] + "..."
     return text
-
 plt.rcParams.update({"figure.facecolor":"white","axes.facecolor":"#fafafa","axes.edgecolor":"#cccccc","axes.grid":True,"grid.alpha":0.3,"font.family":"sans-serif","font.size":11})
 
 
@@ -93,6 +93,7 @@ class ReportGenerator:
         pdf = pdf.copy(); pdf["published_at"] = pd.to_datetime(pdf["published_at"],errors="coerce"); pdf = pdf.dropna(subset=["published_at"])
         if pdf.empty: return
         w = pdf.set_index("published_at").resample("W").agg(reach=("reach","sum"),eng=("engagement_total","sum"))
+        w = self._clip_90d(w)
         if len(w)<2: return
         fig,ax1 = plt.subplots(figsize=(10,4.5))
         # Use short "Mon DD" format for x labels
@@ -147,18 +148,46 @@ class ReportGenerator:
             if not d.empty: self._render_acct(d,plat)
 
     def _render_acct(self, daily, plat):
-        pc = PLATFORMS.get(plat,{}).get("color","#666"); pn = PLATFORMS.get(plat,{}).get("name",plat); dates = daily.index
-        # Reach+Views
-        fig,(a1,a2)=plt.subplots(2,1,figsize=(12,7),sharex=True)
-        if "reach" in daily.columns:
+        pc = PLATFORMS.get(plat,{}).get("color","#666"); pn = PLATFORMS.get(plat,{}).get("name",plat)
+        daily = self._clip_90d(daily)
+        # Further trim: only show from first non-zero day to last non-zero day
+        data_cols = [c for c in ["reach","views","follows","interactions","visits","follower_count"]
+                     if c in daily.columns and daily[c].sum() > 0]
+        if data_cols:
+            has_data = daily[data_cols].ne(0).any(axis=1)
+            if has_data.any():
+                first_idx = has_data.idxmax()
+                last_idx = has_data[::-1].idxmax()
+                daily = daily.loc[first_idx:last_idx]
+        dates = daily.index
+
+        # Reach chart — only if reach has real data
+        has_reach = "reach" in daily.columns and daily["reach"].sum() > 0
+        has_views = "views" in daily.columns and daily["views"].sum() > 0
+
+        if has_reach and has_views:
+            fig,(a1,a2)=plt.subplots(2,1,figsize=(12,7),sharex=True)
             a1.fill_between(dates,daily["reach"],alpha=0.15,color=pc); a1.plot(dates,daily["reach"],color=pc,alpha=0.4,linewidth=0.8)
             if "reach_7d_avg" in daily.columns: a1.plot(dates,daily["reach_7d_avg"],color=pc,linewidth=2.5,label="7d avg")
             a1.set_ylabel("Reach"); a1.set_title(f"Daily Reach — {pn}"); a1.legend(loc="upper left")
-        if "views" in daily.columns:
             a2.fill_between(dates,daily["views"],alpha=0.15,color=BRANDING["secondary_color"]); a2.plot(dates,daily["views"],color=BRANDING["secondary_color"],alpha=0.4,linewidth=0.8)
             if "views_7d_avg" in daily.columns: a2.plot(dates,daily["views_7d_avg"],color=BRANDING["secondary_color"],linewidth=2.5,label="7d avg")
             a2.set_ylabel("Views"); a2.set_title(f"Daily Views — {pn}"); a2.legend(loc="upper left")
-        plt.xticks(rotation=45); plt.tight_layout(); self.charts[f"{plat}_acct_rv"] = self._b64(fig)
+            plt.xticks(rotation=45); plt.tight_layout(); self.charts[f"{plat}_acct_rv"] = self._b64(fig)
+        elif has_views:
+            # Only views, no reach
+            fig,ax=plt.subplots(figsize=(12,4))
+            ax.fill_between(dates,daily["views"],alpha=0.15,color=BRANDING["secondary_color"]); ax.plot(dates,daily["views"],color=BRANDING["secondary_color"],alpha=0.4,linewidth=0.8)
+            if "views_7d_avg" in daily.columns: ax.plot(dates,daily["views_7d_avg"],color=BRANDING["secondary_color"],linewidth=2.5,label="7d avg")
+            ax.set_ylabel("Views"); ax.set_title(f"Daily Views — {pn}"); ax.legend(loc="upper left")
+            plt.xticks(rotation=45); plt.tight_layout(); self.charts[f"{plat}_acct_rv"] = self._b64(fig)
+        elif has_reach:
+            fig,ax=plt.subplots(figsize=(12,4))
+            ax.fill_between(dates,daily["reach"],alpha=0.15,color=pc); ax.plot(dates,daily["reach"],color=pc,alpha=0.4,linewidth=0.8)
+            if "reach_7d_avg" in daily.columns: ax.plot(dates,daily["reach_7d_avg"],color=pc,linewidth=2.5,label="7d avg")
+            ax.set_ylabel("Reach"); ax.set_title(f"Daily Reach — {pn}"); ax.legend(loc="upper left")
+            plt.xticks(rotation=45); plt.tight_layout(); self.charts[f"{plat}_acct_rv"] = self._b64(fig)
+
         # Follows
         if "follows" in daily.columns and daily["follows"].sum()>0:
             fig,ax=plt.subplots(figsize=(12,4)); ax.bar(dates,daily["follows"],color=BRANDING["accent_color"],alpha=0.7,width=1.0)
@@ -230,6 +259,26 @@ class ReportGenerator:
     def _ci(self, key):
         return f'<img src="data:image/png;base64,{self.charts[key]}" class="chart-img">' if key in self.charts else ""
 
+    def _clip_90d(self, dataframe):
+        """Clip a time-indexed DataFrame to the last 90 days of actual data."""
+        if dataframe.empty:
+            return dataframe
+        last_date = dataframe.index.max()
+        cutoff = last_date - pd.Timedelta(days=90)
+        return dataframe.loc[dataframe.index >= cutoff]
+
+    def _get_followers_gained(self, platform, overview):
+        """Get followers gained, falling back to account data if content-level is 0."""
+        content_val = overview.get('total_followers_gained', 0)
+        if content_val > 0:
+            return content_val
+        plat_data = self.account_data.get("platforms", {})
+        acct = plat_data.get(platform, {})
+        daily = acct.get("daily", pd.DataFrame())
+        if not daily.empty and "follows" in daily.columns:
+            return int(daily["follows"].sum())
+        return content_val
+
     # ════════════════ HTML ════════════════
 
     def _build_html(self):
@@ -268,12 +317,13 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 @media(max-width:768px){{.container{{padding:12px}}.kpis{{grid-template-columns:1fr}}}}
 </style></head><body><div class="container">
 <div class="header"><h1>☦️ {BRANDING['report_title']}</h1>
-<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} • {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
-<div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div></div>
+<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST • Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} • {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
+<div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
+<div style="opacity:0.7;font-size:12px;margin-top:8px">Active since December 2025 • TikTok since January 6, 2026 • All times in KST</div></div>
 {platform_html}
 {cross_html}
 <div class="section"><h2>💡 Recommendations</h2>{rec_html if rec_html else '<p class="no-data">Need more data</p>'}</div>
-<div class="footer">{BRANDING['footer_text']}<br>Data: {meta.get('date_range',{}).get('earliest','N/A')} → {meta.get('date_range',{}).get('latest','N/A')}</div>
+<div class="footer">{BRANDING['footer_text']}<br>Data: {str(meta.get('date_range',{}).get('earliest','N/A'))[:10]} → {str(meta.get('date_range',{}).get('latest','N/A'))[:10]}</div>
 </div></body></html>"""
 
     # ──── PER-PLATFORM SECTION ────
@@ -293,7 +343,7 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         <div class="kpi"><span class="v">{ov.get('total_reach',0):,}</span><span class="l">Total Reach</span></div>
         <div class="kpi"><span class="v">{ov.get('total_engagement',0):,}</span><span class="l">Engagement</span></div>
         <div class="kpi"><span class="v">{ov.get('avg_engagement_rate',0):.1%}</span><span class="l">Avg Eng Rate</span></div>
-        <div class="kpi"><span class="v">{ov.get('total_followers_gained',0):,}</span><span class="l">Followers Gained</span></div>
+        <div class="kpi"><span class="v">{self._get_followers_gained(plat, ov):,}</span><span class="l">Followers Gained</span></div>
         <div class="kpi"><span class="v">{ws}</span><span class="l">WoW Reach</span></div></div>"""
 
         # Viral
@@ -366,15 +416,21 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         # Clusters
         cl=ml.get("content_clusters",{})
         if cl.get("status")=="ok":
-            cl_html="".join(f'<div style="margin:8px 0;padding:12px;background:white;border-radius:8px"><strong>{c["label"]}</strong> — {c["size"]} posts, {c["avg_engagement_rate"]:.1%} avg engagement</div>' for c in cl.get("clusters",[]))
+            cl_html = ""
+            for c in cl.get("clusters", []):
+                label = c.get("label", "Cluster")
+                cl_html += f'<div style="margin:8px 0;padding:12px;background:white;border-radius:8px"><strong>{label}</strong> — {c["size"]} posts, {c["avg_engagement_rate"]:.1%} avg engagement</div>'
             parts.append(f'<div class="sub-s"><h3>🎯 Content Clusters <span class="ml">KMeans</span></h3>{self._ci(f"{plat}_clusters")}{cl_html}</div>')
 
         # NLP
         nlp=ml.get("caption_analysis",{})
         if nlp.get("status")=="ok":
             terms=nlp.get("top_engagement_terms",[])[:6]
-            t_html="".join(f'<div class="dr"><span class="k">"{t["term"]}" ({t["posts_with_term"]} posts)</span><span class="val" style="color:{"green" if t["engagement_lift"]>0 else "red"}">{t["engagement_lift"]:+.0%} lift</span></div>' for t in terms)
-            parts.append(f'<div class="sub-s"><h3>📝 Caption & Hashtag Analysis <span class="ml">TF-IDF NLP</span></h3>{self._ci(f"{plat}_nlp")}{t_html}</div>')
+            t_html = ""
+            for t in terms:
+                color = "green" if t["engagement_lift"] > 0 else "red"
+                t_html += f'<div class="dr"><span class="k">&quot;{_safe(t["term"])}&quot; ({t["posts_with_term"]} posts)</span><span class="val" style="color:{color}">{t["engagement_lift"]:+.0%} lift</span></div>'
+            parts.append(f'<div class="sub-s"><h3>📝 Caption &amp; Hashtag Analysis <span class="ml">TF-IDF NLP</span></h3>{self._ci(f"{plat}_nlp")}{t_html}</div>')
 
         # Drivers
         drivers=ml.get("engagement_drivers",{})
@@ -382,10 +438,15 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
             d_html=""
             for k,d in drivers.items():
                 if k=="caption_length": d_html+=f'<div class="dr"><span class="k">Caption Length</span><span class="val">{d["direction"]} (optimal: {d["optimal_range"]})</span></div>'
-                elif k=="hashtags": d_html+=f'<div class="dr"><span class="k">Hashtags</span><span class="val">{d["direction"]} (optimal: ~{d["optimal_count"]})</span></div>'
+                elif k=="hashtags":
+                    opt = d["optimal_count"]
+                    opt_text = f"~{opt} per post" if opt > 0 else "minimal or none"
+                    d_html+=f'<div class="dr"><span class="k">Hashtags</span><span class="val">{d["direction"]} (optimal: {opt_text})</span></div>'
                 elif k=="multilingual": d_html+=f'<div class="dr"><span class="k">Multilingual</span><span class="val">{d["recommendation"]} ({d["lift"]:+.0%})</span></div>'
                 elif k=="emoji": d_html+=f'<div class="dr"><span class="k">Emoji</span><span class="val">{"Helps" if d.get("lift",0)>0.05 else "No effect"} ({d.get("lift",0):+.0%})</span></div>'
-                elif k=="weekend_effect": d_html+=f'<div class="dr"><span class="k">Weekend vs Weekday</span><span class="val">{d["better"].title()} better (WE:{d["weekend_avg"]:.1%} vs WD:{d["weekday_avg"]:.1%})</span></div>'
+                elif k=="weekend_effect":
+                    we_label = f'{d["better"].title()} is better' if d["better"] != "no difference" else "No significant difference"
+                    d_html+=f'<div class="dr"><span class="k">Weekend vs Weekday</span><span class="val">{we_label} (WE:{d["weekend_avg"]:.1%} vs WD:{d["weekday_avg"]:.1%})</span></div>'
             if d_html: parts.append(f'<div class="sub-s"><h3>🔬 Engagement Drivers <span class="ml">Statistical</span></h3>{d_html}</div>')
 
         if not parts: return ""
@@ -402,12 +463,16 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         if daily.empty and not demo: return ""
         pn=PLATFORMS.get(plat,{}).get("name",plat.title()); parts=[]
         if not daily.empty:
-            days=len(daily); kpi_items=""
+            days=len(self._clip_90d(daily)); kpi_items=""
             for col,lbl in [("reach","Reach"),("views","Views"),("follows","New Followers"),("interactions","Interactions"),("visits","Profile Visits"),("follower_count","Final Followers")]:
                 if col in daily.columns and daily[col].sum()>0:
-                    val=f'{int(daily[col].iloc[-1]):,}' if col=="follower_count" else f'{int(daily[col].sum()):,}'
+                    if col == "follower_count":
+                        nonzero = daily[col][daily[col] > 0]
+                        val = f'{int(nonzero.iloc[-1]):,}' if not nonzero.empty else '0'
+                    else:
+                        val = f'{int(daily[col].sum()):,}'
                     kpi_items+=f'<div class="kpi"><span class="v">{val}</span><span class="l">{lbl}</span></div>'
-            parts.append(f'<h3>📈 Account Metrics ({days} days)</h3><div class="kpis">{kpi_items}</div>{self._ci(f"{plat}_acct_rv")}{self._ci(f"{plat}_acct_fol")}{self._ci(f"{plat}_fol_growth")}')
+            parts.append(f'<h3>📈 Account Metrics (last 90 days)</h3><div class="kpis">{kpi_items}</div>{self._ci(f"{plat}_acct_rv")}{self._ci(f"{plat}_acct_fol")}{self._ci(f"{plat}_fol_growth")}')
         if demo:
             peak=demo.get("peak_hours",[])
             if peak:
@@ -424,7 +489,13 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
     def _cross_section(self):
         if len(self.df["platform"].unique())<2: return ""
         ov=self.analysis.get("platform_overview",{})
-        rows="".join(f'''<tr><td>{PLATFORMS.get(p,{}).get("icon","")} {PLATFORMS.get(p,{}).get("name",p)}</td><td>{d.get("total_posts",0)}</td><td>{d.get("total_reach",0):,}</td><td>{d.get("total_engagement",0):,}</td><td>{d.get("avg_engagement_rate",0):.1%}</td><td>{d.get("benchmark_engagement",0):.1%}</td><td style="color:{"green" if d.get("vs_benchmark",0)>0 else "red"}">{d.get("vs_benchmark",0):+.1%}</td></tr>''' for p,d in ov.items())
+        rows = ""
+        for p, d in ov.items():
+            pn = PLATFORMS.get(p, {}).get("name", p)
+            pico = PLATFORMS.get(p, {}).get("icon", "")
+            vs = d.get("vs_benchmark", 0)
+            vs_color = "green" if vs > 0 else "red"
+            rows += f'<tr><td>{pico} {pn}</td><td>{d.get("total_posts",0)}</td><td>{d.get("total_reach",0):,}</td><td>{d.get("total_engagement",0):,}</td><td>{d.get("avg_engagement_rate",0):.1%}</td><td>{d.get("benchmark_engagement",0):.1%}</td><td style="color:{vs_color}">{vs:+.1%}</td></tr>'
         return f"""<div class="section cross"><h2>🔄 Cross-Platform Comparison</h2>
 <p style="color:#888;font-size:13px;margin-bottom:16px">⚠️ <strong>Note:</strong> Instagram rate = interactions ÷ reach. TikTok rate = interactions ÷ views. Different denominators — not directly comparable.</p>
 {self._ci("cross")}

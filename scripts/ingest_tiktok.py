@@ -124,14 +124,116 @@ def parse_greek_date(date_str: str, fallback_year: int = None) -> Optional[pd.Ti
 
 
 def parse_greek_dates_series(series: pd.Series, fallback_year: int = None) -> pd.Series:
-    """Parse an entire Series of Greek date strings."""
-    # Detect year range from the data itself
-    if fallback_year is None:
-        # Check if any dates hint at 2025 vs 2026
-        now = datetime.now()
-        fallback_year = now.year
+    """
+    Parse an entire Series of Greek date strings with smart year inference.
+    
+    Two modes:
+    - SHORT series (<60 rows, e.g. Content.csv): dates are NOT chronological,
+      all from recent months. Use simple year inference per-date.
+    - LONG series (60+ rows, e.g. Viewers.csv): dates ARE chronological and
+      may wrap across years (March 2025 → March 2026). Walk the sequence
+      and detect year boundaries.
+    """
+    if series.empty:
+        return series
 
-    return series.apply(lambda x: parse_greek_date(x, fallback_year))
+    # First pass: parse all dates as (month, day) tuples without year
+    parsed_md = []
+    for val in series:
+        if not isinstance(val, str):
+            parsed_md.append(None)
+            continue
+        val = val.strip().strip('"')
+        try:
+            ts = pd.Timestamp(val)
+            parsed_md.append((ts.month, ts.day, ts.year))
+            continue
+        except Exception:
+            pass
+        parts = val.split()
+        if len(parts) < 2:
+            parsed_md.append(None)
+            continue
+        try:
+            day = int(parts[0])
+        except ValueError:
+            parsed_md.append(None)
+            continue
+        month_str = parts[1].lower().strip()
+        month = GREEK_MONTHS.get(month_str)
+        if month is None:
+            for key, m_val in GREEK_MONTHS.items():
+                if month_str.startswith(key[:4]) or key.startswith(month_str[:4]):
+                    month = m_val
+                    break
+        if month is None:
+            parsed_md.append(None)
+            continue
+        parsed_md.append((month, day, None))
+
+    valid_entries = [(i, m, d, y) for i, md in enumerate(parsed_md)
+                     if md is not None for m, d, y in [md]]
+
+    if not valid_entries:
+        return pd.Series([None] * len(series), index=series.index)
+
+    now = datetime.now()
+    end_year = fallback_year or now.year
+
+    # Decide mode based on series length
+    is_long_chronological = len(valid_entries) >= 60
+
+    results = [None] * len(series)
+
+    if is_long_chronological:
+        # LONG MODE: Walk sequence, detect year wraps (Dec→Jan)
+        year_wraps = 0
+        for j in range(len(valid_entries) - 1, 0, -1):
+            curr_month = valid_entries[j][1]
+            prev_month = valid_entries[j - 1][1]
+            if curr_month < prev_month - 1:
+                year_wraps += 1
+
+        start_year = end_year - year_wraps
+        current_year = start_year
+        prev_month = None
+
+        for idx, month, day, explicit_year in valid_entries:
+            if explicit_year is not None:
+                try:
+                    results[idx] = pd.Timestamp(year=explicit_year, month=month, day=day)
+                except ValueError:
+                    pass
+                prev_month = month
+                continue
+            if prev_month is not None and month < prev_month - 1:
+                current_year += 1
+            try:
+                results[idx] = pd.Timestamp(year=current_year, month=month, day=day)
+            except ValueError:
+                pass
+            prev_month = month
+    else:
+        # SHORT MODE: All dates are recent. Assign year per-date individually.
+        # If month is far ahead of current month, it's from last year.
+        for idx, month, day, explicit_year in valid_entries:
+            if explicit_year is not None:
+                try:
+                    results[idx] = pd.Timestamp(year=explicit_year, month=month, day=day)
+                except ValueError:
+                    pass
+                continue
+            year = end_year
+            if month > now.month + 2:
+                year -= 1
+            try:
+                results[idx] = pd.Timestamp(year=year, month=month, day=day)
+            except ValueError:
+                pass
+
+    result = pd.Series(results, index=series.index)
+    result = result.apply(lambda x: x.tz_localize("Asia/Seoul") if x is not None and not pd.isna(x) and x.tzinfo is None else x)
+    return result
 
 
 # ══════════════════════════════════════════════
@@ -192,15 +294,14 @@ def ingest_tiktok_content(tiktok_dir: Path) -> Optional[pd.DataFrame]:
     else:
         result["post_id"] = [f"tt_{i:04d}" for i in range(len(result))]
 
-    # Parse Greek dates
+    # Parse Greek dates — returns KST-localized timestamps
     if "published_at" in result.columns:
-        # Detect year from data: if we see January + March, spans 2 years or same year
         result["published_at"] = parse_greek_dates_series(result["published_at"])
-        result["published_at"] = pd.to_datetime(result["published_at"], errors="coerce")
+        result["published_at"] = pd.to_datetime(result["published_at"], errors="coerce", utc=True)
+        # Convert to KST (already KST from parser, but ensure consistency)
         if result["published_at"].notna().any():
-            result["published_at"] = result["published_at"].dt.tz_localize(
-                "UTC", ambiguous="NaT", nonexistent="NaT"
-            )
+            from config import to_kst
+            result["published_at"] = to_kst(result["published_at"])
 
     # Numeric columns
     for col in ["likes", "comments", "shares", "views"]:

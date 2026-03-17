@@ -53,7 +53,7 @@ def ingest_account_data(platform_dir: Path) -> Dict[str, Any]:
     metric_files = {
         "follows":      ["Follows.csv", "follows.csv"],
         "interactions":  ["Interactions.csv", "interactions.csv"],
-        "link_clicks":   ["Link_clicks.csv", "link_clicks.csv", "Link Clicks.csv"],
+        "link_clicks":   ["Link_clicks.csv", "link_clicks.csv", "Link Clicks.csv", "Link clicks.csv"],
         "reach":         ["Reach.csv", "reach.csv"],
         "views":         ["Views.csv", "views.csv"],
         "visits":        ["Visits.csv", "visits.csv"],

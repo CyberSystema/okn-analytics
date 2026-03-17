@@ -1,33 +1,43 @@
 {
-  "generated_at": "2026-03-17T03:49:27.350017",
+  "generated_at": "2026-03-17T15:11:17.412086",
   "meta": {
-    "generated_at": "2026-03-17T03:49:21.770210",
-    "total_posts": 49,
+    "generated_at": "2026-03-17T15:11:14.207300",
+    "total_posts": 139,
     "platforms": [
       "instagram",
       "tiktok"
     ],
     "date_range": {
-      "earliest": "2025-12-18 13:20:00+00:00",
-      "latest": "2026-03-15 08:46:00+00:00"
+      "earliest": "2025-03-22 09:03:00+09:00",
+      "latest": "2026-03-15 15:46:00+09:00"
     }
   },
   "health": {
-    "status": "strong_growth",
-    "emoji": "\ud83d\ude80",
-    "message": "OKN's social presence is growing well across key metrics.",
-    "signal_score": 1.0
+    "status": "stable",
+    "emoji": "\ud83d\udcca",
+    "message": "Growth is stable. Look for opportunities to accelerate.",
+    "signal_score": 0.33
   },
   "recommendations": [
     {
       "priority": "high",
       "category": "content",
-      "message": "On Instagram, your best content type is 'short_video' with 20.5% avg engagement (8 posts). Create more of this."
+      "message": "On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this."
     },
     {
       "priority": "high",
       "category": "content",
-      "message": "On TikTok, your best content type is 'short_video' with 9.2% avg engagement (15 posts). Create more of this."
+      "message": "On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this."
+    },
+    {
+      "priority": "high",
+      "category": "timing",
+      "message": "Your best posting hour is 8:00 KST (based on 4.0 posts). Schedule high-priority content around this time."
+    },
+    {
+      "priority": "high",
+      "category": "growth",
+      "message": "TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform."
     },
     {
       "priority": "high",
@@ -41,33 +51,28 @@
     },
     {
       "priority": "medium",
+      "category": "timing",
+      "message": "Best performing day is Wednesday. Consider making this your primary posting day."
+    },
+    {
+      "priority": "medium",
       "category": "engagement",
       "message": "Comments-to-likes ratio is low. Try asking questions, running polls, or creating discussion-worthy content."
     },
     {
       "priority": "low",
-      "category": "timing",
-      "message": "Not enough data per time slot to recommend posting hours yet. Keep adding weekly exports."
+      "category": "platform",
+      "message": "Instagram is outperforming industry benchmark by 16.5%! Keep up the great work."
     },
     {
       "priority": "low",
       "category": "platform",
-      "message": "Instagram is outperforming industry benchmark by 17.2%! Keep up the great work."
-    },
-    {
-      "priority": "low",
-      "category": "platform",
-      "message": "TikTok is outperforming industry benchmark by 6.7%! Keep up the great work."
+      "message": "TikTok is outperforming industry benchmark by 7.2%! Keep up the great work."
     },
     {
       "priority": "low",
       "category": "growth",
       "message": "Instagram reach is growing! Keep up the momentum."
-    },
-    {
-      "priority": "low",
-      "category": "growth",
-      "message": "TikTok reach is growing! Keep up the momentum."
     },
     {
       "priority": "low",

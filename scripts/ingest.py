@@ -21,7 +21,7 @@ from typing import Optional
 
 from config import (
     PLATFORM_DIRS, HISTORY_DIR, CONTENT_TYPE_MAP,
-    UNIFIED_SCHEMA, TIMEZONE, ensure_dirs,
+    UNIFIED_SCHEMA, TIMEZONE, TIMELINE, to_kst, ensure_dirs,
 )
 
 logger = logging.getLogger("okn.ingest")
@@ -82,7 +82,7 @@ def ingest_platform(platform: str, data_dir: Path) -> Optional[pd.DataFrame]:
     ACCOUNT_FILES = {
         # Instagram account exports
         "follows.csv", "reach.csv", "views.csv", "visits.csv",
-        "interactions.csv", "link_clicks.csv", "audience.csv",
+        "interactions.csv", "link_clicks.csv", "link clicks.csv", "audience.csv",
         # TikTok account exports
         "overview.csv", "viewers.csv", "followerhistory.csv",
         "followeractivity.csv", "followergender.csv",
@@ -382,8 +382,10 @@ def apply_column_map(df: pd.DataFrame, col_map: dict, platform: str) -> pd.DataF
                 result.loc[mask_failed, "published_at"],
                 errors="coerce",
             )
-        # Localize to UTC
-        result["published_at"] = parsed.dt.tz_localize("UTC", ambiguous="NaT", nonexistent="NaT")
+        # Instagram exports from Meta Business Suite are in Greek local time (EET/EEST)
+        # Localize as Europe/Athens (handles DST automatically), then convert to KST
+        result["published_at"] = parsed.dt.tz_localize("Europe/Athens", ambiguous="NaT", nonexistent="NaT")
+        result["published_at"] = to_kst(result["published_at"])
     else:
         result["published_at"] = pd.NaT
 
@@ -485,6 +487,16 @@ def cleanup(df: pd.DataFrame) -> pd.DataFrame:
     # Sort by date
     df = df.sort_values("published_at", ascending=False).reset_index(drop=True)
 
+    # Filter by platform start dates (e.g., TikTok created Jan 6, 2026)
+    start_dates = TIMELINE.get("platform_start", {})
+    for platform, start_str in start_dates.items():
+        start_ts = pd.Timestamp(start_str, tz="Asia/Seoul")
+        mask = (df["platform"] == platform) & (df["published_at"] < start_ts)
+        n_removed = mask.sum()
+        if n_removed > 0:
+            logger.info(f"   🗑️  Removed {n_removed} {platform} posts before {start_str}")
+            df = df[~mask]
+
     # Ensure no negative values in metrics
     numeric_cols = ["reach", "views", "likes", "comments", "shares",
                     "saves", "engagement_total", "watch_time_sec"]
@@ -505,49 +517,8 @@ def cleanup(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ══════════════════════════════════════════════
-# TEMPLATE GENERATOR
-# ══════════════════════════════════════════════
-
-def generate_templates():
-    """Generate CSV templates for manual data entry (especially TikTok)."""
-    ensure_dirs()
-
-    template_cols = [
-        "post_id", "content_type", "published_at", "title",
-        "reach", "views", "likes", "comments", "shares", "saves",
-        "watch_time_sec", "avg_watch_sec", "followers_gained", "link_clicks",
-    ]
-
-    for platform, platform_dir in PLATFORM_DIRS.items():
-        template_path = platform_dir / "template.csv"
-        if not template_path.exists():
-            template = pd.DataFrame(columns=template_cols)
-            # Add example row
-            example = {
-                "post_id": f"{platform}_example_001",
-                "content_type": "short_video" if platform == "tiktok" else "image",
-                "published_at": "2025-01-15 14:30:00",
-                "title": "Example post title",
-                "reach": 1000,
-                "views": 500,
-                "likes": 50,
-                "comments": 10,
-                "shares": 5,
-                "saves": 20,
-                "watch_time_sec": 0,
-                "avg_watch_sec": 0,
-                "followers_gained": 3,
-                "link_clicks": 0,
-            }
-            template = pd.concat([template, pd.DataFrame([example])], ignore_index=True)
-            template.to_csv(template_path, index=False)
-            logger.info(f"📝 Template created: {template_path}")
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    generate_templates()
     df = ingest_all()
     if not df.empty:
         print(f"\n✅ Ingestion complete: {len(df)} posts")

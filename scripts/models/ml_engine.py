@@ -27,6 +27,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import r2_score, mean_absolute_error
 
+from config import compute_recency_weights
+
 logger = logging.getLogger("okn.ml")
 
 
@@ -89,6 +91,12 @@ class MLEngine:
 
         if "duration_sec" in df.columns:
             self.feature_cols.append("duration_sec")
+
+        # Recency weights — last 90 days get full weight for ML training
+        if "weight" in df.columns:
+            self.sample_weights = df["weight"].values
+        else:
+            self.sample_weights = compute_recency_weights(df["published_at"]).values
 
     def run_all(self) -> Dict[str, Any]:
         """Run all ML models. Returns results dict."""
@@ -176,7 +184,7 @@ class MLEngine:
                 "r2_score": round(r2, 4),
                 "cv_r2_score": round(cv_r2, 4) if cv_r2 is not None else None,
                 "mae": round(mae, 4),
-                "interpretation": self._interpret_r2(r2),
+                "interpretation": self._interpret_r2(cv_r2 if cv_r2 is not None else r2),
                 "overperformers": [
                     {
                         "title": row["title"][:80],
@@ -220,7 +228,7 @@ class MLEngine:
                 learning_rate=0.1,
                 random_state=42,
             )
-            gb.fit(X, y)
+            gb.fit(X, y, sample_weight=self.sample_weights)
 
             importances = gb.feature_importances_
             feature_ranking = sorted(
@@ -489,31 +497,37 @@ class MLEngine:
                 "optimal_count": int(optimal_tags),
             }
 
-        # Multilingual content effect
+        # Multilingual content effect (recency-weighted)
         if self.df["is_multilingual"].sum() >= 2 and (self.df["is_multilingual"] == 0).sum() >= 2:
-            multi_eng = self.df[self.df["is_multilingual"] == 1]["engagement_rate"].mean()
-            single_eng = self.df[self.df["is_multilingual"] == 0]["engagement_rate"].mean()
+            m_df = self.df[self.df["is_multilingual"] == 1]
+            s_df = self.df[self.df["is_multilingual"] == 0]
+            multi_eng = float(np.average(m_df["engagement_rate"].values, weights=m_df["weight"].values if "weight" in m_df.columns else None))
+            single_eng = float(np.average(s_df["engagement_rate"].values, weights=s_df["weight"].values if "weight" in s_df.columns else None))
             drivers["multilingual"] = {
                 "multilingual_avg_engagement": round(float(multi_eng), 4),
                 "single_language_avg_engagement": round(float(single_eng), 4),
                 "lift": round(float((multi_eng / single_eng) - 1), 4) if single_eng > 0 else 0,
-                "recommendation": "Multilingual captions perform better" if multi_eng > single_eng * 1.1 else "No significant difference",
+                "recommendation": "Multilingual captions perform better" if multi_eng > single_eng * 1.1 else "Single-language captions perform better" if single_eng > multi_eng * 1.1 else "No significant difference",
             }
 
-        # Emoji effect
+        # Emoji effect (recency-weighted)
         if self.df["has_emoji"].sum() >= 2 and (self.df["has_emoji"] == 0).sum() >= 2:
-            emoji_eng = self.df[self.df["has_emoji"] == 1]["engagement_rate"].mean()
-            no_emoji_eng = self.df[self.df["has_emoji"] == 0]["engagement_rate"].mean()
+            e_df = self.df[self.df["has_emoji"] == 1]
+            ne_df = self.df[self.df["has_emoji"] == 0]
+            emoji_eng = float(np.average(e_df["engagement_rate"].values, weights=e_df["weight"].values if "weight" in e_df.columns else None))
+            no_emoji_eng = float(np.average(ne_df["engagement_rate"].values, weights=ne_df["weight"].values if "weight" in ne_df.columns else None))
             drivers["emoji"] = {
                 "with_emoji_avg": round(float(emoji_eng), 4),
                 "without_emoji_avg": round(float(no_emoji_eng), 4),
                 "lift": round(float((emoji_eng / no_emoji_eng) - 1), 4) if no_emoji_eng > 0 else 0,
             }
 
-        # Weekend vs weekday
+        # Weekend vs weekday (recency-weighted)
         if self.df["is_weekend"].sum() >= 2 and (self.df["is_weekend"] == 0).sum() >= 2:
-            we_eng = self.df[self.df["is_weekend"] == 1]["engagement_rate"].mean()
-            wd_eng = self.df[self.df["is_weekend"] == 0]["engagement_rate"].mean()
+            we_df = self.df[self.df["is_weekend"] == 1]
+            wd_df = self.df[self.df["is_weekend"] == 0]
+            we_eng = float(np.average(we_df["engagement_rate"].values, weights=we_df["weight"].values if "weight" in we_df.columns else None))
+            wd_eng = float(np.average(wd_df["engagement_rate"].values, weights=wd_df["weight"].values if "weight" in wd_df.columns else None))
             drivers["weekend_effect"] = {
                 "weekend_avg": round(float(we_eng), 4),
                 "weekday_avg": round(float(wd_eng), 4),

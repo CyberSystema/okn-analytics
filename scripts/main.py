@@ -21,7 +21,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import REPORTS_DIR, HISTORY_DIR, PLATFORM_DIRS, ensure_dirs
-from ingest import ingest_all, generate_templates
+from ingest import ingest_all
 from ingest_account import ingest_account_data, load_account_history
 from ingest_tiktok import ingest_tiktok_account
 from analyze import OKNAnalyzer
@@ -62,8 +62,6 @@ def run_pipeline(ingest_only=False, report_only=False):
     logger.info(f"   Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
 
-    # Generate templates for any missing platforms
-    generate_templates()
 
     # ── STEP 1: INGEST ──
     logger.info("\n📥 STEP 1: Data Ingestion")
@@ -154,6 +152,10 @@ def run_pipeline(ingest_only=False, report_only=False):
     # ── STEP 2: ANALYZE ──
     logger.info("\n🔬 STEP 2: Core Analysis")
     logger.info("-" * 40)
+
+    # Add recency weights to main df (used by analyzer, ML, and scoring)
+    from config import compute_recency_weights
+    df["weight"] = compute_recency_weights(df["published_at"])
 
     analyzer = OKNAnalyzer(df)
     analysis = analyzer.run_all()
