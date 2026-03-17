@@ -19,6 +19,16 @@ from typing import Dict, Any
 from config import BRANDING, PLATFORMS, ANALYSIS, REPORTS_DIR, CHARTS_DIR, ensure_dirs
 
 logger = logging.getLogger("okn.report")
+
+def _safe(text, max_len=80):
+    """Escape HTML-sensitive characters in text for safe embedding."""
+    if not isinstance(text, str):
+        text = str(text)
+    text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    if len(text) > max_len:
+        text = text[:max_len] + "..."
+    return text
+
 plt.rcParams.update({"figure.facecolor":"white","axes.facecolor":"#fafafa","axes.edgecolor":"#cccccc","axes.grid":True,"grid.alpha":0.3,"font.family":"sans-serif","font.size":11})
 
 
@@ -75,7 +85,7 @@ class ReportGenerator:
         totals = {k:int(pdf[k].sum()) for k in ["likes","comments","shares","saves"] if k in pdf.columns and pdf[k].sum()>0}
         if not totals: return
         fig,ax = plt.subplots(figsize=(6,6))
-        ax.pie(totals.values(), labels=[k.capitalize() for k in totals], colors=["#E4405F","#1877F2","#25D366","#FF6B35"][:len(totals)], autopct="%1.1f%%", startangle=90, pctdistance=0.8)
+        ax.pie(list(totals.values()), labels=[k.capitalize() for k in totals], colors=["#E4405F","#1877F2","#25D366","#FF6B35"][:len(totals)], autopct="%1.1f%%", startangle=90, pctdistance=0.8)
         ax.set_title(f"Engagement Mix — {PLATFORMS.get(p,{}).get('name',p)}"); plt.tight_layout()
         self.charts[f"{p}_eng_pie"] = self._b64(fig)
 
@@ -334,8 +344,18 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         nn=ml.get("engagement_prediction",{})
         if nn.get("status")=="trained":
             r2=nn["r2_score"]; cv=nn.get("cv_r2_score"); cv_t=f" · CV R²: {cv:.3f}" if cv else ""
-            over_rows="".join(f'<tr><td>{"<a href=\""+o.get("permalink","")+"\" target=\"_blank\">" if o.get("permalink") else ""}{o["title"][:50]}{"</a>" if o.get("permalink") else ""}</td><td>{o["actual"]:.1%}</td><td>{o["predicted"]:.1%}</td><td style="color:green">+{o["surplus"]:.1%}</td></tr>' for o in nn.get("overperformers",[])[:3])
-            under_rows="".join(f'<tr><td>{"<a href=\""+u.get("permalink","")+"\" target=\"_blank\">" if u.get("permalink") else ""}{u["title"][:50]}{"</a>" if u.get("permalink") else ""}</td><td>{u["actual"]:.1%}</td><td>{u["predicted"]:.1%}</td><td style="color:red">{u["deficit"]:.1%}</td></tr>' for u in nn.get("underperformers",[])[:3])
+            over_rows = ""
+            for o in nn.get("overperformers",[])[:3]:
+                link = o.get("permalink","")
+                title = _safe(o["title"][:50])
+                cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
+                over_rows += f'<tr><td>{cell}</td><td>{o["actual"]:.1%}</td><td>{o["predicted"]:.1%}</td><td style="color:green">+{o["surplus"]:.1%}</td></tr>'
+            under_rows = ""
+            for u in nn.get("underperformers",[])[:3]:
+                link = u.get("permalink","")
+                title = _safe(u["title"][:50])
+                cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
+                under_rows += f'<tr><td>{cell}</td><td>{u["actual"]:.1%}</td><td>{u["predicted"]:.1%}</td><td style="color:red">{u["deficit"]:.1%}</td></tr>'
             parts.append(f"""<div class="sub-s"><h3>🧠 Neural Network Predictor <span class="ml">MLP (32→16→8)</span></h3>
 <p>Model: <strong>R² = {r2:.3f}</strong>{cv_t} — {nn.get("interpretation","")}</p>
 <p>Posts that <strong>outperformed</strong> the model's prediction:</p>
