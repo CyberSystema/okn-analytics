@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-03-17T05:25:15.245142",
+  "generated_at": "2026-03-17T03:49:30.908898",
   "analysis": {
     "meta": {
-      "generated_at": "2026-03-17T05:24:52.549228",
+      "generated_at": "2026-03-17T03:49:21.770210",
       "total_posts": 49,
       "platforms": [
         "instagram",
@@ -1277,7 +1277,7 @@
   "forecast": {
     "horizon_days": 30,
     "method_used": "prophet",
-    "generated_at": "2026-03-17T05:24:52.751312",
+    "generated_at": "2026-03-17T03:49:22.217697",
     "reach": {
       "method": "prophet",
       "historical_weeks": 12,
@@ -1287,26 +1287,26 @@
         {
           "week": "2026-03-15",
           "predicted": 122603,
-          "lower_bound": 24338,
-          "upper_bound": 226235
+          "lower_bound": 23120,
+          "upper_bound": 217729
         },
         {
           "week": "2026-03-22",
           "predicted": 134727,
-          "lower_bound": 34107,
-          "upper_bound": 224404
+          "lower_bound": 34788,
+          "upper_bound": 227842
         },
         {
           "week": "2026-03-29",
           "predicted": 146851,
-          "lower_bound": 57453,
-          "upper_bound": 239794
+          "lower_bound": 48301,
+          "upper_bound": 249403
         },
         {
           "week": "2026-04-05",
           "predicted": 158975,
-          "lower_bound": 53792,
-          "upper_bound": 248579
+          "lower_bound": 60444,
+          "upper_bound": 257197
         }
       ],
       "summary": "Weekly reach is expected to increase over the next 4 weeks. Current avg: 106,550, Projected: 158,975 (+49.2%)."
@@ -1320,26 +1320,26 @@
         {
           "week": "2026-03-15",
           "predicted": 17837,
-          "lower_bound": 2850,
-          "upper_bound": 31086
+          "lower_bound": 2497,
+          "upper_bound": 32234
         },
         {
           "week": "2026-03-22",
           "predicted": 19606,
-          "lower_bound": 4755,
-          "upper_bound": 34727
+          "lower_bound": 4382,
+          "upper_bound": 33970
         },
         {
           "week": "2026-03-29",
           "predicted": 21375,
-          "lower_bound": 7156,
-          "upper_bound": 37148
+          "lower_bound": 7127,
+          "upper_bound": 35088
         },
         {
           "week": "2026-04-05",
           "predicted": 23144,
-          "lower_bound": 9207,
-          "upper_bound": 38024
+          "lower_bound": 8562,
+          "upper_bound": 37253
         }
       ],
       "summary": "Weekly engagement is expected to increase over the next 4 weeks. Current avg: 15,461, Projected: 23,144 (+49.7%)."
@@ -1353,7 +1353,7 @@
         {
           "week": "2026-03-15",
           "predicted": 16,
-          "lower_bound": 6,
+          "lower_bound": 7,
           "upper_bound": 25
         },
         {
@@ -1365,13 +1365,13 @@
         {
           "week": "2026-03-29",
           "predicted": 19,
-          "lower_bound": 9,
+          "lower_bound": 10,
           "upper_bound": 28
         },
         {
           "week": "2026-04-05",
           "predicted": 20,
-          "lower_bound": 11,
+          "lower_bound": 10,
           "upper_bound": 29
         }
       ],
@@ -1386,7 +1386,7 @@
     "instagram_forecast": {
       "horizon_days": 30,
       "method_used": "prophet",
-      "generated_at": "2026-03-17T05:24:54.213856",
+      "generated_at": "2026-03-17T03:49:22.452757",
       "reach": {
         "method": "prophet",
         "historical_weeks": 10,
@@ -1396,26 +1396,26 @@
           {
             "week": "2026-03-15",
             "predicted": 3616,
-            "lower_bound": 1395,
-            "upper_bound": 5777
+            "lower_bound": 1463,
+            "upper_bound": 5935
           },
           {
             "week": "2026-03-22",
             "predicted": 3757,
-            "lower_bound": 1582,
-            "upper_bound": 5993
+            "lower_bound": 1518,
+            "upper_bound": 6017
           },
           {
             "week": "2026-03-29",
             "predicted": 3898,
-            "lower_bound": 1772,
-            "upper_bound": 6154
+            "lower_bound": 1726,
+            "upper_bound": 6051
           },
           {
             "week": "2026-04-05",
             "predicted": 4039,
-            "lower_bound": 1795,
-            "upper_bound": 6209
+            "lower_bound": 1964,
+            "upper_bound": 6224
           }
         ],
         "summary": "Weekly reach is expected to increase over the next 4 weeks. Current avg: 3,354, Projected: 4,039 (+20.4%)."
@@ -1429,26 +1429,26 @@
           {
             "week": "2026-03-15",
             "predicted": 729,
-            "lower_bound": 348,
-            "upper_bound": 1114
+            "lower_bound": 290,
+            "upper_bound": 1115
           },
           {
             "week": "2026-03-22",
             "predicted": 761,
-            "lower_bound": 345,
-            "upper_bound": 1181
+            "lower_bound": 336,
+            "upper_bound": 1159
           },
           {
             "week": "2026-03-29",
             "predicted": 794,
-            "lower_bound": 374,
-            "upper_bound": 1200
+            "lower_bound": 403,
+            "upper_bound": 1215
           },
           {
             "week": "2026-04-05",
             "predicted": 826,
-            "lower_bound": 439,
-            "upper_bound": 1247
+            "lower_bound": 432,
+            "upper_bound": 1222
           }
         ],
         "summary": "Weekly engagement is expected to increase over the next 4 weeks. Current avg: 659, Projected: 826 (+25.3%)."
@@ -1462,26 +1462,26 @@
           {
             "week": "2026-03-15",
             "predicted": 19,
-            "lower_bound": 11,
-            "upper_bound": 27
+            "lower_bound": 10,
+            "upper_bound": 28
           },
           {
             "week": "2026-03-22",
             "predicted": 20,
             "lower_bound": 12,
-            "upper_bound": 29
+            "upper_bound": 30
           },
           {
             "week": "2026-03-29",
             "predicted": 22,
             "lower_bound": 13,
-            "upper_bound": 30
+            "upper_bound": 31
           },
           {
             "week": "2026-04-05",
             "predicted": 23,
             "lower_bound": 15,
-            "upper_bound": 32
+            "upper_bound": 31
           }
         ],
         "summary": "Weekly followers is expected to increase over the next 4 weeks. Current avg: 15, Projected: 23 (+50.8%)."
@@ -1497,7 +1497,7 @@
     "tiktok_forecast": {
       "horizon_days": 30,
       "method_used": "prophet",
-      "generated_at": "2026-03-17T05:24:54.344669",
+      "generated_at": "2026-03-17T03:49:22.619404",
       "reach": {
         "method": "linear_trend_ma",
         "historical_weeks": 5,

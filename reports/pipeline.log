@@ -121,3 +121,791 @@ Invalid media type '(max-width:768px)' the whole @media rule was ignored at 16:1
    🔴 Viral content on Instagram is: short_video. Create more content in these formats.
    🔴 Viral content on TikTok is: short_video. Create more content in these formats.
    🟡 Comments-to-likes ratio is low. Try asking questions, running polls, or creating discussion-worthy content.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-17 03:49:21
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /home/runner/work/okn-analytics/okn-analytics/data/instagram
+   ✅ instagram: 34 posts ingested
+📥 Ingesting youtube data from /home/runner/work/okn-analytics/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /home/runner/work/okn-analytics/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /home/runner/work/okn-analytics/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+Parquet save failed (Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - `Import pyarrow` failed. pyarrow is required for parquet support. Use pip or conda to install the pyarrow package.
+ - `Import fastparquet` failed. fastparquet is required for parquet support. Use pip or conda to install the fastparquet package.), saving CSV only
+📊 Total unified dataset: 49 posts across 2 platforms
+
+✅ Dataset: 49 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, audience.csv, reach.csv, views.csv, follows.csv, visits.csv
+   📈 follows: 78 days loaded
+   📈 interactions: 90 days loaded
+   📈 reach: 90 days loaded
+   📈 views: 90 days loaded
+   📈 visits: 90 days loaded
+   👥 Audience demographics loaded
+   💾 Account daily: merged → 90 days
+   💾 Demographics snapshot saved
+   📈 Found TikTok account data: followeractivity.csv, followergender.csv, viewers.csv, overview.csv, followertopterritories.csv, followerhistory.csv
+   📈 TikTok Overview: 60 days
+   📈 TikTok Viewers: 60 days
+   📈 TikTok Followers: 60 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   ✅ Account daily data: 90 days
+   ✅ Demographics data loaded
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+n_changepoints greater than number of observations. Using 8.
+Chain [1] start processing
+Chain [1] done processing
+n_changepoints greater than number of observations. Using 8.
+Chain [1] start processing
+Chain [1] done processing
+n_changepoints greater than number of observations. Using 8.
+Chain [1] start processing
+Chain [1] done processing
+n_changepoints greater than number of observations. Using 7.
+Chain [1] start processing
+Chain [1] done processing
+n_changepoints greater than number of observations. Using 7.
+Chain [1] start processing
+Chain [1] done processing
+n_changepoints greater than number of observations. Using 7.
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 34 posts
+      instagram: NN R²=-3.7796, features=7, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-2.8249, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
+Ignored `box-shadow:0 2px 8px rgba(0,0,0,0.06)` at 5:78, unknown property.
+Expected a media type, got '(max-width:768px)'
+Invalid media type '(max-width:768px)' the whole @media rule was ignored at 16:1.
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "맞" (U+B9DE)
+.notdef glyph rendered for Unicode string unsupported by fonts: "아" (U+C544)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "울" (U+C6B8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "화" (U+D654)
+.notdef glyph rendered for Unicode string unsupported by fonts: "상" (U+C0C1)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "렬" (U+B82C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "하" (U+D558)
+.notdef glyph rendered for Unicode string unsupported by fonts: "며" (U+BA70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "우" (U+C6B0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "리" (U+B9AC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "신" (U+C2E0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "앙" (U+C559)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "승" (U+C2B9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "리" (U+B9AC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "를" (U+B97C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "이" (U+C774)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "거" (U+AC70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "되" (U+B418)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "매" (U+B9E4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "마" (U+B9C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "이" (U+C774)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "거" (U+AC70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "되" (U+B418)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "모" (U+BAA8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "기" (U+AE30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "립" (U+B9BD)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "양" (U+C591)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "울" (U+C6B8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "맞" (U+B9DE)
+.notdef glyph rendered for Unicode string unsupported by fonts: "아" (U+C544)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "울" (U+C6B8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "화" (U+D654)
+.notdef glyph rendered for Unicode string unsupported by fonts: "상" (U+C0C1)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "렬" (U+B82C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "하" (U+D558)
+.notdef glyph rendered for Unicode string unsupported by fonts: "며" (U+BA70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "우" (U+C6B0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "바" (U+BC14)
+.notdef glyph rendered for Unicode string unsupported by fonts: "실" (U+C2E4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "로" (U+B85C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "피" (U+D53C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "타" (U+D0C0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "그" (U+ADF8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "리" (U+B9AC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "통" (U+D1B5)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "새" (U+C0C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "해" (U+D574)
+.notdef glyph rendered for Unicode string unsupported by fonts: "첫" (U+CCAB)
+.notdef glyph rendered for Unicode string unsupported by fonts: "날" (U+B0A0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "인" (U+C778)
+.notdef glyph rendered for Unicode string unsupported by fonts: "월" (U+C6D4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "바" (U+BC14)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "이" (U+C774)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "후" (U+D6C4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "전" (U+C804)
+.notdef glyph rendered for Unicode string unsupported by fonts: "례" (U+B840)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "거" (U+AC70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "되" (U+B418)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "찬" (U+CC2C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "예" (U+C608)
+.notdef glyph rendered for Unicode string unsupported by fonts: "배" (U+BC30)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "간" (U+AC04)
+.notdef glyph rendered for Unicode string unsupported by fonts: "소" (U+C18C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "식" (U+C2DD)
+.notdef glyph rendered for Unicode string unsupported by fonts: "월" (U+C6D4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "간" (U+AC04)
+.notdef glyph rendered for Unicode string unsupported by fonts: "소" (U+C18C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "식" (U+C2DD)
+.notdef glyph rendered for Unicode string unsupported by fonts: "월" (U+C6D4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "맞" (U+B9DE)
+.notdef glyph rendered for Unicode string unsupported by fonts: "아" (U+C544)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "울" (U+C6B8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "화" (U+D654)
+.notdef glyph rendered for Unicode string unsupported by fonts: "상" (U+C0C1)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "렬" (U+B82C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "하" (U+D558)
+.notdef glyph rendered for Unicode string unsupported by fonts: "며" (U+BA70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "우" (U+C6B0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "리" (U+B9AC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "신" (U+C2E0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "앙" (U+C559)
+.notdef glyph rendered for Unicode string unsupported by fonts: "의" (U+C758)
+.notdef glyph rendered for Unicode string unsupported by fonts: "승" (U+C2B9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "리" (U+B9AC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "를" (U+B97C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "주" (U+C8FC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "맞" (U+B9DE)
+.notdef glyph rendered for Unicode string unsupported by fonts: "아" (U+C544)
+.notdef glyph rendered for Unicode string unsupported by fonts: "한" (U+D55C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "국" (U+AD6D)
+.notdef glyph rendered for Unicode string unsupported by fonts: "정" (U+C815)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "회" (U+D68C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "교" (U+AD50)
+.notdef glyph rendered for Unicode string unsupported by fonts: "구" (U+AD6C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "는" (U+B294)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "울" (U+C6B8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "당" (U+B2F9)
+.notdef glyph rendered for Unicode string unsupported by fonts: "에" (U+C5D0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "서" (U+C11C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "성" (U+C131)
+.notdef glyph rendered for Unicode string unsupported by fonts: "화" (U+D654)
+.notdef glyph rendered for Unicode string unsupported by fonts: "상" (U+C0C1)
+.notdef glyph rendered for Unicode string unsupported by fonts: "행" (U+D589)
+.notdef glyph rendered for Unicode string unsupported by fonts: "렬" (U+B82C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "을" (U+C744)
+.notdef glyph rendered for Unicode string unsupported by fonts: "하" (U+D558)
+.notdef glyph rendered for Unicode string unsupported by fonts: "며" (U+BA70)
+.notdef glyph rendered for Unicode string unsupported by fonts: "우" (U+C6B0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "신" (U+C2E0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "현" (U+D604)
+.notdef glyph rendered for Unicode string unsupported by fonts: "축" (U+CD95)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "대" (U+B300)
+.notdef glyph rendered for Unicode string unsupported by fonts: "시" (U+C2DC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "과" (U+ACFC)
+.notdef glyph rendered for Unicode string unsupported by fonts: "신" (U+C2E0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "현" (U+D604)
+.notdef glyph rendered for Unicode string unsupported by fonts: "축" (U+CD95)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "신" (U+C2E0)
+.notdef glyph rendered for Unicode string unsupported by fonts: "현" (U+D604)
+.notdef glyph rendered for Unicode string unsupported by fonts: "축" (U+CD95)
+.notdef glyph rendered for Unicode string unsupported by fonts: "일" (U+C77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "니" (U+B2C8)
+.notdef glyph rendered for Unicode string unsupported by fonts: "콜" (U+CF5C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "라" (U+B77C)
+.notdef glyph rendered for Unicode string unsupported by fonts: "스" (U+C2A4)
+Reading 'maxp' table from disk
+Decompiling 'maxp' table
+Took 0.000s to load 'maxp'
+Took 0.000s to prune 'maxp'
+maxp pruned
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Took 0.000s to load 'cmap'
+Took 0.000s to prune 'cmap'
+cmap pruned
+Reading 'post' table from disk
+Decompiling 'post' table
+Took 0.000s to load 'post'
+Took 0.000s to prune 'post'
+post pruned
+GSUB dropped
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Took 0.001s to close glyph list over 'cmap'
+Added .notdef to subset
+Retaining 17 glyphs
+head subsetting not needed
+hhea subsetting not needed
+maxp subsetting not needed
+OS/2 subsetting not needed
+Reading 'hmtx' table from disk
+Decompiling 'hmtx' table
+Reading 'hhea' table from disk
+Decompiling 'hhea' table
+Took 0.003s to subset 'hmtx'
+hmtx subsetted
+Took 0.000s to subset 'cmap'
+cmap subsetted
+Took 0.000s to subset 'post'
+post subsetted
+Reading 'CBDT' table from disk
+Decompiling 'CBDT' table
+Reading 'CBLC' table from disk
+Decompiling 'CBLC' table
+Took 0.018s to subset 'CBDT'
+CBDT subsetted
+Took 0.000s to subset 'CBLC'
+CBLC subsetted
+vhea subsetting not needed
+Reading 'vmtx' table from disk
+Decompiling 'vmtx' table
+Reading 'vhea' table from disk
+Decompiling 'vhea' table
+Took 0.002s to subset 'vmtx'
+vmtx subsetted
+name subsetting not needed
+Took 0.000s to subset GlyphOrder
+Reading 'head' table from disk
+Decompiling 'head' table
+Took 0.000s to prune 'head'
+head pruned
+Reading 'OS/2' table from disk
+Decompiling 'OS/2' table
+OS/2 Unicode ranges pruned: []
+Reading 'name' table from disk
+Decompiling 'name' table
+Took 0.000s to prune 'name'
+name pruned
+Reading 'maxp' table from disk
+Decompiling 'maxp' table
+Took 0.000s to load 'maxp'
+Took 0.000s to prune 'maxp'
+maxp pruned
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Reading 'post' table from disk
+Decompiling 'post' table
+Took 0.007s to load 'cmap'
+Took 0.000s to prune 'cmap'
+cmap pruned
+fpgm dropped
+prep dropped
+cvt  dropped
+kern dropped
+Took 0.000s to load 'post'
+Took 0.000s to prune 'post'
+post pruned
+GPOS dropped
+GSUB dropped
+Reading 'glyf' table from disk
+Decompiling 'glyf' table
+Reading 'loca' table from disk
+Decompiling 'loca' table
+Reading 'head' table from disk
+Decompiling 'head' table
+Took 0.006s to load 'glyf'
+Took 0.000s to prune 'glyf'
+glyf pruned
+Took 0.001s to close glyph list over 'cmap'
+Added gid0 to subset
+Closing glyph list over 'glyf': 74 glyphs before
+Glyph names: ['.notdef', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'V', 'W', 'a', 'ampersand', 'arrowright', 'asciitilde', 'b', 'bracketleft', 'bracketright', 'c', 'colon', 'comma', 'd', 'e', 'eight', 'emdash', 'equal', 'f', 'fi', 'five', 'four', 'g', 'h', 'hyphen', 'i', 'k', 'l', 'm', 'n', 'nine', 'numbersign', 'o', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'plus', 'r', 's', 'seven', 'six', 'space', 't', 'three', 'two', 'twosuperior', 'u', 'uniFB00', 'v', 'w', 'x', 'y', 'zero']
+Glyph IDs:   [0, 3, 6, 8, 9, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 53, 54, 55, 57, 58, 62, 64, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90, 91, 92, 97, 116, 2807, 3101, 5037, 5038]
+Closed glyph list over 'glyf': 74 glyphs after
+Glyph names: ['.notdef', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'V', 'W', 'a', 'ampersand', 'arrowright', 'asciitilde', 'b', 'bracketleft', 'bracketright', 'c', 'colon', 'comma', 'd', 'e', 'eight', 'emdash', 'equal', 'f', 'fi', 'five', 'four', 'g', 'h', 'hyphen', 'i', 'k', 'l', 'm', 'n', 'nine', 'numbersign', 'o', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'plus', 'r', 's', 'seven', 'six', 'space', 't', 'three', 'two', 'twosuperior', 'u', 'uniFB00', 'v', 'w', 'x', 'y', 'zero']
+Glyph IDs:   [0, 3, 6, 8, 9, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 53, 54, 55, 57, 58, 62, 64, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 80, 81, 82, 83, 85, 86, 87, 88, 89, 90, 91, 92, 97, 116, 2807, 3101, 5037, 5038]
+Took 0.002s to close glyph list over 'glyf'
+Retaining 74 glyphs
+head subsetting not needed
+hhea subsetting not needed
+maxp subsetting not needed
+OS/2 subsetting not needed
+Reading 'hmtx' table from disk
+Decompiling 'hmtx' table
+Reading 'hhea' table from disk
+Decompiling 'hhea' table
+Took 0.004s to subset 'hmtx'
+hmtx subsetted
+Took 0.002s to subset 'cmap'
+cmap subsetted
+loca subsetting not needed
+Took 0.000s to subset 'post'
+post subsetted
+gasp subsetting not needed
+FFTM NOT subset; don't know how to subset
+Reading 'GDEF' table from disk
+Decompiling 'GDEF' table
+Took 0.002s to subset 'GDEF'
+GDEF subsetted
+name subsetting not needed
+Took 0.003s to subset 'glyf'
+glyf subsetted
+Took 0.000s to subset GlyphOrder
+Took 0.000s to prune 'head'
+head pruned
+Reading 'OS/2' table from disk
+Decompiling 'OS/2' table
+OS/2 Unicode ranges pruned: [0, 1, 31, 37, 62]
+OS/2 CodePage ranges pruned: [0]
+Took 0.001s to prune 'glyf'
+glyf pruned
+Took 0.000s to prune 'GDEF'
+GDEF pruned
+Reading 'name' table from disk
+Decompiling 'name' table
+Reading 'gasp' table from disk
+Decompiling 'gasp' table
+Reading 'FFTM' table from disk
+Decompiling 'FFTM' table
+Took 0.001s to prune 'name'
+name pruned
+Reading 'maxp' table from disk
+Decompiling 'maxp' table
+Took 0.000s to load 'maxp'
+Took 0.000s to prune 'maxp'
+maxp pruned
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Took 0.000s to load 'cmap'
+Took 0.000s to prune 'cmap'
+cmap pruned
+Reading 'post' table from disk
+Decompiling 'post' table
+Took 0.000s to load 'post'
+Took 0.000s to prune 'post'
+post pruned
+GSUB dropped
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Took 0.001s to close glyph list over 'cmap'
+Added .notdef to subset
+Retaining 10 glyphs
+head subsetting not needed
+hhea subsetting not needed
+maxp subsetting not needed
+OS/2 subsetting not needed
+Reading 'hmtx' table from disk
+Decompiling 'hmtx' table
+Reading 'hhea' table from disk
+Decompiling 'hhea' table
+Took 0.002s to subset 'hmtx'
+hmtx subsetted
+Took 0.000s to subset 'cmap'
+cmap subsetted
+Took 0.000s to subset 'post'
+post subsetted
+Reading 'CBDT' table from disk
+Decompiling 'CBDT' table
+Reading 'CBLC' table from disk
+Decompiling 'CBLC' table
+Took 0.014s to subset 'CBDT'
+CBDT subsetted
+Took 0.000s to subset 'CBLC'
+CBLC subsetted
+vhea subsetting not needed
+Reading 'vmtx' table from disk
+Decompiling 'vmtx' table
+Reading 'vhea' table from disk
+Decompiling 'vhea' table
+Took 0.002s to subset 'vmtx'
+vmtx subsetted
+name subsetting not needed
+Took 0.000s to subset GlyphOrder
+Reading 'head' table from disk
+Decompiling 'head' table
+Took 0.000s to prune 'head'
+head pruned
+Reading 'OS/2' table from disk
+Decompiling 'OS/2' table
+OS/2 Unicode ranges pruned: []
+Reading 'name' table from disk
+Decompiling 'name' table
+Took 0.000s to prune 'name'
+name pruned
+Reading 'maxp' table from disk
+Decompiling 'maxp' table
+Took 0.000s to load 'maxp'
+Took 0.000s to prune 'maxp'
+maxp pruned
+Reading 'cmap' table from disk
+Decompiling 'cmap' table
+Reading 'post' table from disk
+Decompiling 'post' table
+Took 0.007s to load 'cmap'
+Took 0.000s to prune 'cmap'
+cmap pruned
+fpgm dropped
+prep dropped
+cvt  dropped
+kern dropped
+Took 0.000s to load 'post'
+Took 0.000s to prune 'post'
+post pruned
+GPOS dropped
+GSUB dropped
+Reading 'glyf' table from disk
+Decompiling 'glyf' table
+Reading 'loca' table from disk
+Decompiling 'loca' table
+Reading 'head' table from disk
+Decompiling 'head' table
+Took 0.004s to load 'glyf'
+Took 0.000s to prune 'glyf'
+glyf pruned
+Missing requested glyphs: {6272, 6273, 6274, 6275, 6276, 6277, 6278, 6279, 6280, 6281, 6282, 6283, 6284, 6285, 6286, 6287, 6288, 6289, 6290, 6291, 6292, 6293, 6294, 6295, 6296, 6297, 6298, 6299, 6300, 6301, 6302, 6303, 6304, 6305, 6306, 6307, 6308, 6309, 6310, 6311, 6312, 6313, 6314, 6315, 6316, 6317, 6318, 6319, 6320, 6321, 6322, 6253, 6254, 6255, 6256, 6257, 6258, 6259, 6260, 6261, 6262, 6263, 6264, 6265, 6266, 6267, 6268, 6269, 6270, 6271}
+Took 0.001s to close glyph list over 'cmap'
+Added gid0 to subset
+Closing glyph list over 'MATH': 118 glyphs before
+Glyph names: ['.notdef', 'A', 'Alpha', 'B', 'Beta', 'C', 'Chi', 'D', 'E', 'F', 'G', 'H', 'I', 'Iota', 'J', 'K', 'Kappa', 'L', 'M', 'N', 'Nu', 'O', 'P', 'R', 'S', 'T', 'Theta', 'U', 'V', 'W', 'Y', 'a', 'alpha', 'alphatonos', 'arrowright', 'b', 'bracketleft', 'bracketright', 'bullet', 'c', 'colon', 'comma', 'd', 'delta', 'divide', 'e', 'eight', 'emdash', 'epsilon', 'equal', 'eta', 'exclam', 'f', 'fi', 'five', 'four', 'g', 'gamma', 'guillemotleft', 'guillemotright', 'h', 'hyphen', 'i', 'iota', 'iotatonos', 'j', 'k', 'kappa', 'l', 'lambda', 'm', 'n', 'nine', 'nu', 'numbersign', 'o', 'omicron', 'omicrontonos', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'periodcentered', 'pi', 'plus', 'q', 'quotedbl', 'quotedblleft', 'quotedblright', 'quotesingle', 'r', 'rho', 's', 'semicolon', 'seven', 'sigma', 'sigma1', 'six', 'space', 't', 'tau', 'theta', 'three', 'two', 'twosuperior', 'u', 'underscore', 'uni03BC', 'uniFB00', 'upsilon', 'v', 'w', 'x', 'y', 'z', 'zero']
+Glyph IDs:   [0, 3, 4, 5, 6, 8, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 58, 60, 62, 64, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 109, 116, 121, 125, 185, 807, 808, 814, 815, 816, 819, 828, 833, 836, 838, 840, 841, 842, 844, 845, 846, 847, 848, 849, 850, 852, 853, 854, 855, 856, 857, 858, 865, 2807, 2815, 2816, 2821, 3101, 5041, 5042]
+Reading 'MATH' table from disk
+Decompiling 'MATH' table
+Closed glyph list over 'MATH': 131 glyphs after
+Glyph names: ['.notdef', 'A', 'Alpha', 'B', 'Beta', 'C', 'Chi', 'D', 'E', 'F', 'G', 'H', 'I', 'Iota', 'J', 'K', 'Kappa', 'L', 'M', 'N', 'Nu', 'O', 'P', 'R', 'S', 'T', 'Theta', 'U', 'V', 'W', 'Y', 'a', 'alpha', 'alphatonos', 'arrowright', 'b', 'bracketleft', 'bracketright', 'bullet', 'c', 'colon', 'comma', 'd', 'delta', 'divide', 'e', 'eight', 'emdash', 'epsilon', 'equal', 'eta', 'exclam', 'f', 'fi', 'five', 'four', 'g', 'gamma', 'guillemotleft', 'guillemotright', 'h', 'hyphen', 'i', 'iota', 'iotatonos', 'j', 'k', 'kappa', 'l', 'lambda', 'm', 'n', 'nine', 'nu', 'numbersign', 'o', 'omicron', 'omicrontonos', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'periodcentered', 'pi', 'plus', 'q', 'quotedbl', 'quotedblleft', 'quotedblright', 'quotesingle', 'r', 'rho', 's', 'semicolon', 'seven', 'sigma', 'sigma1', 'six', 'space', 't', 'tau', 'theta', 'three', 'two', 'twosuperior', 'u', 'underscore', 'uni03BC', 'uni239B', 'uni239C', 'uni239D', 'uni239E', 'uni239F', 'uni23A0', 'uni23A1', 'uni23A2', 'uni23A3', 'uni23A4', 'uni23A5', 'uni23A6', 'uni27F6', 'uniFB00', 'upsilon', 'v', 'w', 'x', 'y', 'z', 'zero']
+Glyph IDs:   [0, 3, 4, 5, 6, 8, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 58, 60, 62, 64, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 109, 116, 121, 125, 185, 807, 808, 814, 815, 816, 819, 828, 833, 836, 838, 840, 841, 842, 844, 845, 846, 847, 848, 849, 850, 852, 853, 854, 855, 856, 857, 858, 865, 2807, 2815, 2816, 2821, 3101, 3507, 3508, 3509, 3510, 3511, 3512, 3513, 3514, 3515, 3516, 3517, 3518, 4178, 5041, 5042]
+Took 0.005s to close glyph list over 'MATH'
+Closing glyph list over 'glyf': 131 glyphs before
+Glyph names: ['.notdef', 'A', 'Alpha', 'B', 'Beta', 'C', 'Chi', 'D', 'E', 'F', 'G', 'H', 'I', 'Iota', 'J', 'K', 'Kappa', 'L', 'M', 'N', 'Nu', 'O', 'P', 'R', 'S', 'T', 'Theta', 'U', 'V', 'W', 'Y', 'a', 'alpha', 'alphatonos', 'arrowright', 'b', 'bracketleft', 'bracketright', 'bullet', 'c', 'colon', 'comma', 'd', 'delta', 'divide', 'e', 'eight', 'emdash', 'epsilon', 'equal', 'eta', 'exclam', 'f', 'fi', 'five', 'four', 'g', 'gamma', 'guillemotleft', 'guillemotright', 'h', 'hyphen', 'i', 'iota', 'iotatonos', 'j', 'k', 'kappa', 'l', 'lambda', 'm', 'n', 'nine', 'nu', 'numbersign', 'o', 'omicron', 'omicrontonos', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'periodcentered', 'pi', 'plus', 'q', 'quotedbl', 'quotedblleft', 'quotedblright', 'quotesingle', 'r', 'rho', 's', 'semicolon', 'seven', 'sigma', 'sigma1', 'six', 'space', 't', 'tau', 'theta', 'three', 'two', 'twosuperior', 'u', 'underscore', 'uni03BC', 'uni239B', 'uni239C', 'uni239D', 'uni239E', 'uni239F', 'uni23A0', 'uni23A1', 'uni23A2', 'uni23A3', 'uni23A4', 'uni23A5', 'uni23A6', 'uni27F6', 'uniFB00', 'upsilon', 'v', 'w', 'x', 'y', 'z', 'zero']
+Glyph IDs:   [0, 3, 4, 5, 6, 8, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 58, 60, 62, 64, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 109, 116, 121, 125, 185, 807, 808, 814, 815, 816, 819, 828, 833, 836, 838, 840, 841, 842, 844, 845, 846, 847, 848, 849, 850, 852, 853, 854, 855, 856, 857, 858, 865, 2807, 2815, 2816, 2821, 3101, 3507, 3508, 3509, 3510, 3511, 3512, 3513, 3514, 3515, 3516, 3517, 3518, 4178, 5041, 5042]
+Closed glyph list over 'glyf': 134 glyphs after
+Glyph names: ['.notdef', 'A', 'Alpha', 'B', 'Beta', 'C', 'Chi', 'D', 'E', 'F', 'G', 'H', 'I', 'Iota', 'J', 'K', 'Kappa', 'L', 'M', 'N', 'Nu', 'O', 'P', 'R', 'S', 'T', 'Theta', 'U', 'V', 'W', 'X', 'Y', 'a', 'alpha', 'alphatonos', 'arrowright', 'b', 'bracketleft', 'bracketright', 'bullet', 'c', 'colon', 'comma', 'd', 'delta', 'divide', 'e', 'eight', 'emdash', 'epsilon', 'equal', 'eta', 'exclam', 'f', 'fi', 'five', 'four', 'g', 'gamma', 'guillemotleft', 'guillemotright', 'h', 'hyphen', 'i', 'iota', 'iotatonos', 'j', 'k', 'kappa', 'l', 'lambda', 'm', 'mu', 'n', 'nine', 'nu', 'numbersign', 'o', 'omicron', 'omicrontonos', 'one', 'p', 'parenleft', 'parenright', 'percent', 'period', 'periodcentered', 'pi', 'plus', 'q', 'quotedbl', 'quotedblleft', 'quotedblright', 'quotesingle', 'r', 'rho', 's', 'semicolon', 'seven', 'sigma', 'sigma1', 'six', 'space', 't', 'tau', 'theta', 'three', 'tonos', 'two', 'twosuperior', 'u', 'underscore', 'uni03BC', 'uni239B', 'uni239C', 'uni239D', 'uni239E', 'uni239F', 'uni23A0', 'uni23A1', 'uni23A2', 'uni23A3', 'uni23A4', 'uni23A5', 'uni23A6', 'uni27F6', 'uniFB00', 'upsilon', 'v', 'w', 'x', 'y', 'z', 'zero']
+Glyph IDs:   [0, 3, 4, 5, 6, 8, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 58, 59, 60, 62, 64, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 109, 116, 119, 121, 125, 185, 796, 807, 808, 814, 815, 816, 819, 828, 833, 836, 838, 840, 841, 842, 844, 845, 846, 847, 848, 849, 850, 852, 853, 854, 855, 856, 857, 858, 865, 2807, 2815, 2816, 2821, 3101, 3507, 3508, 3509, 3510, 3511, 3512, 3513, 3514, 3515, 3516, 3517, 3518, 4178, 5041, 5042]
+Took 0.001s to close glyph list over 'glyf'
+Retaining 134 glyphs
+head subsetting not needed
+hhea subsetting not needed
+maxp subsetting not needed
+OS/2 subsetting not needed
+Reading 'hmtx' table from disk
+Decompiling 'hmtx' table
+Reading 'hhea' table from disk
+Decompiling 'hhea' table
+Took 0.004s to subset 'hmtx'
+hmtx subsetted
+Took 0.001s to subset 'cmap'
+cmap subsetted
+loca subsetting not needed
+Took 0.000s to subset 'post'
+post subsetted
+gasp subsetting not needed
+FFTM NOT subset; don't know how to subset
+Took 0.000s to subset 'MATH'
+MATH subsetted
+Reading 'GDEF' table from disk
+Decompiling 'GDEF' table
+Took 0.002s to subset 'GDEF'
+GDEF subsetted
+name subsetting not needed
+Took 0.002s to subset 'glyf'
+glyf subsetted
+Took 0.000s to subset GlyphOrder
+Took 0.000s to prune 'head'
+head pruned
+Reading 'OS/2' table from disk
+Decompiling 'OS/2' table
+OS/2 Unicode ranges pruned: [0, 1, 7, 31, 37, 62]
+OS/2 CodePage ranges pruned: [0]
+Took 0.001s to prune 'glyf'
+glyf pruned
+Took 0.000s to prune 'GDEF'
+GDEF pruned
+Reading 'name' table from disk
+Decompiling 'name' table
+Reading 'gasp' table from disk
+Decompiling 'gasp' table
+Reading 'FFTM' table from disk
+Decompiling 'FFTM' table
+Took 0.001s to prune 'name'
+name pruned
+   ✅ PDF Report: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.pdf
+   📄 Full results: /home/runner/work/okn-analytics/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-17 03:49:30
+   Posts analyzed: 49
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 20.5% avg engagement (8 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.2% avg engagement (15 posts). Create more of this.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+   🔴 Viral content on TikTok is: short_video. Create more content in these formats.
+   🟡 Comments-to-likes ratio is low. Try asking questions, running polls, or creating discussion-worthy content.
