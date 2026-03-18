@@ -2964,11 +2964,16 @@ Chain [1] done processing
    🔴 Viral content on Instagram is: short_video. Create more content in these formats.
 ============================================================
 ☦️  OKN ANALYTICS PIPELINE
+<<<<<<< Updated upstream
    Started: 2026-03-18 01:19:25
+=======
+   Started: 2026-03-18 03:27:50
+>>>>>>> Stashed changes
 ============================================================
 
 📥 STEP 1: Data Ingestion
 ----------------------------------------
+<<<<<<< Updated upstream
 📥 Ingesting instagram data from /home/runner/work/okn-analytics/okn-analytics/data/instagram
    ✅ instagram: 124 posts ingested
 📥 Ingesting youtube data from /home/runner/work/okn-analytics/okn-analytics/data/youtube
@@ -2979,13 +2984,29 @@ Chain [1] done processing
    📄 TikTok Content: 15 videos found
    ✅ tiktok: 15 posts ingested
 💾 History saved: 139 records → /home/runner/work/okn-analytics/okn-analytics/history/unified_history.parquet
+=======
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+>>>>>>> Stashed changes
 📊 Total unified dataset: 139 posts across 2 platforms
 
 ✅ Dataset: 139 posts across 2 platforms
 
 📥 STEP 1b: Account-Level Data
 ----------------------------------------
+<<<<<<< Updated upstream
    📈 Found Instagram account data: interactions.csv, audience.csv, reach.csv, views.csv, follows.csv, visits.csv
+=======
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+>>>>>>> Stashed changes
    📈 follows: 309 days loaded
    📈 interactions: 366 days loaded
    📈 link_clicks: 366 days loaded
@@ -2993,7 +3014,11 @@ Chain [1] done processing
    📈 views: 366 days loaded
    📈 visits: 366 days loaded
    💾 Account daily (instagram): 366 days saved
+<<<<<<< Updated upstream
    📈 Found TikTok account data: followeractivity.csv, followergender.csv, viewers.csv, overview.csv, followertopterritories.csv, followerhistory.csv
+=======
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+>>>>>>> Stashed changes
    📈 TikTok Overview: 71 days
    📈 TikTok Viewers: 365 days
    📈 TikTok Followers: 71 days (10 → 3,117)
@@ -3037,14 +3062,22 @@ Chain [1] start processing
 Chain [1] done processing
    🧠 ML & Neural Network analysis...
    🧠 ML Engine (instagram): 124 posts
+<<<<<<< Updated upstream
       instagram: NN R²=-1.3541, features=8, clusters=3
    🧠 ML Engine (tiktok): 15 posts
+=======
+      stopwordsiso not installed — using built-in stop words
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      stopwordsiso not installed — using built-in stop words
+>>>>>>> Stashed changes
       tiktok: NN R²=-0.1116, features=6, clusters=3
 
 📝 STEP 4: Report Generation
 ----------------------------------------
 📝 Generating report...
    📊 Generating charts...
+<<<<<<< Updated upstream
 📄 Report saved: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
    ✅ HTML Report: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
    📄 Full results: /home/runner/work/okn-analytics/okn-analytics/reports/full_results.json
@@ -3052,6 +3085,15 @@ Chain [1] done processing
 ============================================================
 ✅ PIPELINE COMPLETE
    Finished: 2026-03-18 01:19:32
+=======
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 03:27:54
+>>>>>>> Stashed changes
    Posts analyzed: 139
    Platforms: instagram, tiktok
    Report: reports/weekly_report.html

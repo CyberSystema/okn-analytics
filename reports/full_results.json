@@ -1,8 +1,15 @@
 {
+<<<<<<< Updated upstream
   "generated_at": "2026-03-18T01:19:32.425970",
   "analysis": {
     "meta": {
       "generated_at": "2026-03-18T01:19:25.368066",
+=======
+  "generated_at": "2026-03-18T03:27:54.059977",
+  "analysis": {
+    "meta": {
+      "generated_at": "2026-03-18T03:27:50.805838",
+>>>>>>> Stashed changes
       "total_posts": 139,
       "platforms": [
         "instagram",
@@ -1920,7 +1927,11 @@
   "forecast": {
     "horizon_days": 0,
     "method_used": "prophet",
+<<<<<<< Updated upstream
     "generated_at": "2026-03-18T01:19:26.152265",
+=======
+    "generated_at": "2026-03-18T03:27:51.114875",
+>>>>>>> Stashed changes
     "reach": {
       "method": "prophet",
       "historical_weeks": 44,
@@ -1954,7 +1965,11 @@
     "instagram_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
+<<<<<<< Updated upstream
       "generated_at": "2026-03-18T01:19:26.583783",
+=======
+      "generated_at": "2026-03-18T03:27:51.374310",
+>>>>>>> Stashed changes
       "reach": {
         "method": "prophet",
         "historical_weeks": 41,
@@ -1990,7 +2005,11 @@
     "tiktok_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
+<<<<<<< Updated upstream
       "generated_at": "2026-03-18T01:19:26.882088",
+=======
+      "generated_at": "2026-03-18T03:27:51.581183",
+>>>>>>> Stashed changes
       "reach": {
         "method": "linear_trend_ma",
         "historical_weeks": 5,

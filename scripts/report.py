@@ -258,6 +258,10 @@ class ReportGenerator:
 
     @staticmethod
     def _b64(fig):
+        # Watermark on every chart
+        fig.text(0.99, 0.01, "cybersystema.com", fontsize=7, color="#cccccc",
+                 ha="right", va="bottom", alpha=0.5, style="italic",
+                 transform=fig.transFigure)
         buf=BytesIO(); fig.savefig(buf,format="png",dpi=150,bbox_inches="tight"); plt.close(fig); buf.seek(0)
         return base64.b64encode(buf.read()).decode("utf-8")
 
@@ -290,7 +294,7 @@ class ReportGenerator:
         now=datetime.now(); recs=self.analysis.get("recommendations",[])
         health=self.forecast.get("health",{}); meta=self.analysis.get("meta",{})
 
-        # Load logo — try multiple filenames
+        # Load OKN logo
         logo_html = ""
         for logo_name in ["okn_logo.png", "OKN_bg.png", "logo.png"]:
             logo_path = REPORTS_DIR / logo_name
@@ -299,6 +303,19 @@ class ReportGenerator:
                 with open(logo_path, "rb") as f:
                     logo_b64 = b64mod.b64encode(f.read()).decode("utf-8")
                 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" alt="OKN">'
+                break
+
+        # Load CyberSystema logo
+        cs_logo_html = ""
+        cs_logo_small = ""
+        for cs_name in ["cybersystema_logo.png", "cybersystema-logo-2x.png"]:
+            cs_path = REPORTS_DIR / cs_name
+            if cs_path.exists():
+                import base64 as b64mod
+                with open(cs_path, "rb") as f:
+                    cs_b64 = b64mod.b64encode(f.read()).decode("utf-8")
+                cs_logo_html = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo" alt="CyberSystema">'
+                cs_logo_small = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo-sm" alt="CS">'
                 break
 
         platform_html = ""
@@ -338,18 +355,26 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 .dr{{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0}}.dr .k{{font-weight:500}}.dr .val{{color:{BRANDING['primary_color']};font-weight:600}}
 .no-data{{color:#999;font-style:italic;padding:20px;text-align:center}}.footer{{text-align:center;padding:24px;color:#999;font-size:12px}}
 .cross{{background:linear-gradient(180deg,#f0f4f8,#fff);border:2px solid {BRANDING['primary_color']}20}}
+.powered-badge{{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:0.5px}}
+.powered-badge a{{color:rgba(255,255,255,0.75);text-decoration:none;display:inline-flex;align-items:center;gap:5px}}.powered-badge a:hover{{color:white;text-decoration:underline}}
+.cs-logo-sm{{width:16px;height:16px;border-radius:3px;vertical-align:middle}}
+.built-by{{text-align:center;padding:28px 20px;margin-bottom:8px;border-radius:12px;background:linear-gradient(135deg,#f8f6f0,#eef2f7);border:1px solid #e0e0e0}}
+.cs-logo{{width:48px;height:48px;border-radius:10px;margin-bottom:8px}}
+.built-by-label{{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}}.built-by-name{{font-size:16px;font-weight:600;color:{BRANDING['primary_color']}}}.built-by-name a{{color:{BRANDING['primary_color']};text-decoration:none}}.built-by-name a:hover{{text-decoration:underline}}.built-by-tagline{{font-size:12px;color:#888;margin-top:4px}}
 </style></head><body><div class="container">
 <div class="header">
 {f'<div class="header-logo-wrap">{logo_html}</div>' if logo_html else ''}
 <h1>{BRANDING['report_title']}</h1>
 <div class="header-divider"></div>
-<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
+<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST by <a href="https://cybersystema.com" target="_blank" style="color:rgba(255,255,255,0.85);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4)">CyberSystema</a> &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
 <div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
 <div class="header-meta">Active since December 2025 &nbsp;•&nbsp; TikTok since January 6, 2026 &nbsp;•&nbsp; All times in KST</div>
+<div class="powered-badge">Powered by <a href="https://cybersystema.com" target="_blank">{cs_logo_small} CyberSystema</a></div>
 </div>
 {platform_html}
 {cross_html}
 <div class="section"><h2>💡 Recommendations</h2>{rec_html if rec_html else '<p class="no-data">Need more data</p>'}</div>
+<div class="built-by">{cs_logo_html}<div class="built-by-label">Analytics Infrastructure by</div><div class="built-by-name"><a href="https://cybersystema.com" target="_blank">CyberSystema</a></div><div class="built-by-tagline">Social media intelligence &amp; data engineering</div></div>
 <div class="footer">{BRANDING['footer_text']}<br>Data: {str(meta.get('date_range',{}).get('earliest','N/A'))[:10]} → {str(meta.get('date_range',{}).get('latest','N/A'))[:10]}</div>
 </div></body></html>"""
 
