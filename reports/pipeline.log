@@ -2065,3 +2065,799 @@ Invalid media type '(max-width:768px)' the whole @media rule was ignored at 16:1
    🔴 Your best posting hour is 8:00 KST (based on 4.0 posts). Schedule high-priority content around this time.
    🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
    🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-17 17:49:55
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+Parquet save failed (Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - `Import pyarrow` failed. pyarrow is required for parquet support. Use pip or conda to install the pyarrow package.
+ - `Import fastparquet` failed. fastparquet is required for parquet support. Use pip or conda to install the fastparquet package.), saving CSV only
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): 366 days saved
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): 365 days saved
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+Ignored `box-shadow:0 2px 8px rgba(0,0,0,0.06)` at 5:78, unknown property.
+Expected a media type, got '(max-width:768px)'
+Invalid media type '(max-width:768px)' the whole @media rule was ignored at 16:1.
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+"auto-fit" and "auto-fill" are unsupported in repeat()
+.notdef glyph rendered for Unicode string unsupported by fonts: " " (U+2028)
+   ✅ PDF Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.pdf
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-17 17:50:00
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11.0 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-17 18:39:10
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+📂 Loaded 139 historical records (csv fallback)
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-17 18:42:58
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+📂 Loaded 139 historical records (csv fallback)
+Parquet save failed (Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - `Import pyarrow` failed. pyarrow is required for parquet support. Use pip or conda to install the pyarrow package.
+ - `Import fastparquet` failed. fastparquet is required for parquet support. Use pip or conda to install the fastparquet package.), saving CSV only
+📊 Total unified dataset: 278 posts across 2 platforms
+
+✅ Dataset: 278 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): merged → 366 days
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): merged → 365 days
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:13:14
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): 366 days saved
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): 365 days saved
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:13:19
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:17:40
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): 366 days saved
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): 365 days saved
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:17:43
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:30:10
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): 366 days saved
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): 365 days saved
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:30:13
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:32:18
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+📂 Loaded 139 historical records (parquet)
+   Merged: 139 older records updated with fresh metrics
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): merged → 366 days
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): merged → 365 days
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:32:24
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:36:40
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): 366 days saved
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): 365 days saved
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:36:43
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.
+============================================================
+☦️  OKN ANALYTICS PIPELINE
+   Started: 2026-03-18 02:47:19
+============================================================
+
+📥 STEP 1: Data Ingestion
+----------------------------------------
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+   📄 TikTok Content: 15 videos found
+   ✅ tiktok: 15 posts ingested
+📂 Loaded 139 historical records (parquet)
+   Merged: 139 older records updated with fresh metrics
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+📊 Total unified dataset: 139 posts across 2 platforms
+
+✅ Dataset: 139 posts across 2 platforms
+
+📥 STEP 1b: Account-Level Data
+----------------------------------------
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+   📈 follows: 309 days loaded
+   📈 interactions: 366 days loaded
+   📈 link_clicks: 366 days loaded
+   Could not find header in Reach.csv
+   📈 views: 366 days loaded
+   📈 visits: 366 days loaded
+   💾 Account daily (instagram): merged → 366 days
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+   📈 TikTok Overview: 71 days
+   📈 TikTok Viewers: 365 days
+   📈 TikTok Followers: 71 days (10 → 3,117)
+   👤 TikTok Gender: 3 groups
+   🌍 TikTok Territories: 11 regions
+   🕐 TikTok Activity: peak hours = [21, 22, 20]
+   💾 Account daily (instagram): merged → 366 days
+   💾 Account daily (tiktok): merged → 365 days
+   💾 Demographics (tiktok): saved + versioned
+   ✅ Account daily data: 366 days
+
+🔬 STEP 2: Core Analysis
+----------------------------------------
+🔬 Running full analysis pipeline...
+   📊 Platform overview...
+   🎬 Content performance...
+   💬 Engagement analysis...
+   🕐 Temporal patterns...
+   📈 Growth analysis...
+   🔥 Anomaly detection...
+   🔄 Cross-platform analysis...
+   💡 Generating recommendations...
+✅ Analysis complete.
+
+🤖 STEP 3: Predictive Models
+----------------------------------------
+   ⏰ Optimal posting times...
+   📊 Content scoring...
+   📈 Growth forecasting...
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+Chain [1] start processing
+Chain [1] done processing
+   🧠 ML & Neural Network analysis...
+   🧠 ML Engine (instagram): 124 posts
+      stopwordsiso not installed — using built-in stop words
+      instagram: NN R²=-1.3541, features=8, clusters=3
+   🧠 ML Engine (tiktok): 15 posts
+      stopwordsiso not installed — using built-in stop words
+      tiktok: NN R²=-0.1116, features=6, clusters=3
+
+📝 STEP 4: Report Generation
+----------------------------------------
+📝 Generating report...
+   📊 Generating charts...
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-18 02:47:23
+   Posts analyzed: 139
+   Platforms: instagram, tiktok
+   Report: reports/weekly_report.html
+============================================================
+
+💡 KEY RECOMMENDATIONS:
+   🔴 On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this.
+   🔴 On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this.
+   🔴 Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time.
+   🔴 TikTok reach is declining. Consider boosting posting frequency or trying new content formats on this platform.
+   🔴 Viral content on Instagram is: short_video. Create more content in these formats.

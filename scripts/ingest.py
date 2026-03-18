@@ -382,9 +382,8 @@ def apply_column_map(df: pd.DataFrame, col_map: dict, platform: str) -> pd.DataF
                 result.loc[mask_failed, "published_at"],
                 errors="coerce",
             )
-        # Instagram exports from Meta Business Suite are in Greek local time (EET/EEST)
-        # Localize as Europe/Athens (handles DST automatically), then convert to KST
-        result["published_at"] = parsed.dt.tz_localize("Europe/Athens", ambiguous="NaT", nonexistent="NaT")
+        # Localize to UTC then convert to KST
+        result["published_at"] = parsed.dt.tz_localize("UTC", ambiguous="NaT", nonexistent="NaT")
         result["published_at"] = to_kst(result["published_at"])
     else:
         result["published_at"] = pd.NaT
@@ -433,29 +432,46 @@ def apply_column_map(df: pd.DataFrame, col_map: dict, platform: str) -> pd.DataF
 # ══════════════════════════════════════════════
 
 def merge_with_history(new_data: pd.DataFrame) -> pd.DataFrame:
-    """Merge new data with historical data, deduplicating."""
+    """Merge new data with historical data. Keeps latest metrics for each post."""
     history_file = HISTORY_DIR / "unified_history.parquet"
+    csv_fallback = HISTORY_DIR / "unified_history.csv"
 
+    history = None
     if history_file.exists():
         try:
             history = pd.read_parquet(history_file)
-            logger.info(f"📂 Loaded {len(history)} historical records")
-            combined = pd.concat([history, new_data], ignore_index=True)
+            logger.info(f"📂 Loaded {len(history)} historical records (parquet)")
         except Exception as e:
-            logger.warning(f"Could not load history: {e}")
-            combined = new_data
+            logger.warning(f"Could not load parquet: {e}")
+    
+    if history is None and csv_fallback.exists():
+        try:
+            history = pd.read_csv(csv_fallback)
+            # CSV loads published_at as strings — convert to datetime
+            if "published_at" in history.columns:
+                history["published_at"] = pd.to_datetime(
+                    history["published_at"], errors="coerce", utc=True
+                )
+            logger.info(f"📂 Loaded {len(history)} historical records (csv fallback)")
+        except Exception as e:
+            logger.warning(f"Could not load CSV fallback: {e}")
+
+    if history is not None:
+        # New data goes AFTER history so keep="last" keeps the fresh metrics
+        combined = pd.concat([history, new_data], ignore_index=True)
     else:
         combined = new_data
 
-    # Deduplicate based on post_id + platform
+    # Deduplicate — keep the LATEST version of each post (freshest metrics)
     before = len(combined)
+    combined = combined.sort_values("published_at", ascending=True)
     combined = combined.drop_duplicates(
         subset=["post_id", "platform"],
-        keep="last",  # Keep the latest version of each post
+        keep="last",
     )
     dupes = before - len(combined)
     if dupes > 0:
-        logger.info(f"   Removed {dupes} duplicate records")
+        logger.info(f"   Merged: {dupes} older records updated with fresh metrics")
 
     return combined
 
@@ -513,6 +529,10 @@ def cleanup(df: pd.DataFrame) -> pd.DataFrame:
 
     # Cap engagement rate at 1.0 (100%) — anything higher is likely a data error
     df["engagement_rate"] = df["engagement_rate"].clip(upper=1.0)
+
+    # Strip problematic Unicode characters from captions (breaks WeasyPrint)
+    if "title" in df.columns:
+        df["title"] = df["title"].fillna("").str.replace("\u2028", " ").str.replace("\u2029", " ")
 
     return df
 

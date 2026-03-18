@@ -328,35 +328,64 @@ def build_daily_dataframe(frames: Dict[str, pd.Series]) -> pd.DataFrame:
 # HISTORY MANAGEMENT
 # ══════════════════════════════════════════════
 
-def save_account_history(daily: pd.DataFrame, demographics: Dict):
-    """Save account-level data to history."""
+def save_account_history(daily: pd.DataFrame, demographics: Dict, platform: str = "instagram"):
+    """Save account-level data to history, merging with existing."""
     import json
 
     HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Save daily time-series
-    daily_path = HISTORY_DIR / "account_daily.csv"
+    # Save daily time-series (per-platform)
+    daily_path = HISTORY_DIR / f"account_daily_{platform}.csv"
     if daily_path.exists():
         existing = pd.read_csv(daily_path, index_col="date", parse_dates=True)
         combined = pd.concat([existing, daily])
         combined = combined[~combined.index.duplicated(keep="last")]
         combined = combined.sort_index()
         combined.to_csv(daily_path)
-        logger.info(f"   💾 Account daily: merged → {len(combined)} days")
+        logger.info(f"   💾 Account daily ({platform}): merged → {len(combined)} days")
     else:
         daily.to_csv(daily_path)
-        logger.info(f"   💾 Account daily: {len(daily)} days saved")
+        logger.info(f"   💾 Account daily ({platform}): {len(daily)} days saved")
 
-    # Save demographics snapshot
+    # Also save combined account_daily.csv for backward compatibility
+    all_daily_files = list(HISTORY_DIR.glob("account_daily_*.csv"))
+    if all_daily_files:
+        frames = []
+        for f in all_daily_files:
+            d = pd.read_csv(f, index_col="date", parse_dates=True)
+            # Normalize timezone — strip tz for compatibility
+            if d.index.tz is not None:
+                d.index = d.index.tz_localize(None)
+            frames.append(d)
+        if frames:
+            combined_all = frames[0]
+            for f in frames[1:]:
+                combined_all = combined_all.combine_first(f)
+            combined_all.to_csv(HISTORY_DIR / "account_daily.csv")
+
+    # Save demographics with versioning
     if demographics:
-        demo_path = HISTORY_DIR / "demographics.json"
+        # Current snapshot
+        demo_path = HISTORY_DIR / f"demographics_{platform}.json"
+        snapshot = {
+            "snapshot_date": pd.Timestamp.now().isoformat(),
+            "platform": platform,
+            **demographics,
+        }
         with open(demo_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "snapshot_date": pd.Timestamp.now().isoformat(),
-                "platform": "instagram",
-                **demographics,
-            }, f, indent=2, ensure_ascii=False)
-        logger.info(f"   💾 Demographics snapshot saved")
+            json.dump(snapshot, f, indent=2, ensure_ascii=False)
+
+        # Append to history (track audience changes over time)
+        demo_history_path = HISTORY_DIR / f"demographics_history_{platform}.jsonl"
+        with open(demo_history_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
+
+        # Backward compatibility
+        demo_compat = HISTORY_DIR / "demographics.json"
+        with open(demo_compat, "w", encoding="utf-8") as f:
+            json.dump(snapshot, f, indent=2, ensure_ascii=False)
+
+        logger.info(f"   💾 Demographics ({platform}): saved + versioned")
 
 
 def load_account_history() -> Tuple[pd.DataFrame, Dict]:

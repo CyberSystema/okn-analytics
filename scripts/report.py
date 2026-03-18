@@ -131,7 +131,12 @@ class ReportGenerator:
         terms = self.ml_results.get(p,{}).get("caption_analysis",{}).get("top_engagement_terms",[])[:8]
         if not terms: return
         fig,ax = plt.subplots(figsize=(9, max(3,len(terms)*0.5)))
-        names=[t["term"] for t in reversed(terms)]; lifts=[t["engagement_lift"]*100 for t in reversed(terms)]
+        import unicodedata
+        def _chart_safe(text):
+            """Keep only Latin, Greek, and common characters for chart labels."""
+            safe = ''.join(c for c in text if ord(c) < 0x3000)
+            return safe.strip() if safe.strip() else f"[{text[:8]}]"
+        names=[_chart_safe(t["term"]) for t in reversed(terms)]; lifts=[t["engagement_lift"]*100 for t in reversed(terms)]
         cols=[BRANDING["secondary_color"] if l>0 else BRANDING["accent_color"] for l in lifts]
         ax.barh(names,lifts,color=cols,alpha=0.85); ax.axvline(x=0,color="#333",linewidth=0.8)
         ax.set_xlabel("Engagement Lift (%)"); ax.set_title(f"Caption Terms Impact — {PLATFORMS.get(p,{}).get('name',p)}"); plt.tight_layout()
@@ -285,6 +290,17 @@ class ReportGenerator:
         now=datetime.now(); recs=self.analysis.get("recommendations",[])
         health=self.forecast.get("health",{}); meta=self.analysis.get("meta",{})
 
+        # Load logo — try multiple filenames
+        logo_html = ""
+        for logo_name in ["okn_logo.png", "OKN_bg.png", "logo.png"]:
+            logo_path = REPORTS_DIR / logo_name
+            if logo_path.exists():
+                import base64 as b64mod
+                with open(logo_path, "rb") as f:
+                    logo_b64 = b64mod.b64encode(f.read()).decode("utf-8")
+                logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" alt="OKN">'
+                break
+
         platform_html = ""
         for plat in self.df["platform"].unique():
             platform_html += self._platform_section(plat)
@@ -301,11 +317,19 @@ class ReportGenerator:
 <title>{BRANDING['report_title']}</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:{BRANDING['font_family']};background:{BRANDING['bg_color']};color:{BRANDING['text_color']};line-height:1.6}}.container{{max-width:1100px;margin:0 auto;padding:24px}}
-.header{{background:linear-gradient(135deg,{BRANDING['primary_color']},{BRANDING['accent_color']});color:white;padding:40px;border-radius:16px;margin-bottom:32px;text-align:center}}.header h1{{font-size:28px;margin-bottom:8px}}.header .sub{{opacity:0.85;font-size:14px}}.health{{display:inline-block;background:rgba(255,255,255,0.15);padding:12px 24px;border-radius:30px;margin-top:16px;font-size:16px}}
+.header{{background:linear-gradient(160deg,{BRANDING['primary_color']} 0%,#1e4a6e 35%,#2a3a5c 60%,{BRANDING['accent_color']} 100%);color:white;padding:48px 40px 36px;border-radius:20px;margin-bottom:32px;text-align:center;position:relative;overflow:hidden}}
+.header::before{{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(196,149,58,0.08) 0%,transparent 50%);pointer-events:none}}
+.header-logo-wrap{{display:inline-block;padding:6px;border-radius:50%;background:linear-gradient(135deg,rgba(196,149,58,0.6),rgba(255,255,255,0.2));margin-bottom:20px}}
+.header-logo{{width:140px;height:140px;border-radius:50%;display:block;object-fit:cover;border:3px solid rgba(255,255,255,0.25)}}
+.header h1{{font-size:28px;margin-bottom:6px;letter-spacing:0.5px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,0.15)}}
+.header .sub{{opacity:0.85;font-size:13px;margin-bottom:16px;letter-spacing:0.2px}}
+.header-divider{{width:60px;height:2px;background:linear-gradient(90deg,transparent,{BRANDING['secondary_color']},transparent);margin:0 auto 16px;border-radius:1px}}
+.health{{display:inline-block;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);padding:11px 26px;border-radius:30px;font-size:15px}}
+.header-meta{{opacity:0.55;font-size:11px;margin-top:14px;letter-spacing:0.3px}}
 .pblock{{margin-bottom:40px}}.phead{{background:white;padding:20px 28px;border-radius:12px 12px 0 0;border-bottom:3px solid;display:flex;align-items:center;gap:12px}}.phead h2{{font-size:22px;margin:0}}
-.section{{background:white;border-radius:12px;padding:28px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}}.section h2{{color:{BRANDING['primary_color']};font-size:20px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid {BRANDING['secondary_color']}}}.section h3{{color:{BRANDING['primary_color']};font-size:16px;margin:20px 0 12px 0}}
+.section{{background:white;border-radius:12px;padding:28px;margin-bottom:24px;border:1px solid #eee}}.section h2{{color:{BRANDING['primary_color']};font-size:20px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid {BRANDING['secondary_color']}}}.section h3{{color:{BRANDING['primary_color']};font-size:16px;margin:20px 0 12px 0}}
 .sub-s{{background:#fafafa;border-radius:10px;padding:20px;margin-bottom:16px}}
-.kpis{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}}.kpi{{background:#fafafa;padding:14px;border-radius:10px;text-align:center}}.kpi .v{{display:block;font-size:20px;font-weight:bold;color:{BRANDING['primary_color']}}}.kpi .l{{display:block;font-size:10px;color:#888;text-transform:uppercase}}
+.kpis{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}}.kpi{{background:#fafafa;padding:14px;border-radius:10px;text-align:center}}.kpi .v{{display:block;font-size:20px;font-weight:bold;color:{BRANDING['primary_color']}}}.kpi .l{{display:block;font-size:10px;color:#888;text-transform:uppercase}}
 .chart-img{{width:100%;max-width:100%;height:auto;border-radius:8px;margin:12px 0}}
 table{{width:100%;border-collapse:collapse;font-size:14px}}th,td{{padding:10px 14px;text-align:left;border-bottom:1px solid #eee}}th{{background:#f5f5f5;font-weight:600;color:{BRANDING['primary_color']}}}tr:hover{{background:#fafafa}}
 a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decoration:underline}}
@@ -314,12 +338,15 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 .dr{{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0}}.dr .k{{font-weight:500}}.dr .val{{color:{BRANDING['primary_color']};font-weight:600}}
 .no-data{{color:#999;font-style:italic;padding:20px;text-align:center}}.footer{{text-align:center;padding:24px;color:#999;font-size:12px}}
 .cross{{background:linear-gradient(180deg,#f0f4f8,#fff);border:2px solid {BRANDING['primary_color']}20}}
-@media(max-width:768px){{.container{{padding:12px}}.kpis{{grid-template-columns:1fr}}}}
 </style></head><body><div class="container">
-<div class="header"><h1>☦️ {BRANDING['report_title']}</h1>
-<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST • Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} • {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
+<div class="header">
+{f'<div class="header-logo-wrap">{logo_html}</div>' if logo_html else ''}
+<h1>{BRANDING['report_title']}</h1>
+<div class="header-divider"></div>
+<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
 <div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
-<div style="opacity:0.7;font-size:12px;margin-top:8px">Active since December 2025 • TikTok since January 6, 2026 • All times in KST</div></div>
+<div class="header-meta">Active since December 2025 &nbsp;•&nbsp; TikTok since January 6, 2026 &nbsp;•&nbsp; All times in KST</div>
+</div>
 {platform_html}
 {cross_html}
 <div class="section"><h2>💡 Recommendations</h2>{rec_html if rec_html else '<p class="no-data">Need more data</p>'}</div>
@@ -351,7 +378,7 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         if viral:
             viral_html='<h3>🔥 Viral Content</h3><table><tr><th>Post</th><th>Engagement</th><th>vs Avg</th></tr>'
             for v in viral[:5]:
-                t=v["title"][:60]; lk=v.get("permalink",""); cell=f'<a href="{lk}" target="_blank">{t}</a>' if lk else t
+                t=str(v.get('title','') or '')[:60]; lk=v.get("permalink",""); cell=f'<a href="{lk}" target="_blank">{t}</a>' if lk else t
                 viral_html+=f'<tr><td>{cell}</td><td>{v["engagement"]:,}</td><td><strong>{v["multiplier"]}x</strong></td></tr>'
             viral_html+="</table>"
 
@@ -360,7 +387,7 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
         if tp:
             top_html='<h3>🏆 Top Scored Posts</h3><table><tr><th>#</th><th>Post</th><th>Score</th><th>Grade</th></tr>'
             for p2 in tp[:5]:
-                t=p2["title"][:50]; lk=p2.get("permalink",""); cell=f'<a href="{lk}" target="_blank">{t}</a>' if lk else t
+                t=str(p2.get('title','') or '')[:50]; lk=p2.get("permalink",""); cell=f'<a href="{lk}" target="_blank">{t}</a>' if lk else t
                 top_html+=f'<tr><td>#{p2["rank"]}</td><td>{cell}</td><td><strong>{p2["score"]}</strong></td><td>{p2["grade"]}</td></tr>'
             top_html+="</table>"
 
@@ -397,13 +424,13 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
             over_rows = ""
             for o in nn.get("overperformers",[])[:3]:
                 link = o.get("permalink","")
-                title = _safe(o["title"][:50])
+                title = _safe(str(o.get('title','') or '')[:50])
                 cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
                 over_rows += f'<tr><td>{cell}</td><td>{o["actual"]:.1%}</td><td>{o["predicted"]:.1%}</td><td style="color:green">+{o["surplus"]:.1%}</td></tr>'
             under_rows = ""
             for u in nn.get("underperformers",[])[:3]:
                 link = u.get("permalink","")
-                title = _safe(u["title"][:50])
+                title = _safe(str(u.get('title','') or '')[:50])
                 cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
                 under_rows += f'<tr><td>{cell}</td><td>{u["actual"]:.1%}</td><td>{u["predicted"]:.1%}</td><td style="color:red">{u["deficit"]:.1%}</td></tr>'
             parts.append(f"""<div class="sub-s"><h3>🧠 Neural Network Predictor <span class="ml">MLP (32→16→8)</span></h3>
@@ -448,6 +475,93 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
                     we_label = f'{d["better"].title()} is better' if d["better"] != "no difference" else "No significant difference"
                     d_html+=f'<div class="dr"><span class="k">Weekend vs Weekday</span><span class="val">{we_label} (WE:{d["weekend_avg"]:.1%} vs WD:{d["weekday_avg"]:.1%})</span></div>'
             if d_html: parts.append(f'<div class="sub-s"><h3>🔬 Engagement Drivers <span class="ml">Statistical</span></h3>{d_html}</div>')
+
+        # Content Fatigue
+        fatigue = ml.get("content_fatigue", {})
+        if fatigue.get("status") == "ok":
+            fatigued = fatigue.get("fatigued_types", [])
+            growing = fatigue.get("growing_types", [])
+            f_html = ""
+            for ft in fatigue.get("content_types", []):
+                icon = "📉" if ft["trend"] == "declining" else "📈" if ft["trend"] == "growing" else "➡️"
+                color = "red" if ft["trend"] == "declining" else "green" if ft["trend"] == "growing" else "#888"
+                f_html += f'<div class="dr"><span class="k">{icon} {ft["content_type"]} ({ft["post_count"]} posts)</span><span class="val" style="color:{color}">{ft["change_pct"]:+.1f}% recent vs older</span></div>'
+            alert = ""
+            if fatigued:
+                types = ", ".join(f["content_type"] for f in fatigued)
+                alert = f'<p style="color:red;font-weight:500">⚠️ Audience fatigue detected for: {types}. Consider reducing frequency or refreshing the format.</p>'
+            if growing:
+                types = ", ".join(g["content_type"] for g in growing)
+                alert += f'<p style="color:green;font-weight:500">🚀 Growing engagement for: {types}. Double down on these.</p>'
+            parts.append(f'<div class="sub-s"><h3>🔄 Content Fatigue Detector <span class="ml">Trend Regression</span></h3>{alert}{f_html}</div>')
+
+        # Posting Cadence
+        cadence = ml.get("posting_cadence", {})
+        if cadence.get("status") == "ok":
+            opt_eng = cadence.get("optimal_for_engagement", {})
+            opt_reach = cadence.get("optimal_for_reach", {})
+            c_html = f'<div class="dr"><span class="k">Current pace</span><span class="val">~{cadence["current_cadence"]:.0f} posts/week</span></div>'
+            c_html += f'<div class="dr"><span class="k">Optimal for engagement</span><span class="val">{opt_eng.get("posts_per_week",0)} posts/week ({opt_eng.get("avg_engagement_rate",0):.1%} avg)</span></div>'
+            c_html += f'<div class="dr"><span class="k">Optimal for reach</span><span class="val">{opt_reach.get("posts_per_week",0)} posts/week ({opt_reach.get("avg_total_reach",0):,} avg reach)</span></div>'
+            rec = cadence.get("recommendation", "")
+            c_html += f'<p style="margin-top:8px"><strong>→</strong> {_safe(rec)}</p>'
+            parts.append(f'<div class="sub-s"><h3>⏱️ Optimal Posting Cadence <span class="ml">Cadence Analysis</span></h3>{c_html}</div>')
+
+        # Momentum Score
+        momentum = ml.get("momentum_score", {})
+        if momentum.get("status") == "ok":
+            score = momentum["total_score"]
+            verdict = momentum["verdict"]
+            bd = momentum.get("breakdown", {})
+            # Color based on score
+            if score >= 60:
+                score_color = "green"
+            elif score >= 35:
+                score_color = BRANDING["secondary_color"]
+            else:
+                score_color = "red"
+            m_html = f'<div style="text-align:center;margin:16px 0"><span style="font-size:48px;font-weight:bold;color:{score_color}">{score:.0f}</span><span style="font-size:16px;color:#888">/100</span></div>'
+            m_html += f'<p style="text-align:center;color:#666;margin-bottom:16px">{_safe(verdict)}</p>'
+            m_html += f'<div class="dr"><span class="k">Engagement Trend</span><span class="val">{bd.get("engagement_trend",0):.0f}/25</span></div>'
+            m_html += f'<div class="dr"><span class="k">Posting Consistency</span><span class="val">{bd.get("posting_consistency",0):.0f}/25</span></div>'
+            m_html += f'<div class="dr"><span class="k">Reach Growth</span><span class="val">{bd.get("reach_growth",0):.0f}/25</span></div>'
+            m_html += f'<div class="dr"><span class="k">Content Quality</span><span class="val">{bd.get("content_quality",0):.0f}/25</span></div>'
+            parts.append(f'<div class="sub-s"><h3>🚀 Audience Momentum Score <span class="ml">Composite ML</span></h3>{m_html}</div>')
+
+        # Root Cause Analysis
+        rca = ml.get("root_cause", {})
+        if rca.get("status") == "ok":
+            rca_html = ""
+            viral_exp = rca.get("viral_explanations", [])
+            if viral_exp:
+                rca_html += '<p><strong>Why these posts went viral:</strong></p>'
+                for v in viral_exp[:2]:
+                    title = _safe(str(v.get('title','') or '')[:50])
+                    link = v.get("permalink", "")
+                    cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
+                    rca_html += f'<div style="margin:8px 0;padding:12px;background:white;border-radius:8px"><strong>{cell}</strong> (actual: {v["actual_rate"]:.1%}, predicted: {v["predicted_rate"]:.1%})<br>'
+                    for w in v.get("why", [])[:3]:
+                        arrow = "↑" if w["direction"] == "positive" else "↓"
+                        color = "green" if w["direction"] == "positive" else "red"
+                        rca_html += f'<span style="color:{color};margin-right:12px">{arrow} {w["feature"]}: {w["contribution_pct"]:+.1f}%</span>'
+                    rca_html += '</div>'
+
+            flop_exp = rca.get("flop_explanations", [])
+            if flop_exp:
+                rca_html += '<p style="margin-top:12px"><strong>Why these posts underperformed:</strong></p>'
+                for v in flop_exp[:2]:
+                    title = _safe(str(v.get('title','') or '')[:50])
+                    link = v.get("permalink", "")
+                    cell = f'<a href="{link}" target="_blank">{title}</a>' if link else title
+                    rca_html += f'<div style="margin:8px 0;padding:12px;background:white;border-radius:8px"><strong>{cell}</strong> (actual: {v["actual_rate"]:.1%}, predicted: {v["predicted_rate"]:.1%})<br>'
+                    for w in v.get("why", [])[:3]:
+                        arrow = "↑" if w["direction"] == "positive" else "↓"
+                        color = "green" if w["direction"] == "positive" else "red"
+                        rca_html += f'<span style="color:{color};margin-right:12px">{arrow} {w["feature"]}: {w["contribution_pct"]:+.1f}%</span>'
+                    rca_html += '</div>'
+
+            if rca_html:
+                parts.append(f'<div class="sub-s"><h3>🔍 Root Cause Analysis <span class="ml">Feature Attribution</span></h3>{rca_html}</div>')
 
         if not parts: return ""
         return f'<div class="section"><h2>🤖 ML & AI Insights — {pn}</h2>{"".join(parts)}</div>'

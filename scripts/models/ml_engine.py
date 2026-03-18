@@ -51,10 +51,14 @@ class MLEngine:
         """Build feature matrix from post data."""
         df = self.df
 
-        # Time features
-        df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce")
-        df["hour"] = df["published_at"].dt.hour.fillna(0).astype(int)
-        df["day_of_week"] = df["published_at"].dt.dayofweek.fillna(0).astype(int)
+        # Time features (extract in KST)
+        df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce", utc=True)
+        try:
+            kst = df["published_at"].dt.tz_convert("Asia/Seoul")
+        except Exception:
+            kst = df["published_at"]
+        df["hour"] = kst.dt.hour.fillna(0).astype(int)
+        df["day_of_week"] = kst.dt.dayofweek.fillna(0).astype(int)
         df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)
 
         # Caption features
@@ -113,13 +117,19 @@ class MLEngine:
 
         self.results["status"] = "ok"
 
-        # Run models
+        # Core models
         self.results["feature_importance"] = self._feature_importance()
         self.results["engagement_prediction"] = self._engagement_predictor()
         self.results["content_clusters"] = self._content_clustering()
         self.results["anomalies"] = self._anomaly_detection()
         self.results["caption_analysis"] = self._caption_nlp()
         self.results["engagement_drivers"] = self._engagement_drivers()
+
+        # Advanced models
+        self.results["content_fatigue"] = self._content_fatigue()
+        self.results["posting_cadence"] = self._optimal_cadence()
+        self.results["momentum_score"] = self._momentum_score()
+        self.results["root_cause"] = self._root_cause_analysis()
 
         return self.results
 
@@ -187,7 +197,7 @@ class MLEngine:
                 "interpretation": self._interpret_r2(cv_r2 if cv_r2 is not None else r2),
                 "overperformers": [
                     {
-                        "title": row["title"][:80],
+                        "title": str(row.get("title", "") or "")[:80],
                         "actual": round(row["engagement_rate"], 4),
                         "predicted": round(row["predicted_engagement_rate"], 4),
                         "surplus": round(row["engagement_residual"], 4),
@@ -197,7 +207,7 @@ class MLEngine:
                 ],
                 "underperformers": [
                     {
-                        "title": row["title"][:80],
+                        "title": str(row.get("title", "") or "")[:80],
                         "actual": round(row["engagement_rate"], 4),
                         "predicted": round(row["predicted_engagement_rate"], 4),
                         "deficit": round(row["engagement_residual"], 4),
@@ -361,7 +371,7 @@ class MLEngine:
             for _, row in anomalies.iterrows():
                 is_positive = row["engagement_rate"] > self.df["engagement_rate"].median()
                 results.append({
-                    "title": row["title"][:80],
+                    "title": str(row.get("title", "") or "")[:80],
                     "type": "viral_outlier" if is_positive else "underperformer_outlier",
                     "engagement_rate": round(row["engagement_rate"], 4),
                     "reach": int(row["reach"]),
@@ -388,6 +398,13 @@ class MLEngine:
         TF-IDF analysis on captions to find words/topics
         correlated with high engagement.
         """
+        import unicodedata
+
+        def _strip_accents(text):
+            """Remove all diacritical marks (accents, tonos) for consistent matching."""
+            nfkd = unicodedata.normalize("NFKD", str(text))
+            return "".join(c for c in nfkd if unicodedata.category(c) != "Mn")
+
         captions = self.df["title"].fillna("").tolist()
 
         # Filter out very short captions
@@ -396,17 +413,49 @@ class MLEngine:
             return {"status": "insufficient_captions"}
 
         valid_df = self.df[valid_mask]
-        valid_captions = valid_df["title"].tolist()
+        # Strip accents from captions so "τής" matches stop word "της"
+        valid_captions = [_strip_accents(c) for c in valid_df["title"].tolist()]
 
         try:
-            # Multi-language stop words
-            stop_words = set([
-                # English
-                "the", "a", "an", "is", "are", "was", "were", "in", "on", "at",
-                "to", "for", "of", "and", "or", "but", "with", "from", "by",
-                "this", "that", "our", "we", "you", "it", "its", "has", "have",
-                # Common social media
-                "fyp", "foryou", "foryoupage", "viral",
+            # Multi-language stop words (English, Greek, Korean)
+            try:
+                from stopwordsiso import stopwords as sw_iso
+                stop_words = sw_iso(["en", "el", "ko"])
+                logger.debug("stopwordsiso loaded: %d stop words", len(stop_words))
+            except ImportError:
+                logger.info("      stopwordsiso not installed — using built-in stop words")
+                from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+                stop_words = set(ENGLISH_STOP_WORDS)
+                stop_words.update([
+                    "και", "το", "τον", "την", "του", "της", "τα", "οι", "των", "τους",
+                    "τις", "στο", "στη", "στον", "στην", "στα", "στις", "στους",
+                    "με", "για", "από", "σε", "ως", "προς", "μετά", "κατά", "παρά",
+                    "είναι", "ήταν", "έχει", "έχουν", "θα", "να", "δεν", "μην",
+                    "που", "ότι", "αν", "αλλά", "όμως", "ενώ", "επειδή", "αφού",
+                    "ένα", "ένας", "μια", "μία", "αυτό", "αυτή", "αυτός", "αυτά",
+                    "αυτές", "αυτοί", "αυτών", "αυτούς",
+                    "εγώ", "εσύ", "εμείς", "εσείς", "μου", "σου", "μας", "σας",
+                    "πολύ", "πιο", "κάθε", "όλα", "όλες", "όλοι", "όλων",
+                    "εδώ", "εκεί", "πως", "πώς", "όταν", "πριν", "μετά",
+                    "τώρα", "πάλι", "ακόμα", "ίσως", "μόνο", "πάντα",
+                ])
+                stop_words.update([
+                    "의", "에", "을", "를", "이", "가", "은", "는", "와", "과",
+                    "도", "로", "으로", "에서", "까지", "부터", "하고", "이나", "나",
+                    "그", "이것", "저", "것", "수", "등", "더", "또", "및",
+                    "한", "할", "하는", "된", "되는", "있는", "없는", "위해",
+                    "그리고", "하지만", "그러나", "그래서", "때문에",
+                    "있다", "없다", "하다", "되다", "이다",
+                ])
+
+            # Strip accents from stop words too so both sides match
+            stop_words = {_strip_accents(w) for w in stop_words}
+
+            # Add common social media noise terms
+            stop_words.update([
+                "fyp", "foryou", "foryoupage", "viral", "trending", "reels",
+                "like", "follow", "share", "comment", "link", "bio", "dm",
+                "http", "https", "www", "com",
             ])
 
             tfidf = TfidfVectorizer(
@@ -535,6 +584,372 @@ class MLEngine:
             }
 
         return drivers
+
+    # ──────────────────────────────────────────
+    # 7. CONTENT FATIGUE DETECTOR
+    # ──────────────────────────────────────────
+
+    def _content_fatigue(self) -> Dict:
+        """
+        Detect declining engagement trends per content type.
+        Uses rolling regression on engagement rate over time to find
+        content types that are losing audience interest.
+        """
+        df = self.df.copy()
+        df = df.sort_values("published_at")
+
+        if len(df) < 15:
+            return {"status": "need_more_data"}
+
+        fatigue_results = []
+        for ctype in df["content_type"].unique():
+            cdf = df[df["content_type"] == ctype].copy()
+            if len(cdf) < 5:
+                continue
+
+            # Convert dates to numeric (days since first post)
+            cdf["days"] = (cdf["published_at"] - cdf["published_at"].min()).dt.total_seconds() / 86400
+            eng = cdf["engagement_rate"].values
+            days = cdf["days"].values
+            w = cdf["weight"].values if "weight" in cdf.columns else np.ones(len(cdf))
+
+            # Weighted linear regression: engagement_rate = slope * days + intercept
+            # Slope tells us if engagement is rising or falling
+            w_sum = w.sum()
+            x_mean = np.average(days, weights=w)
+            y_mean = np.average(eng, weights=w)
+            numerator = np.sum(w * (days - x_mean) * (eng - y_mean))
+            denominator = np.sum(w * (days - x_mean) ** 2)
+
+            if denominator == 0:
+                slope = 0
+            else:
+                slope = numerator / denominator
+
+            # Slope per 30 days (monthly trend)
+            monthly_change = slope * 30
+
+            # Classify
+            if monthly_change < -0.01:
+                status = "declining"
+                severity = "high" if monthly_change < -0.03 else "medium"
+            elif monthly_change > 0.01:
+                status = "growing"
+                severity = "positive"
+            else:
+                status = "stable"
+                severity = "none"
+
+            # Recent vs older performance
+            midpoint = len(cdf) // 2
+            older_eng = cdf.iloc[:midpoint]["engagement_rate"].mean()
+            recent_eng = cdf.iloc[midpoint:]["engagement_rate"].mean()
+
+            fatigue_results.append({
+                "content_type": ctype,
+                "post_count": len(cdf),
+                "trend": status,
+                "severity": severity,
+                "monthly_change_pct": round(float(monthly_change * 100), 2),
+                "older_avg_rate": round(float(older_eng), 4),
+                "recent_avg_rate": round(float(recent_eng), 4),
+                "change_pct": round(float((recent_eng / older_eng - 1) * 100), 1) if older_eng > 0 else 0,
+            })
+
+        # Sort by severity
+        severity_order = {"high": 0, "medium": 1, "none": 2, "positive": 3}
+        fatigue_results.sort(key=lambda x: severity_order.get(x["severity"], 2))
+
+        return {
+            "status": "ok",
+            "content_types": fatigue_results,
+            "fatigued_types": [r for r in fatigue_results if r["trend"] == "declining"],
+            "growing_types": [r for r in fatigue_results if r["trend"] == "growing"],
+        }
+
+    # ──────────────────────────────────────────
+    # 8. OPTIMAL POSTING CADENCE
+    # ──────────────────────────────────────────
+
+    def _optimal_cadence(self) -> Dict:
+        """
+        Find the optimal number of posts per week.
+        Groups weeks by post count and measures average engagement per group.
+        Identifies the sweet spot where engagement is maximized.
+        """
+        df = self.df.copy()
+        df = df.sort_values("published_at")
+
+        if len(df) < 15:
+            return {"status": "need_more_data"}
+
+        # Group posts by week
+        df["week_start"] = df["published_at"].dt.to_period("W").apply(
+            lambda r: r.start_time
+        )
+
+        weekly = df.groupby("week_start").agg(
+            post_count=("post_id", "count"),
+            avg_engagement=("engagement_rate", "mean"),
+            total_reach=("reach", "sum"),
+            total_engagement=("engagement_total", "sum"),
+        )
+
+        if len(weekly) < 4:
+            return {"status": "need_more_weeks"}
+
+        # Group weeks by post count and find engagement per cadence
+        cadence_perf = {}
+        for count in sorted(weekly["post_count"].unique()):
+            weeks_at_count = weekly[weekly["post_count"] == count]
+            if len(weeks_at_count) >= 1:
+                cadence_perf[int(count)] = {
+                    "weeks_observed": len(weeks_at_count),
+                    "avg_engagement_rate": round(float(weeks_at_count["avg_engagement"].mean()), 4),
+                    "avg_total_reach": int(weeks_at_count["total_reach"].mean()),
+                    "avg_total_engagement": int(weeks_at_count["total_engagement"].mean()),
+                }
+
+        # Find optimal cadence (best engagement rate with enough data)
+        reliable = {k: v for k, v in cadence_perf.items() if v["weeks_observed"] >= 2}
+        if reliable:
+            optimal = max(reliable.items(), key=lambda x: x[1]["avg_engagement_rate"])
+            max_reach = max(reliable.items(), key=lambda x: x[1]["avg_total_reach"])
+        else:
+            optimal = max(cadence_perf.items(), key=lambda x: x[1]["avg_engagement_rate"])
+            max_reach = max(cadence_perf.items(), key=lambda x: x[1]["avg_total_reach"])
+
+        current_cadence = round(weekly["post_count"].tail(4).mean(), 1)
+
+        return {
+            "status": "ok",
+            "cadence_performance": cadence_perf,
+            "optimal_for_engagement": {
+                "posts_per_week": optimal[0],
+                "avg_engagement_rate": optimal[1]["avg_engagement_rate"],
+            },
+            "optimal_for_reach": {
+                "posts_per_week": max_reach[0],
+                "avg_total_reach": max_reach[1]["avg_total_reach"],
+            },
+            "current_cadence": current_cadence,
+            "recommendation": self._cadence_recommendation(current_cadence, optimal[0]),
+        }
+
+    @staticmethod
+    def _cadence_recommendation(current, optimal):
+        diff = optimal - current
+        if abs(diff) < 0.5:
+            return f"Your current pace (~{current:.0f}/week) is close to optimal ({optimal}/week). Maintain it."
+        elif diff > 0:
+            return f"Consider posting more: {optimal}/week is optimal, you're averaging {current:.0f}/week."
+        else:
+            return f"Consider posting less: {optimal}/week is optimal, you're averaging {current:.0f}/week. Quality over quantity."
+
+    # ──────────────────────────────────────────
+    # 9. AUDIENCE MOMENTUM SCORE
+    # ──────────────────────────────────────────
+
+    def _momentum_score(self) -> Dict:
+        """
+        Composite forward-looking score (0-100) combining:
+        - Engagement trend (is it going up or down?)
+        - Posting consistency (regular posting schedule?)
+        - Reach growth (is reach expanding?)
+        - Content quality trend (are recent posts better?)
+
+        A high momentum score means things are accelerating.
+        A low score means things are stalling.
+        """
+        df = self.df.copy()
+        df = df.sort_values("published_at")
+
+        if len(df) < 10:
+            return {"status": "need_more_data"}
+
+        now = df["published_at"].max()
+        last_30 = df[df["published_at"] >= now - pd.Timedelta(days=30)]
+        prev_30 = df[(df["published_at"] >= now - pd.Timedelta(days=60)) &
+                     (df["published_at"] < now - pd.Timedelta(days=30))]
+
+        # 1. Engagement Trend (0-25)
+        if len(last_30) >= 3 and len(prev_30) >= 3:
+            recent_eng = last_30["engagement_rate"].mean()
+            prev_eng = prev_30["engagement_rate"].mean()
+            eng_ratio = recent_eng / prev_eng if prev_eng > 0 else 1.0
+            eng_score = min(25, max(0, (eng_ratio - 0.5) * 50))  # 0.5x=0, 1.0x=25, 1.5x=25
+        else:
+            eng_score = 12.5  # Neutral
+
+        # 2. Posting Consistency (0-25)
+        weeks = df.groupby(df["published_at"].dt.to_period("W")).size()
+        if len(weeks) >= 4:
+            recent_weeks = weeks.tail(4)
+            consistency = 1.0 - (recent_weeks.std() / recent_weeks.mean() if recent_weeks.mean() > 0 else 1.0)
+            consistency_score = max(0, min(25, consistency * 25))
+            # Bonus for no gaps
+            if recent_weeks.min() > 0:
+                consistency_score = min(25, consistency_score + 5)
+        else:
+            consistency_score = 10
+
+        # 3. Reach Growth (0-25)
+        if len(last_30) >= 3 and len(prev_30) >= 3:
+            recent_reach = last_30["reach"].mean()
+            prev_reach = prev_30["reach"].mean()
+            reach_ratio = recent_reach / prev_reach if prev_reach > 0 else 1.0
+            reach_score = min(25, max(0, (reach_ratio - 0.5) * 50))
+        else:
+            reach_score = 12.5
+
+        # 4. Content Quality Trend (0-25)
+        # Compare composite signals: engagement_total, shares, saves
+        quality_cols = [c for c in ["shares", "saves", "comments"] if c in df.columns]
+        if quality_cols and len(last_30) >= 3 and len(prev_30) >= 3:
+            recent_quality = last_30[quality_cols].sum().sum() / len(last_30)
+            prev_quality = prev_30[quality_cols].sum().sum() / len(prev_30)
+            quality_ratio = recent_quality / prev_quality if prev_quality > 0 else 1.0
+            quality_score = min(25, max(0, (quality_ratio - 0.5) * 50))
+        else:
+            quality_score = 12.5
+
+        total = round(eng_score + consistency_score + reach_score + quality_score, 1)
+
+        # Interpret
+        if total >= 75:
+            verdict = "Strong momentum — your content strategy is accelerating"
+        elif total >= 55:
+            verdict = "Good momentum — steady growth, look for opportunities to push harder"
+        elif total >= 35:
+            verdict = "Moderate momentum — stable but not accelerating, consider experimenting"
+        elif total >= 20:
+            verdict = "Low momentum — engagement or reach may be stalling"
+        else:
+            verdict = "Warning — multiple signals declining, review content strategy"
+
+        return {
+            "status": "ok",
+            "total_score": total,
+            "max_possible": 100,
+            "verdict": verdict,
+            "breakdown": {
+                "engagement_trend": round(eng_score, 1),
+                "posting_consistency": round(consistency_score, 1),
+                "reach_growth": round(reach_score, 1),
+                "content_quality": round(quality_score, 1),
+            },
+            "detail": {
+                "recent_30d_posts": len(last_30),
+                "prev_30d_posts": len(prev_30),
+                "recent_avg_engagement": round(float(last_30["engagement_rate"].mean()), 4) if len(last_30) > 0 else 0,
+                "prev_avg_engagement": round(float(prev_30["engagement_rate"].mean()), 4) if len(prev_30) > 0 else 0,
+            },
+        }
+
+    # ──────────────────────────────────────────
+    # 10. ROOT CAUSE ANALYSIS (Feature Attribution)
+    # ──────────────────────────────────────────
+
+    def _root_cause_analysis(self) -> Dict:
+        """
+        For the top viral posts and worst flops, explain WHY using
+        feature contribution analysis (similar to SHAP values).
+
+        Uses the trained GradientBoosting model to decompose each
+        post's predicted engagement into feature contributions.
+        """
+        if len(self.df) < self.MIN_POSTS_FOR_NN:
+            return {"status": "need_more_data"}
+
+        X = self.df[self.feature_cols].fillna(0).values
+        y = self.df["engagement_rate"].values
+
+        try:
+            # Train a GradientBoosting model (tree-based = can extract contributions)
+            from sklearn.ensemble import GradientBoostingRegressor
+            gb = GradientBoostingRegressor(
+                n_estimators=100, max_depth=3, learning_rate=0.1, random_state=42,
+            )
+            gb.fit(X, y, sample_weight=self.sample_weights)
+
+            # Get predictions for all posts
+            predictions = gb.predict(X)
+            residuals = y - predictions
+
+            # Find top overperformers and underperformers
+            top_idx = np.argsort(residuals)[-3:][::-1]  # Top 3 overperformers
+            bottom_idx = np.argsort(residuals)[:3]       # Top 3 underperformers
+
+            # Feature contribution via individual conditional expectation
+            # For each flagged post, measure how each feature shifts the prediction
+            global_mean = predictions.mean()
+            feature_names = self.feature_cols
+            readable_names = {
+                "hour": "Posting Hour", "day_of_week": "Day of Week",
+                "is_weekend": "Weekend Post", "caption_length": "Caption Length",
+                "hashtag_count": "Hashtags", "has_emoji": "Emoji Usage",
+                "is_multilingual": "Multilingual", "duration_sec": "Video Duration",
+                "is_short_video": "Short Video", "is_carousel": "Carousel",
+                "is_image": "Single Image",
+            }
+
+            def _explain_post(idx):
+                """Compute approximate feature contributions for a single post."""
+                post_features = X[idx]
+                contributions = []
+
+                for i, feat_name in enumerate(feature_names):
+                    # Baseline: set this feature to its mean, predict
+                    X_modified = X[idx].copy()
+                    X_modified[i] = X[:, i].mean()
+
+                    baseline_pred = gb.predict(X_modified.reshape(1, -1))[0]
+                    actual_pred = predictions[idx]
+                    contribution = actual_pred - baseline_pred
+
+                    if abs(contribution) > 0.001:  # Only significant contributions
+                        readable = readable_names.get(feat_name, feat_name.replace("is_", "").replace("_", " ").title())
+                        contributions.append({
+                            "feature": readable,
+                            "value": float(post_features[i]),
+                            "contribution_pct": round(float(contribution * 100), 1),
+                            "direction": "positive" if contribution > 0 else "negative",
+                        })
+
+                contributions.sort(key=lambda x: abs(x["contribution_pct"]), reverse=True)
+                return contributions[:5]
+
+            viral_explanations = []
+            for idx in top_idx:
+                row = self.df.iloc[idx]
+                viral_explanations.append({
+                    "title": row["title"][:60] if pd.notna(row["title"]) else "",
+                    "actual_rate": round(float(y[idx]), 4),
+                    "predicted_rate": round(float(predictions[idx]), 4),
+                    "surplus": round(float(residuals[idx]), 4),
+                    "permalink": row.get("permalink", ""),
+                    "why": _explain_post(idx),
+                })
+
+            flop_explanations = []
+            for idx in bottom_idx:
+                row = self.df.iloc[idx]
+                flop_explanations.append({
+                    "title": row["title"][:60] if pd.notna(row["title"]) else "",
+                    "actual_rate": round(float(y[idx]), 4),
+                    "predicted_rate": round(float(predictions[idx]), 4),
+                    "deficit": round(float(residuals[idx]), 4),
+                    "permalink": row.get("permalink", ""),
+                    "why": _explain_post(idx),
+                })
+
+            return {
+                "status": "ok",
+                "viral_explanations": viral_explanations,
+                "flop_explanations": flop_explanations,
+            }
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
 
     # ──────────────────────────────────────────
     # HELPERS

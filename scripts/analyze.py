@@ -25,6 +25,17 @@ from config import PLATFORMS, ANALYSIS, CONTENT_CATEGORIES, TIMEZONE, TIMELINE, 
 logger = logging.getLogger("okn.analyze")
 
 
+def _safe_weighted_avg(values, weights):
+    """Compute weighted average, safe against empty/zero weights/NaN."""
+    values = np.asarray(values, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+    mask = np.isfinite(values) & np.isfinite(weights)
+    values, weights = values[mask], weights[mask]
+    if len(values) == 0 or float(np.sum(weights)) < 1e-10:
+        return 0.0
+    return float(np.average(values, weights=weights))
+
+
 class OKNAnalyzer:
     """Core analytics engine for OKN social media data."""
 
@@ -35,26 +46,40 @@ class OKNAnalyzer:
 
     def _prepare_data(self):
         """Pre-process data for analysis."""
-        # Ensure datetime
-        self.df["published_at"] = pd.to_datetime(self.df["published_at"], errors="coerce")
+        # Ensure datetime — normalize everything to UTC for safe comparison
+        self.df["published_at"] = pd.to_datetime(
+            self.df["published_at"], errors="coerce", utc=True
+        )
 
-        # Add derived time columns
-        if not self.df["published_at"].isna().all():
-            self.df["day_of_week"] = self.df["published_at"].dt.day_name()
-            self.df["hour"] = self.df["published_at"].dt.hour
-            self.df["week"] = self.df["published_at"].dt.isocalendar().week.astype(int)
-            self.df["year_week"] = (
-                self.df["published_at"].dt.strftime("%Y-W%U")
-            )
-            self.df["month"] = self.df["published_at"].dt.to_period("M").astype(str)
+        # Add derived time columns (only for rows with valid dates)
+        valid_mask = self.df["published_at"].notna()
+
+        if valid_mask.any():
+            # Extract time features in KST (Korean Standard Time)
+            kst_times = self.df.loc[valid_mask, "published_at"].dt.tz_convert("Asia/Seoul")
+            self.df.loc[valid_mask, "day_of_week"] = kst_times.dt.day_name()
+            self.df.loc[valid_mask, "hour"] = kst_times.dt.hour
+
+            # isocalendar().week can have NA for NaT rows — fill with 0
+            iso = self.df["published_at"].dt.isocalendar()
+            self.df["week"] = iso["week"].fillna(0).astype(int)
+
+            self.df.loc[valid_mask, "year_week"] = kst_times.dt.strftime("%Y-W%U")
+            self.df.loc[valid_mask, "month"] = kst_times.dt.to_period("M").astype(str)
         else:
             for col in ["day_of_week", "hour", "week", "year_week", "month"]:
                 self.df[col] = None
 
-        # Current week data — anchored to the most recent date in the data, not today
+        # Fill NaN in derived columns for rows with bad dates
+        self.df["day_of_week"] = self.df["day_of_week"].fillna("Unknown")
+        self.df["hour"] = pd.to_numeric(self.df["hour"], errors="coerce").fillna(0).astype(int)
+        self.df["year_week"] = self.df["year_week"].fillna("Unknown")
+        self.df["month"] = self.df["month"].fillna("Unknown")
+
+        # Current week data — anchored to the most recent date in the data
         now = self.df["published_at"].max()
         if pd.isna(now):
-            now = pd.Timestamp.now(tz="Asia/Seoul")
+            now = pd.Timestamp.now(tz="UTC")
         self.now = now
         week_ago = now - timedelta(days=7)
         two_weeks_ago = now - timedelta(days=14)
@@ -70,7 +95,7 @@ class OKNAnalyzer:
 
     def run_all(self) -> Dict[str, Any]:
         """Run all analysis modules and return results."""
-        logger.info("🔬 Running full analysis pipeline...")
+        logger.info("\U0001f52c Running full analysis pipeline...")
 
         self.results["meta"] = {
             "generated_at": datetime.now().isoformat(),
@@ -91,7 +116,7 @@ class OKNAnalyzer:
         self.results["cross_platform"] = self.analyze_cross_platform()
         self.results["recommendations"] = self.generate_recommendations()
 
-        logger.info("✅ Analysis complete.")
+        logger.info("\u2705 Analysis complete.")
         return self.results
 
     # ──────────────────────────────────────────
@@ -100,7 +125,7 @@ class OKNAnalyzer:
 
     def analyze_platforms(self) -> Dict:
         """KPI summary for each platform."""
-        logger.info("   📊 Platform overview...")
+        logger.info("   \U0001f4ca Platform overview...")
         overview = {}
 
         for platform in self.df["platform"].unique():
@@ -108,16 +133,13 @@ class OKNAnalyzer:
             pw = self.df_this_week[self.df_this_week["platform"] == platform]
             plw = self.df_last_week[self.df_last_week["platform"] == platform]
 
-            # Week-over-week changes
             wow_reach = self._wow_change(pw["reach"].sum(), plw["reach"].sum())
             wow_engagement = self._wow_change(
                 pw["engagement_total"].sum(), plw["engagement_total"].sum()
             )
 
             benchmark = ANALYSIS["engagement_benchmarks"].get(platform, 0.03)
-            # Weighted average — last 90 days matter most
-            w = pdf["weight"].values
-            weighted_rate = float(np.average(pdf["engagement_rate"].values, weights=w)) if len(pdf) > 0 else 0.0
+            weighted_rate = _safe_weighted_avg(pdf["engagement_rate"].values, pdf["weight"].values)
 
             overview[platform] = {
                 "total_posts": len(pdf),
@@ -125,7 +147,7 @@ class OKNAnalyzer:
                 "total_reach": int(pdf["reach"].sum()),
                 "total_engagement": int(pdf["engagement_total"].sum()),
                 "avg_engagement_rate": round(weighted_rate, 4),
-                "median_engagement_rate": round(pdf["engagement_rate"].median(), 4),
+                "median_engagement_rate": round(float(pdf["engagement_rate"].median()), 4),
                 "benchmark_engagement": benchmark,
                 "vs_benchmark": round(weighted_rate - benchmark, 4),
                 "total_followers_gained": int(pdf["followers_gained"].sum()),
@@ -142,30 +164,29 @@ class OKNAnalyzer:
 
     def analyze_content(self) -> Dict:
         """Performance breakdown by content type."""
-        logger.info("   🎬 Content performance...")
+        logger.info("   \U0001f3ac Content performance...")
         content = {}
 
         for ctype in self.df["content_type"].unique():
             cdf = self.df[self.df["content_type"] == ctype]
-
             if len(cdf) < ANALYSIS["min_posts_for_analysis"]:
                 continue
 
             w = cdf["weight"].values
             content[ctype] = {
                 "count": len(cdf),
-                "avg_reach": int(np.average(cdf["reach"].values, weights=w)),
-                "avg_engagement": int(np.average(cdf["engagement_total"].values, weights=w)),
-                "avg_engagement_rate": round(float(np.average(cdf["engagement_rate"].values, weights=w)), 4),
-                "avg_likes": int(np.average(cdf["likes"].values, weights=w)),
-                "avg_comments": int(np.average(cdf["comments"].values, weights=w)),
-                "avg_shares": int(np.average(cdf["shares"].values, weights=w)),
-                "avg_saves": int(np.average(cdf["saves"].values, weights=w)),
+                "avg_reach": int(_safe_weighted_avg(cdf["reach"].values, w)),
+                "avg_engagement": int(_safe_weighted_avg(cdf["engagement_total"].values, w)),
+                "avg_engagement_rate": round(_safe_weighted_avg(cdf["engagement_rate"].values, w), 4),
+                "avg_likes": int(_safe_weighted_avg(cdf["likes"].values, w)),
+                "avg_comments": int(_safe_weighted_avg(cdf["comments"].values, w)),
+                "avg_shares": int(_safe_weighted_avg(cdf["shares"].values, w)),
+                "avg_saves": int(_safe_weighted_avg(cdf["saves"].values, w)),
                 "total_reach": int(cdf["reach"].sum()),
                 "platforms": cdf["platform"].unique().tolist(),
             }
 
-        # Per-platform content ranking (avoids mixing different rate methodologies)
+        # Per-platform content ranking
         platform_rankings = {}
         for platform in self.df["platform"].unique():
             pdf = self.df[self.df["platform"] == platform]
@@ -176,9 +197,9 @@ class OKNAnalyzer:
                     cw = cdf["weight"].values
                     p_ranked.append({
                         "type": ctype,
-                        "engagement_rate": round(float(np.average(cdf["engagement_rate"].values, weights=cw)), 4),
+                        "engagement_rate": round(_safe_weighted_avg(cdf["engagement_rate"].values, cw), 4),
                         "count": len(cdf),
-                        "avg_engagement": int(np.average(cdf["engagement_total"].values, weights=cw)),
+                        "avg_engagement": int(_safe_weighted_avg(cdf["engagement_total"].values, cw)),
                     })
             p_ranked.sort(key=lambda x: x["engagement_rate"], reverse=True)
             if p_ranked:
@@ -186,9 +207,6 @@ class OKNAnalyzer:
 
         content["_platform_rankings"] = platform_rankings
 
-        # Overall ranking — but only compare within same platform where possible
-        # If a content type spans multiple platforms with different methodologies,
-        # rank by total engagement (absolute) instead of rate
         if content:
             ranked = sorted(
                 [(k, v) for k, v in content.items() if not k.startswith("_")],
@@ -196,11 +214,7 @@ class OKNAnalyzer:
                 reverse=True,
             )
             content["_ranking"] = [
-                {
-                    "type": k,
-                    "engagement_rate": v["avg_engagement_rate"],
-                    "platforms": v["platforms"],
-                }
+                {"type": k, "engagement_rate": v["avg_engagement_rate"], "platforms": v["platforms"]}
                 for k, v in ranked
             ]
 
@@ -212,9 +226,8 @@ class OKNAnalyzer:
 
     def analyze_engagement(self) -> Dict:
         """Detailed engagement analysis."""
-        logger.info("   💬 Engagement analysis...")
+        logger.info("   \U0001f4ac Engagement analysis...")
 
-        # Engagement composition (what type of engagement dominates?)
         total = {
             "likes": int(self.df["likes"].sum()),
             "comments": int(self.df["comments"].sum()),
@@ -223,32 +236,23 @@ class OKNAnalyzer:
         }
         grand_total = sum(total.values()) or 1
 
-        composition = {
-            k: round(v / grand_total, 4) for k, v in total.items()
-        }
+        composition = {k: round(v / grand_total, 4) for k, v in total.items()}
 
-        # Engagement quality score
-        # Shares and saves are higher-quality engagement signals
         quality_weights = {"likes": 1, "comments": 3, "shares": 5, "saves": 4}
-        quality_score = sum(
-            total[k] * quality_weights[k] for k in quality_weights
-        ) / (self.df["reach"].sum() or 1)
+        quality_score = sum(total[k] * quality_weights[k] for k in quality_weights) / (self.df["reach"].sum() or 1)
 
-        # Comments-to-likes ratio (conversation indicator)
         ctl_ratio = total["comments"] / (total["likes"] or 1)
-
-        # Shares-to-engagement ratio (virality indicator)
         ste_ratio = total["shares"] / (grand_total or 1)
 
-        # Per-platform engagement breakdown
         platform_engagement = {}
         for platform in self.df["platform"].unique():
             pdf = self.df[self.df["platform"] == platform]
+            eng_sum = pdf["engagement_total"].sum() or 1
             platform_engagement[platform] = {
-                "likes_pct": round(pdf["likes"].sum() / (pdf["engagement_total"].sum() or 1), 4),
-                "comments_pct": round(pdf["comments"].sum() / (pdf["engagement_total"].sum() or 1), 4),
-                "shares_pct": round(pdf["shares"].sum() / (pdf["engagement_total"].sum() or 1), 4),
-                "saves_pct": round(pdf["saves"].sum() / (pdf["engagement_total"].sum() or 1), 4),
+                "likes_pct": round(float(pdf["likes"].sum() / eng_sum), 4),
+                "comments_pct": round(float(pdf["comments"].sum() / eng_sum), 4),
+                "shares_pct": round(float(pdf["shares"].sum() / eng_sum), 4),
+                "saves_pct": round(float(pdf["saves"].sum() / eng_sum), 4),
             }
 
         return {
@@ -266,19 +270,17 @@ class OKNAnalyzer:
 
     def analyze_temporal(self) -> Dict:
         """When should OKN post for maximum impact?"""
-        logger.info("   🕐 Temporal patterns...")
+        logger.info("   \U0001f550 Temporal patterns...")
 
-        valid = self.df.dropna(subset=["published_at", "hour"])
+        valid = self.df.dropna(subset=["published_at"])
         if valid.empty:
             return {"error": "No valid timestamp data"}
 
         # Exclude platforms where ALL posts have hour=0 (no real time data)
-        # TikTok exports don't include posting hour, so all parse as midnight
         platforms_with_hours = []
         for platform in valid["platform"].unique():
             pdata = valid[valid["platform"] == platform]
-            unique_hours = pdata["hour"].nunique()
-            if unique_hours > 1:  # Has real hour variation
+            if pdata["hour"].nunique() > 1:
                 platforms_with_hours.append(platform)
 
         if not platforms_with_hours:
@@ -286,55 +288,50 @@ class OKNAnalyzer:
 
         valid = valid[valid["platform"].isin(platforms_with_hours)]
 
-        # Best hours (weighted by recency)
         def _weighted_agg(group):
             w = group["weight"].values
             eng = group["engagement_rate"].values
             reach = group["reach"].values
             return pd.Series({
-                "avg_engagement": float(np.average(eng, weights=w)) if len(w) > 0 else 0,
-                "avg_reach": float(np.average(reach, weights=w)) if len(w) > 0 else 0,
-                "post_count": len(group),
+                "avg_engagement": _safe_weighted_avg(eng, w),
+                "avg_reach": _safe_weighted_avg(reach, w),
+                "post_count": float(len(group)),
             })
 
-        hourly = valid.groupby("hour").apply(_weighted_agg).round(4)
-        best_hours = hourly.nlargest(3, "avg_engagement")
+        try:
+            hourly = valid.groupby("hour", group_keys=False).apply(_weighted_agg).round(4)
+            best_hours = hourly.nlargest(3, "avg_engagement")
 
-        # Best days (weighted)
-        daily = valid.groupby("day_of_week").apply(_weighted_agg).round(4)
+            daily = valid.groupby("day_of_week", group_keys=False).apply(_weighted_agg).round(4)
+            day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            daily = daily.reindex([d for d in day_order if d in daily.index])
+            best_days = daily.nlargest(3, "avg_engagement")
+        except Exception as e:
+            logger.warning(f"   Temporal aggregation error: {e}")
+            return {"error": str(e)}
 
-        day_order = ["Monday", "Tuesday", "Wednesday", "Thursday",
-                     "Friday", "Saturday", "Sunday"]
-        daily = daily.reindex([d for d in day_order if d in daily.index])
-
-        best_days = daily.nlargest(3, "avg_engagement")
-
-        # Per-platform best times (weighted)
+        # Per-platform best times
         platform_timing = {}
         for platform in valid["platform"].unique():
             pdata = valid[valid["platform"] == platform]
             if len(pdata) >= ANALYSIS["min_posts_for_analysis"]:
-                p_hourly = pdata.groupby("hour").apply(_weighted_agg)
-                p_daily = pdata.groupby("day_of_week").apply(_weighted_agg)
+                try:
+                    p_hourly = pdata.groupby("hour", group_keys=False).apply(_weighted_agg)
+                    p_daily = pdata.groupby("day_of_week", group_keys=False).apply(_weighted_agg)
+                    best_h = p_hourly.nlargest(3, "avg_engagement").index.tolist()
+                    best_d = p_daily.nlargest(2, "avg_engagement").index.tolist()
+                    platform_timing[platform] = {"best_hours": best_h, "best_days": best_d}
+                except Exception:
+                    pass
 
-                best_h = p_hourly.nlargest(3, "avg_engagement").index.tolist()
-                best_d = p_daily.nlargest(2, "avg_engagement").index.tolist()
-
-                platform_timing[platform] = {
-                    "best_hours": best_h,
-                    "best_days": best_d,
-                }
-
-        # Heatmap data (day x hour) — weighted
-        def _weighted_mean(x):
-            w = valid.loc[x.index, "weight"].values
-            return float(np.average(x.values, weights=w)) if len(w) > 0 else 0
-        heatmap = valid.pivot_table(
-            values="engagement_rate",
-            index="day_of_week",
-            columns="hour",
-            aggfunc=_weighted_mean,
-        ).round(4)
+        # Heatmap — safe version
+        try:
+            heatmap_data = valid.groupby(["day_of_week", "hour"], group_keys=False).apply(
+                lambda g: pd.Series({"engagement_rate": _safe_weighted_avg(g["engagement_rate"].values, g["weight"].values)})
+            ).reset_index()
+            heatmap = heatmap_data.pivot_table(values="engagement_rate", index="day_of_week", columns="hour").round(4)
+        except Exception:
+            heatmap = pd.DataFrame()
 
         return {
             "best_hours_overall": best_hours.to_dict("index"),
@@ -351,13 +348,13 @@ class OKNAnalyzer:
 
     def analyze_growth(self) -> Dict:
         """Follower/reach growth trajectory."""
-        logger.info("   📈 Growth analysis...")
+        logger.info("   \U0001f4c8 Growth analysis...")
 
         valid = self.df.dropna(subset=["published_at"])
+        valid = valid[valid["year_week"] != "Unknown"]
         if valid.empty:
             return {"error": "No valid data for growth analysis"}
 
-        # Weekly aggregates
         weekly = valid.groupby("year_week").agg(
             total_reach=("reach", "sum"),
             total_engagement=("engagement_total", "sum"),
@@ -366,24 +363,22 @@ class OKNAnalyzer:
             avg_engagement_rate=("engagement_rate", "mean"),
         ).round(4)
 
-        # Growth rates
-        weekly["reach_growth"] = weekly["total_reach"].pct_change().round(4)
-        weekly["engagement_growth"] = weekly["total_engagement"].pct_change().round(4)
-        weekly["follower_growth"] = weekly["total_followers"].pct_change().round(4)
+        # Growth rates — replace inf with 0
+        for col_name in ["total_reach", "total_engagement", "total_followers"]:
+            growth_col = col_name.replace("total_", "") + "_growth"
+            weekly[growth_col] = weekly[col_name].pct_change().replace([np.inf, -np.inf], np.nan).fillna(0).round(4)
 
-        # Current trajectory (last 4 weeks)
         recent = weekly.tail(4)
         trajectory = {
-            "avg_weekly_reach": int(recent["total_reach"].mean()),
-            "avg_weekly_engagement": int(recent["total_engagement"].mean()),
-            "avg_weekly_followers": int(recent["total_followers"].mean()),
-            "avg_weekly_posts": round(recent["post_count"].mean(), 1),
+            "avg_weekly_reach": int(recent["total_reach"].mean()) if not recent.empty else 0,
+            "avg_weekly_engagement": int(recent["total_engagement"].mean()) if not recent.empty else 0,
+            "avg_weekly_followers": int(recent["total_followers"].mean()) if not recent.empty else 0,
+            "avg_weekly_posts": round(float(recent["post_count"].mean()), 1) if not recent.empty else 0,
             "reach_trend": self._trend_direction(recent["total_reach"]),
             "engagement_trend": self._trend_direction(recent["total_engagement"]),
             "follower_trend": self._trend_direction(recent["total_followers"]),
         }
 
-        # Per-platform growth
         platform_growth = {}
         for platform in valid["platform"].unique():
             pdata = valid[valid["platform"] == platform]
@@ -411,7 +406,7 @@ class OKNAnalyzer:
 
     def detect_anomalies(self) -> Dict:
         """Identify viral hits and unexpected flops."""
-        logger.info("   🔥 Anomaly detection...")
+        logger.info("   \U0001f525 Anomaly detection...")
 
         anomalies = {"viral": [], "underperformers": []}
 
@@ -421,30 +416,28 @@ class OKNAnalyzer:
                 continue
 
             mean_eng = pdf["engagement_total"].mean()
-            std_eng = pdf["engagement_total"].std()
+            if pd.isna(mean_eng) or mean_eng == 0:
+                continue
             mean_reach = pdf["reach"].mean()
 
             viral_threshold = mean_eng * ANALYSIS["viral_multiplier"]
             flop_threshold = mean_eng * ANALYSIS["underperform_threshold"]
 
-            # Viral posts
-            viral = pdf[pdf["engagement_total"] >= viral_threshold].head(
-                ANALYSIS["top_n_posts"]
-            )
+            viral = pdf[pdf["engagement_total"] >= viral_threshold].head(ANALYSIS["top_n_posts"])
             for _, row in viral.iterrows():
+                title = row.get("title", "") or ""
                 anomalies["viral"].append({
                     "platform": platform,
                     "post_id": row["post_id"],
-                    "title": row["title"][:100],
+                    "title": str(title)[:100],
                     "content_type": row["content_type"],
                     "engagement": int(row["engagement_total"]),
                     "reach": int(row["reach"]),
-                    "multiplier": round(row["engagement_total"] / (mean_eng or 1), 1),
+                    "multiplier": round(float(row["engagement_total"] / mean_eng), 1),
                     "published_at": str(row["published_at"]),
                     "permalink": row.get("permalink", ""),
                 })
 
-            # Underperformers (high reach, low engagement — wasted potential)
             if mean_reach > 0:
                 underperformers = pdf[
                     (pdf["engagement_total"] <= flop_threshold) &
@@ -452,20 +445,19 @@ class OKNAnalyzer:
                 ].head(ANALYSIS["top_n_posts"])
 
                 for _, row in underperformers.iterrows():
+                    title = row.get("title", "") or ""
                     anomalies["underperformers"].append({
                         "platform": platform,
                         "post_id": row["post_id"],
-                        "title": row["title"][:100],
+                        "title": str(title)[:100],
                         "content_type": row["content_type"],
                         "engagement": int(row["engagement_total"]),
                         "reach": int(row["reach"]),
-                        "engagement_rate": round(row["engagement_rate"], 4),
+                        "engagement_rate": round(float(row["engagement_rate"]), 4),
                         "published_at": str(row["published_at"]),
                     })
 
-        # Sort by multiplier / impact
         anomalies["viral"].sort(key=lambda x: x["multiplier"], reverse=True)
-
         return anomalies
 
     # ──────────────────────────────────────────
@@ -474,27 +466,25 @@ class OKNAnalyzer:
 
     def analyze_cross_platform(self) -> Dict:
         """Compare performance across platforms to find content-platform fit."""
-        logger.info("   🔄 Cross-platform analysis...")
+        logger.info("   \U0001f504 Cross-platform analysis...")
 
         platforms = self.df["platform"].unique()
         if len(platforms) < 2:
             return {"note": "Need data from 2+ platforms for comparison"}
 
-        # Per-platform averages
         platform_avgs = {}
         for platform in platforms:
             pdf = self.df[self.df["platform"] == platform]
             w = pdf["weight"].values
             platform_avgs[platform] = {
-                "avg_reach": int(np.average(pdf["reach"].values, weights=w)),
-                "avg_engagement_rate": round(float(np.average(pdf["engagement_rate"].values, weights=w)), 4),
-                "avg_likes": int(np.average(pdf["likes"].values, weights=w)),
-                "avg_comments": int(np.average(pdf["comments"].values, weights=w)),
-                "avg_shares": int(np.average(pdf["shares"].values, weights=w)),
+                "avg_reach": int(_safe_weighted_avg(pdf["reach"].values, w)),
+                "avg_engagement_rate": round(_safe_weighted_avg(pdf["engagement_rate"].values, w), 4),
+                "avg_likes": int(_safe_weighted_avg(pdf["likes"].values, w)),
+                "avg_comments": int(_safe_weighted_avg(pdf["comments"].values, w)),
+                "avg_shares": int(_safe_weighted_avg(pdf["shares"].values, w)),
                 "dominant_content_type": pdf["content_type"].mode().iloc[0] if not pdf["content_type"].mode().empty else "unknown",
             }
 
-        # Content type performance across platforms
         content_platform = {}
         for ctype in self.df["content_type"].unique():
             cdf = self.df[self.df["content_type"] == ctype]
@@ -507,13 +497,12 @@ class OKNAnalyzer:
                 if len(cpdf) >= 2:
                     cpw = cpdf["weight"].values
                     cp_data[platform] = {
-                        "avg_engagement_rate": round(float(np.average(cpdf["engagement_rate"].values, weights=cpw)), 4),
-                        "avg_reach": int(np.average(cpdf["reach"].values, weights=cpw)),
+                        "avg_engagement_rate": round(_safe_weighted_avg(cpdf["engagement_rate"].values, cpw), 4),
+                        "avg_reach": int(_safe_weighted_avg(cpdf["reach"].values, cpw)),
                         "count": len(cpdf),
                     }
 
             if len(cp_data) >= 2:
-                # Find the best platform for this content type
                 best = max(cp_data.items(), key=lambda x: x[1]["avg_engagement_rate"])
                 content_platform[ctype] = {
                     "platforms": cp_data,
@@ -532,10 +521,9 @@ class OKNAnalyzer:
 
     def generate_recommendations(self) -> list:
         """Generate actionable recommendations based on all analysis."""
-        logger.info("   💡 Generating recommendations...")
+        logger.info("   \U0001f4a1 Generating recommendations...")
         recs = []
 
-        # Check if we have enough data
         if len(self.df) < 10:
             recs.append({
                 "priority": "high",
@@ -544,7 +532,7 @@ class OKNAnalyzer:
             })
             return recs
 
-        # Per-platform content type recommendations (avoids cross-platform rate mixing)
+        # Content recommendations
         content = self.results.get("content_performance", {})
         platform_rankings = content.get("_platform_rankings", {})
         for platform, rankings in platform_rankings.items():
@@ -557,27 +545,26 @@ class OKNAnalyzer:
                     "message": f"On {pname}, your best content type is '{best['type']}' with {best['engagement_rate']:.1%} avg engagement ({best['count']} posts). Create more of this.",
                 })
 
-        # Timing recommendations — only if enough data
+        # Timing recommendations
         temporal = self.results.get("temporal", {})
         best_hours = temporal.get("best_hours_overall", {})
         if best_hours:
-            # Only recommend if the best hour has at least 3 posts
             top_hour = list(best_hours.keys())[0]
             top_data = best_hours[top_hour]
-            if top_data.get("post_count", 0) >= 3:
+            pc = top_data.get("post_count", 0)
+            if pc >= 3:
                 recs.append({
                     "priority": "high",
                     "category": "timing",
-                    "message": f"Your best posting hour is {int(top_hour)}:00 KST (based on {top_data['post_count']} posts). Schedule high-priority content around this time.",
+                    "message": f"Your best posting hour is {int(top_hour)}:00 KST (based on {pc:.0f} posts). Schedule high-priority content around this time.",
                 })
             else:
-                # Find the first hour with enough data
                 for h, d in best_hours.items():
                     if d.get("post_count", 0) >= 3:
                         recs.append({
                             "priority": "medium",
                             "category": "timing",
-                            "message": f"Hour {int(h)}:00 KST shows strong engagement ({d['post_count']} posts). Consider posting around this time.",
+                            "message": f"Hour {int(h)}:00 KST shows strong engagement ({d['post_count']:.0f} posts). Consider posting around this time.",
                         })
                         break
                 else:
@@ -598,7 +585,7 @@ class OKNAnalyzer:
                     "message": f"Best performing day is {top_day}. Consider making this your primary posting day.",
                 })
 
-        # Engagement quality recommendations
+        # Engagement quality
         engagement = self.results.get("engagement", {})
         conversation = engagement.get("conversation_ratio", 0)
         if conversation < 0.05:
@@ -608,7 +595,7 @@ class OKNAnalyzer:
                 "message": "Comments-to-likes ratio is low. Try asking questions, running polls, or creating discussion-worthy content.",
             })
 
-        # Platform-specific benchmark recommendations
+        # Platform benchmarks
         overview = self.results.get("platform_overview", {})
         for platform, data in overview.items():
             vs = data.get("vs_benchmark", 0)
@@ -626,7 +613,7 @@ class OKNAnalyzer:
                     "message": f"{pname} is outperforming industry benchmark by {vs:.1%}! Keep up the great work.",
                 })
 
-        # Per-platform growth alerts (don't blend different scales)
+        # Per-platform growth alerts
         growth = self.results.get("growth", {})
         platform_growth = growth.get("platform_growth", {})
         for platform, pg in platform_growth.items():
@@ -645,11 +632,10 @@ class OKNAnalyzer:
                     "message": f"{pname} reach is growing! Keep up the momentum.",
                 })
 
-        # Anomaly-based recommendations (per platform)
+        # Anomaly-based recommendations
         anomalies = self.results.get("anomalies", {})
         viral = anomalies.get("viral", [])
         if viral:
-            # Group viral content by platform
             for platform in self.df["platform"].unique():
                 pname = PLATFORMS.get(platform, {}).get("name", platform)
                 p_viral = [v for v in viral if v["platform"] == platform]
@@ -661,7 +647,7 @@ class OKNAnalyzer:
                         "message": f"Viral content on {pname} is: {', '.join(viral_types)}. Create more content in these formats.",
                     })
 
-        # Note about methodology if multi-platform
+        # Methodology note
         if len(self.df["platform"].unique()) > 1:
             recs.append({
                 "priority": "low",
@@ -669,10 +655,8 @@ class OKNAnalyzer:
                 "message": "Note: Instagram engagement rate uses reach as denominator; TikTok uses views. Direct rate comparison between platforms should be interpreted with this in mind.",
             })
 
-        # Sort by priority
         priority_order = {"high": 0, "medium": 1, "low": 2}
         recs.sort(key=lambda x: priority_order.get(x["priority"], 3))
-
         return recs
 
     # ──────────────────────────────────────────
@@ -692,8 +676,9 @@ class OKNAnalyzer:
         if df.empty:
             return None
         top = df.nlargest(1, "engagement_total").iloc[0]
+        title = top.get("title", "") or ""
         return {
-            "title": top["title"][:100],
+            "title": str(title)[:100],
             "engagement": int(top["engagement_total"]),
             "reach": int(top["reach"]),
             "type": top["content_type"],
@@ -707,23 +692,31 @@ class OKNAnalyzer:
         if len(series) < 2:
             return "insufficient_data"
 
-        values = series.dropna().values
+        values = np.asarray(series.dropna(), dtype=float)
+
         if len(values) < 2:
             return "insufficient_data"
 
-        # Simple linear regression slope
-        x = np.arange(len(values))
-        slope = np.polyfit(x, values, 1)[0]
-        mean = np.mean(values) or 1
-
-        normalized_slope = slope / abs(mean)
-
-        if normalized_slope > 0.05:
-            return "growing"
-        elif normalized_slope < -0.05:
-            return "declining"
-        else:
+        # Check for constant values (polyfit would fail)
+        if float(np.std(values)) < 1e-10:
             return "stable"
+
+        try:
+            x = np.arange(len(values))
+            slope = float(np.polyfit(x, values, 1)[0])
+            mean_val = float(np.mean(values))
+            if abs(mean_val) < 1e-10:
+                mean_val = 1.0
+            normalized_slope = slope / abs(mean_val)
+
+            if normalized_slope > 0.05:
+                return "growing"
+            elif normalized_slope < -0.05:
+                return "declining"
+            else:
+                return "stable"
+        except (np.linalg.LinAlgError, ValueError, TypeError):
+            return "insufficient_data"
 
 
 def analyze(df: pd.DataFrame) -> Dict[str, Any]:

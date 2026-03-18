@@ -13,16 +13,21 @@ import sys
 import json
 import logging
 import argparse
+import warnings
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+
+# Suppress noisy warnings
+warnings.filterwarnings("ignore", message="Converting to PeriodArray")
+warnings.filterwarnings("ignore", message="Glyph .* missing from font")
 
 # Add scripts dir to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import REPORTS_DIR, HISTORY_DIR, PLATFORM_DIRS, ensure_dirs
 from ingest import ingest_all
-from ingest_account import ingest_account_data, load_account_history
+from ingest_account import ingest_account_data, load_account_history, save_account_history
 from ingest_tiktok import ingest_tiktok_account
 from analyze import OKNAnalyzer
 from models.timing import PostingTimeModel
@@ -61,7 +66,6 @@ def run_pipeline(ingest_only=False, report_only=False):
     logger.info(f"☦️  OKN ANALYTICS PIPELINE")
     logger.info(f"   Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
-
 
     # ── STEP 1: INGEST ──
     logger.info("\n📥 STEP 1: Data Ingestion")
@@ -126,13 +130,19 @@ def run_pipeline(ingest_only=False, report_only=False):
 
         # Merge account data — keep per-platform in a dict
         if all_account_data:
-            # Use the first platform's data as primary for now
-            # Store all platform account data for the report
             account_data = {
                 "daily": all_account_data[0][1]["daily"],
                 "demographics": all_account_data[0][1]["demographics"],
                 "platforms": {p: d for p, d in all_account_data},
             }
+            # Save each platform's account data to history
+            for plat_name, plat_data in all_account_data:
+                if not plat_data["daily"].empty or plat_data["demographics"]:
+                    save_account_history(
+                        plat_data["daily"],
+                        plat_data["demographics"],
+                        platform=plat_name,
+                    )
     else:
         # Load from history
         daily_hist, demo_hist = load_account_history()
@@ -240,16 +250,6 @@ def run_pipeline(ingest_only=False, report_only=False):
         logger.error(f"   ❌ HTML report generation failed: {e}")
         import traceback
         traceback.print_exc()
-
-    # Convert HTML → PDF
-    try:
-        from weasyprint import HTML
-        html_path = REPORTS_DIR / "weekly_report.html"
-        pdf_path = REPORTS_DIR / "weekly_report.pdf"
-        HTML(filename=str(html_path)).write_pdf(str(pdf_path))
-        logger.info(f"   ✅ PDF Report: {pdf_path}")
-    except Exception as e:
-        logger.warning(f"   ⚠️  PDF generation failed (install weasyprint): {e}")
 
     # Save full results as JSON
     try:

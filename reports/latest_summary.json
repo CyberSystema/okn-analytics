@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-03-17T15:11:17.412086",
+  "generated_at": "2026-03-18T02:47:23.440744",
   "meta": {
-    "generated_at": "2026-03-17T15:11:14.207300",
+    "generated_at": "2026-03-18T02:47:20.184337",
     "total_posts": 139,
     "platforms": [
       "instagram",
       "tiktok"
     ],
     "date_range": {
-      "earliest": "2025-03-22 09:03:00+09:00",
-      "latest": "2026-03-15 15:46:00+09:00"
+      "earliest": "2025-03-22 02:03:00+00:00",
+      "latest": "2026-03-15 08:46:00+00:00"
     }
   },
   "health": {
@@ -32,7 +32,7 @@
     {
       "priority": "high",
       "category": "timing",
-      "message": "Your best posting hour is 8:00 KST (based on 4.0 posts). Schedule high-priority content around this time."
+      "message": "Your best posting hour is 10:00 KST (based on 11 posts). Schedule high-priority content around this time."
     },
     {
       "priority": "high",
