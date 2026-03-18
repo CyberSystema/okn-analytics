@@ -323,6 +323,7 @@ class ReportGenerator:
             platform_html += self._platform_section(plat)
 
         cross_html = self._cross_section()
+        summary_html = self._build_summary()
 
         rec_html = ""
         for r in recs:
@@ -361,22 +362,244 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 .built-by{{text-align:center;padding:28px 20px;margin-bottom:8px;border-radius:12px;background:linear-gradient(135deg,#f8f6f0,#eef2f7);border:1px solid #e0e0e0}}
 .cs-logo{{width:48px;height:48px;border-radius:10px;margin-bottom:8px}}
 .built-by-label{{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}}.built-by-name{{font-size:16px;font-weight:600;color:{BRANDING['primary_color']}}}.built-by-name a{{color:{BRANDING['primary_color']};text-decoration:none}}.built-by-name a:hover{{text-decoration:underline}}.built-by-tagline{{font-size:12px;color:#888;margin-top:4px}}
+.summary{{background:white;border-radius:16px;padding:32px;margin-bottom:32px;border:2px solid {BRANDING['secondary_color']}30}}
+.summary h2{{color:{BRANDING['primary_color']};font-size:22px;margin-bottom:4px}}.summary-sub{{color:#888;font-size:13px;margin-bottom:20px}}
+.summary-pulse{{font-size:16px;line-height:1.7;padding:16px 20px;border-radius:12px;margin-bottom:20px}}
+.summary-pulse.good{{background:#f0faf0;border-left:4px solid #38a169}}.summary-pulse.ok{{background:#fffbf0;border-left:4px solid #d69e2e}}.summary-pulse.bad{{background:#fff5f5;border-left:4px solid #e53e3e}}
+.summary-grid{{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:20px}}
+.summary-card{{padding:18px;border-radius:12px;background:#fafbfc;border:1px solid #eee}}
+.summary-card h3{{font-size:14px;color:{BRANDING['primary_color']};margin-bottom:10px}}.summary-card ul{{list-style:none;padding:0}}.summary-card li{{padding:6px 0;font-size:14px;color:#444;border-bottom:1px solid #f4f4f4}}.summary-card li:last-child{{border:none}}
+.summary-actions{{background:linear-gradient(135deg,{BRANDING['primary_color']}08,{BRANDING['secondary_color']}10);padding:18px 20px;border-radius:12px;border:1px solid {BRANDING['primary_color']}15}}
+.summary-actions h3{{font-size:14px;color:{BRANDING['primary_color']};margin-bottom:10px}}.summary-actions ol{{padding-left:20px;margin:0}}.summary-actions li{{padding:5px 0;font-size:14px;color:#333}}
 </style></head><body><div class="container">
 <div class="header">
 {f'<div class="header-logo-wrap">{logo_html}</div>' if logo_html else ''}
 <h1>{BRANDING['report_title']}</h1>
 <div class="header-divider"></div>
-<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST by <a href="https://cybersystema.com" target="_blank" style="color:rgba(255,255,255,0.85);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4)">CyberSystema</a> &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
+<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} by <a href="https://cybersystema.com" target="_blank" style="color:rgba(255,255,255,0.85);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4)">CyberSystema</a> &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
 <div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
 <div class="header-meta">Active since December 2025 &nbsp;•&nbsp; TikTok since January 6, 2026 &nbsp;•&nbsp; All times in KST</div>
 <div class="powered-badge">Powered by <a href="https://cybersystema.com" target="_blank">{cs_logo_small} CyberSystema</a></div>
 </div>
+{summary_html}
 {platform_html}
 {cross_html}
 <div class="section"><h2>💡 Recommendations</h2>{rec_html if rec_html else '<p class="no-data">Need more data</p>'}</div>
 <div class="built-by">{cs_logo_html}<div class="built-by-label">Analytics Infrastructure by</div><div class="built-by-name"><a href="https://cybersystema.com" target="_blank">CyberSystema</a></div><div class="built-by-tagline">Social media intelligence &amp; data engineering</div></div>
 <div class="footer">{BRANDING['footer_text']}<br>Data: {str(meta.get('date_range',{}).get('earliest','N/A'))[:10]} → {str(meta.get('date_range',{}).get('latest','N/A'))[:10]}</div>
 </div></body></html>"""
+
+    # ──── EXECUTIVE SUMMARY ────
+
+    def _build_summary(self):
+        """Build a friendly, plain-language summary for all team members."""
+        overview = self.analysis.get("platform_overview", {})
+        content = self.analysis.get("content_performance", {})
+        temporal = self.analysis.get("temporal", {})
+        growth = self.analysis.get("growth", {})
+        anomalies = self.analysis.get("anomalies", {})
+        recs = self.analysis.get("recommendations", [])
+
+        # ── 1. HEALTH PULSE ──
+        # Determine overall mood from multiple signals
+        health = self.forecast.get("health", {})
+        trajectory = growth.get("trajectory", {})
+
+        signals_good = 0
+        signals_bad = 0
+        for plat, ov in overview.items():
+            vs = ov.get("vs_benchmark", 0)
+            if vs > 0: signals_good += 1
+            elif vs < -0.02: signals_bad += 1
+
+        pg = growth.get("platform_growth", {})
+        for plat, g in pg.items():
+            if g.get("reach_trend") == "growing": signals_good += 1
+            elif g.get("reach_trend") == "declining": signals_bad += 1
+
+        # Check momentum scores
+        for plat in overview:
+            ms = self.ml_results.get(plat, {}).get("momentum_score", {})
+            if ms.get("status") == "ok":
+                score = ms.get("total_score", 50)
+                if score >= 60: signals_good += 1
+                elif score < 35: signals_bad += 1
+
+        if signals_bad == 0 and signals_good >= 2:
+            pulse_class = "good"
+            pulse_text = "Things are looking great! Our content is connecting with the audience and engagement is healthy across platforms."
+        elif signals_bad >= 2:
+            pulse_class = "bad"
+            pulse_text = "There are some areas that need our attention. Engagement or reach is dropping on one or more platforms — let's adjust our approach."
+        else:
+            pulse_class = "ok"
+            pulse_text = "Our social media presence is steady. There's room to grow — the data shows a few opportunities we can take advantage of."
+
+        # Add specific context
+        viral_posts = anomalies.get("viral", [])
+        if viral_posts:
+            top_viral = viral_posts[0]
+            pulse_text += f" We had a standout post that performed {top_viral['multiplier']}x above average!"
+
+        pulse_html = f'<div class="summary-pulse {pulse_class}">{pulse_text}</div>'
+
+        # ── 2. KEY NUMBERS ──
+        numbers_html = ""
+        total_reach = sum(ov.get("total_reach", 0) for ov in overview.values())
+        total_engagement = sum(ov.get("total_engagement", 0) for ov in overview.values())
+        total_followers = sum(ov.get("total_followers_gained", 0) for ov in overview.values())
+        total_posts = sum(ov.get("total_posts", 0) for ov in overview.values())
+
+        numbers = []
+        numbers.append(f"📊 We've published <strong>{total_posts:,}</strong> posts in total")
+        numbers.append(f"👀 Our content reached <strong>{total_reach:,}</strong> people")
+        numbers.append(f"💬 We received <strong>{total_engagement:,}</strong> interactions (likes, comments, shares, saves)")
+
+        if total_followers > 0:
+            numbers.append(f"👥 We gained <strong>{total_followers:,}</strong> new followers across all platforms")
+
+        # Per-platform highlights
+        for plat, ov in overview.items():
+            pname = PLATFORMS.get(plat, {}).get("name", plat)
+            wow = ov.get("wow_reach_change")
+            if wow is not None and wow > 0.1:
+                numbers.append(f"📈 {pname} reach grew <strong>{wow:.0%}</strong> compared to last week")
+            elif wow is not None and wow < -0.1:
+                numbers.append(f"📉 {pname} reach dropped <strong>{abs(wow):.0%}</strong> compared to last week")
+
+        numbers_html = "<ul>" + "".join(f"<li>{n}</li>" for n in numbers) + "</ul>"
+
+        # ── 3. WHAT'S WORKING ──
+        working = []
+        platform_rankings = content.get("_platform_rankings", {})
+        for plat, rankings in platform_rankings.items():
+            if rankings:
+                best = rankings[0]
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                ctype = best["type"].replace("_", " ").title()
+                working.append(f"<strong>{ctype}</strong> posts on {pname} get the best engagement ({best['count']} posts analyzed)")
+
+        best_hours = temporal.get("best_hours_overall", {})
+        if best_hours:
+            top_hour = list(best_hours.keys())[0]
+            top_data = best_hours[top_hour]
+            if top_data.get("post_count", 0) >= 3:
+                working.append(f"Posting around <strong>{int(top_hour)}:00 KST</strong> gets the most engagement")
+
+        best_days = temporal.get("best_days_overall", {})
+        if best_days:
+            top_day = list(best_days.keys())[0]
+            top_day_data = best_days[top_day]
+            if top_day_data.get("post_count", 0) >= 3:
+                working.append(f"<strong>{top_day}</strong> is our best performing day")
+
+        # Caption insights from ML
+        for plat in overview:
+            ml = self.ml_results.get(plat, {})
+            drivers = ml.get("engagement_drivers", {})
+            multi = drivers.get("multilingual", {})
+            if multi.get("lift", 0) > 0.1:
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                working.append(f"Multilingual captions (Korean + English) boost engagement on {pname}")
+            emoji = drivers.get("emoji", {})
+            if emoji.get("lift", 0) > 0.1:
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                working.append(f"Using emojis increases engagement on {pname}")
+
+        if viral_posts:
+            for v in viral_posts[:2]:
+                pname = PLATFORMS.get(v["platform"], {}).get("name", v["platform"])
+                title = str(v.get("title", ""))[:50]
+                if title:
+                    working.append(f'Our post "{_safe(title)}" went viral on {pname} ({v["multiplier"]}x above average)')
+
+        working_html = "<ul>" + "".join(f"<li>{w}</li>" for w in working[:6]) + "</ul>" if working else '<p style="color:#888">Not enough data yet — keep posting!</p>'
+
+        # ── 4. WHAT NEEDS ATTENTION ──
+        attention = []
+        for plat, g in pg.items():
+            pname = PLATFORMS.get(plat, {}).get("name", plat)
+            if g.get("reach_trend") == "declining":
+                attention.append(f"{pname} reach has been declining recently — try new content formats or increase posting frequency")
+
+        # Content fatigue
+        for plat in overview:
+            ml = self.ml_results.get(plat, {})
+            fatigue = ml.get("content_fatigue", {})
+            fatigued = fatigue.get("fatigued_types", [])
+            for ft in fatigued:
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                ctype = ft["content_type"].replace("_", " ").title()
+                attention.append(f"Our audience may be getting tired of <strong>{ctype}</strong> posts on {pname} (engagement is dropping)")
+
+        engagement_data = self.analysis.get("engagement", {})
+        if engagement_data.get("conversation_ratio", 1) < 0.05:
+            attention.append("We're getting lots of likes but very few comments — try asking questions or creating discussion-worthy content")
+
+        for plat, ov in overview.items():
+            if ov.get("vs_benchmark", 0) < -0.02:
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                attention.append(f"{pname} engagement is below the industry average — our content strategy on this platform needs a refresh")
+
+        attention_html = "<ul>" + "".join(f"<li>{a}</li>" for a in attention[:5]) + "</ul>" if attention else '<p style="color:#888">Nothing urgent — keep up the good work!</p>'
+
+        # ── 5. THIS WEEK'S ACTIONS ──
+        actions = []
+
+        # Best content type to create
+        for plat, rankings in platform_rankings.items():
+            if rankings:
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                best_type = rankings[0]["type"].replace("_", " ").title()
+                actions.append(f"Create more <strong>{best_type}</strong> content on {pname} — it's your top performer")
+                break
+
+        # Best time to post
+        if best_hours:
+            top_hour = list(best_hours.keys())[0]
+            actions.append(f"Schedule your most important post for <strong>{int(top_hour)}:00 KST</strong>")
+
+        # Cadence recommendation
+        for plat in overview:
+            ml = self.ml_results.get(plat, {})
+            cadence = ml.get("posting_cadence", {})
+            if cadence.get("status") == "ok":
+                opt = cadence.get("optimal_for_engagement", {}).get("posts_per_week", 0)
+                current = cadence.get("current_cadence", 0)
+                pname = PLATFORMS.get(plat, {}).get("name", plat)
+                if opt > current + 1:
+                    actions.append(f"Try posting <strong>{opt} times per week</strong> on {pname} (currently ~{current:.0f})")
+                break
+
+        # Content variety
+        if attention:
+            for plat in overview:
+                ml = self.ml_results.get(plat, {})
+                fatigue = ml.get("content_fatigue", {})
+                growing = fatigue.get("growing_types", [])
+                if growing:
+                    pname = PLATFORMS.get(plat, {}).get("name", plat)
+                    gtype = growing[0]["content_type"].replace("_", " ").title()
+                    actions.append(f"<strong>{gtype}</strong> content is gaining momentum on {pname} — invest more in this format")
+                    break
+
+        if not actions:
+            actions.append("Keep posting consistently — your data is still building and the models will improve each week")
+
+        actions_html = "<ol>" + "".join(f"<li>{a}</li>" for a in actions[:4]) + "</ol>"
+
+        # ── ASSEMBLE ──
+        return f"""<div class="summary">
+<h2>📋 Weekly Summary</h2>
+<div class="summary-sub">Here's what you need to know — no data science required</div>
+{pulse_html}
+<div class="summary-grid">
+<div class="summary-card"><h3>📊 Key Numbers</h3>{numbers_html}</div>
+<div class="summary-card"><h3>✅ What's Working</h3>{working_html}</div>
+<div class="summary-card"><h3>⚠️ What Needs Attention</h3>{attention_html}</div>
+<div class="summary-card summary-actions"><h3>🎯 This Week's Actions</h3>{actions_html}</div>
+</div>
+</div>"""
 
     # ──── PER-PLATFORM SECTION ────
 
@@ -587,6 +810,58 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 
             if rca_html:
                 parts.append(f'<div class="sub-s"><h3>🔍 Root Cause Analysis <span class="ml">Feature Attribution</span></h3>{rca_html}</div>')
+
+        # Topic Discovery
+        topics = ml.get("topic_discovery", {})
+        if topics.get("status") == "ok":
+            t_html = ""
+            for t in topics.get("topics", [])[:6]:
+                kw = ", ".join(t.get("keywords", [])[:4]) or "—"
+                eng_pct = t["avg_engagement_rate"]
+                bar_w = min(100, max(5, int(eng_pct * 500)))
+                t_html += f'<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span><strong>{_safe(t.get("representative_post","")[:45])}</strong> ({t["post_count"]} posts)</span><span style="color:{BRANDING["primary_color"]};font-weight:600">{eng_pct:.1%}</span></div>'
+                t_html += f'<div style="background:#eee;border-radius:4px;height:8px"><div style="width:{bar_w}%;height:100%;background:{BRANDING["secondary_color"]};border-radius:4px"></div></div>'
+                t_html += f'<div style="font-size:11px;color:#888;margin-top:2px">Keywords: {_safe(kw)}</div></div>'
+            parts.append(f'<div class="sub-s"><h3>📑 Content Topic Discovery <span class="ml">Semantic Clustering</span></h3><p style="color:#666;font-size:13px;margin-bottom:12px">Posts grouped by meaning — works across English, Korean &amp; Greek</p>{t_html}</div>')
+
+        # Similar Post Predictor
+        similar = ml.get("similar_posts", {})
+        if similar.get("status") == "ok":
+            s_html = f'<div class="dr"><span class="k">Prediction accuracy (MAE)</span><span class="val">{similar["mean_absolute_error"]:.2%}</span></div>'
+            s_html += f'<div class="dr"><span class="k">Median content similarity</span><span class="val">{similar["median_similarity"]:.0%}</span></div>'
+            recent = similar.get("recent_predictions", [])
+            if recent:
+                s_html += '<p style="margin-top:14px;font-weight:600;font-size:13px">Recent posts — predicted vs actual:</p>'
+                for rp in recent[:4]:
+                    actual = rp["actual_rate"]
+                    predicted = rp["predicted_rate"]
+                    diff = actual - predicted
+                    diff_color = "green" if diff > 0 else "red" if diff < -0.02 else "#888"
+                    sim_titles = ", ".join(f'"{_safe(t[:25])}"' for t in rp.get("similar_to", [])[:2])
+                    s_html += f'<div style="margin:8px 0;padding:10px;background:white;border-radius:8px;font-size:13px">'
+                    s_html += f'<strong>{_safe(rp["title"][:45])}</strong><br>'
+                    s_html += f'Predicted: {predicted:.1%} → Actual: {actual:.1%} <span style="color:{diff_color}">({diff:+.1%})</span><br>'
+                    s_html += f'<span style="color:#999;font-size:11px">Similar to: {sim_titles} ({rp["similarity"]:.0%} match)</span></div>'
+            parts.append(f'<div class="sub-s"><h3>🔮 Similar Post Predictor <span class="ml">Semantic Similarity</span></h3>{s_html}</div>')
+
+        # Hashtag Clusters
+        htclusters = ml.get("hashtag_clusters", {})
+        if htclusters.get("status") == "ok":
+            h_html = f'<div class="dr"><span class="k">Unique hashtags</span><span class="val">{htclusters["total_unique_hashtags"]}</span></div>'
+            h_html += f'<div class="dr"><span class="k">Semantic clusters</span><span class="val">{htclusters["n_clusters"]}</span></div>'
+            for cl in htclusters.get("clusters", [])[:5]:
+                tags = " ".join(cl.get("top_hashtags", [])[:4])
+                eng = cl["avg_engagement_rate"]
+                h_html += f'<div style="margin:8px 0;padding:10px;background:white;border-radius:8px">'
+                h_html += f'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px"><strong>{_safe(cl.get("label",""))}</strong> ({cl["total_posts"]} posts)</span><span style="color:{BRANDING["primary_color"]};font-weight:600">{eng:.1%}</span></div>'
+                h_html += f'<div style="font-size:12px;color:#666;margin-top:4px">{_safe(tags)}</div></div>'
+            # Top individual hashtags
+            top_ht = htclusters.get("top_individual_hashtags", [])
+            if top_ht:
+                h_html += '<p style="margin-top:12px;font-weight:600;font-size:13px">Top performing hashtags:</p>'
+                for ht in top_ht[:6]:
+                    h_html += f'<div class="dr"><span class="k">{_safe(ht["tag"])} ({ht["post_count"]} posts)</span><span class="val">{ht["avg_engagement"]:.1%}</span></div>'
+            parts.append(f'<div class="sub-s"><h3>#️⃣ Hashtag Strategy <span class="ml">Semantic Clustering</span></h3>{h_html}</div>')
 
         if not parts: return ""
         return f'<div class="section"><h2>🤖 ML & AI Insights — {pn}</h2>{"".join(parts)}</div>'

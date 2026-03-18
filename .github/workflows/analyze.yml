@@ -1,14 +1,13 @@
 name: OKN Analytics Pipeline
 
 on:
-  # Trigger when CSV/JSON files are pushed to data folders
+  # Trigger when data files are pushed
   push:
     paths:
       - 'data/**/*.csv'
       - 'data/**/*.json'
-      - 'data/**/*.xlsx'
 
-  # Manual trigger from GitHub Actions tab
+  # Manual trigger
   workflow_dispatch:
     inputs:
       mode:
@@ -21,23 +20,24 @@ on:
           - ingest-only
           - report-only
 
-  # Weekly schedule (every Monday at 09:00 KST = 00:00 UTC)
+  # Weekly schedule (every Monday 09:00 KST = 00:00 UTC)
   schedule:
     - cron: '0 0 * * 1'
 
 permissions:
-  contents: write  # Needed to commit reports back to repo
+  contents: write
 
 jobs:
   analyze:
     runs-on: ubuntu-latest
     name: 📊 Run Analytics Pipeline
+    timeout-minutes: 15
 
     steps:
       - name: ☦️ Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for accurate git operations
+          fetch-depth: 0
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
@@ -45,15 +45,25 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      # Cache HuggingFace model (~118MB) between runs
+      - name: 🧠 Cache ML models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: huggingface-sentence-transformers-v1
+
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Prophet is optional — install separately (can fail gracefully)
+          # Prophet is optional
           pip install prophet 2>/dev/null || echo "Prophet not available, using statistical forecasting"
 
       - name: 🔬 Run analytics pipeline
         working-directory: ${{ github.workspace }}
+        env:
+          # Pre-download the model on first run, cached after
+          SENTENCE_TRANSFORMERS_HOME: ~/.cache/huggingface
         run: |
           MODE="${{ github.event.inputs.mode || 'full' }}"
           
@@ -70,18 +80,15 @@ jobs:
           git config user.name "OKN Analytics Bot"
           git config user.email "analytics@orthodoxkorea.org"
           
-          # Add reports and history
           git add reports/ || true
           git add history/ || true
           
-          # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
             POST_COUNT=$(python -c "
           import pandas as pd
-          from pathlib import Path
           try:
               df = pd.read_csv('history/unified_history.csv')
               print(len(df))

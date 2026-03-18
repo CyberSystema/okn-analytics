@@ -382,8 +382,8 @@ def apply_column_map(df: pd.DataFrame, col_map: dict, platform: str) -> pd.DataF
                 result.loc[mask_failed, "published_at"],
                 errors="coerce",
             )
-        # Localize to UTC then convert to KST
-        result["published_at"] = parsed.dt.tz_localize("UTC", ambiguous="NaT", nonexistent="NaT")
+        # Instagram exports are in local time (e.g., America/Los_Angeles) without timezone info — localize to that timezone first before converting to KST
+        result["published_at"] = parsed.dt.tz_localize("America/Los_Angeles", ambiguous="NaT", nonexistent="NaT")
         result["published_at"] = to_kst(result["published_at"])
     else:
         result["published_at"] = pd.NaT

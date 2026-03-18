@@ -26,10 +26,44 @@ from sklearn.cluster import KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.metrics.pairwise import cosine_similarity
 
 from config import compute_recency_weights
 
 logger = logging.getLogger("okn.ml")
+
+# ══════════════════════════════════════════════
+# SENTENCE EMBEDDINGS (optional — graceful fallback)
+# ══════════════════════════════════════════════
+_embedding_model = None
+HAS_EMBEDDINGS = False
+
+try:
+    from sentence_transformers import SentenceTransformer
+    HAS_EMBEDDINGS = True
+except ImportError:
+    pass
+
+
+def _get_embedding_model():
+    """Load the multilingual sentence-transformer model (singleton)."""
+    global _embedding_model
+    if _embedding_model is None and HAS_EMBEDDINGS:
+        logger.info("      Loading multilingual embedding model...")
+        _embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+    return _embedding_model
+
+
+def _compute_embeddings(texts: List[str]) -> Optional[np.ndarray]:
+    """Encode texts to 384-dim vectors. Returns None if not available."""
+    model = _get_embedding_model()
+    if model is None:
+        return None
+    try:
+        return model.encode(texts, show_progress_bar=False, batch_size=32)
+    except Exception as e:
+        logger.warning(f"      Embedding failed: {e}")
+        return None
 
 
 class MLEngine:
@@ -102,6 +136,24 @@ class MLEngine:
         else:
             self.sample_weights = compute_recency_weights(df["published_at"]).values
 
+        # Semantic caption embeddings (multilingual, pre-trained)
+        captions = df["title"].fillna("").tolist()
+        self.embeddings = _compute_embeddings(captions)
+        if self.embeddings is not None:
+            logger.info(f"      Embeddings: {self.embeddings.shape[1]}d vectors for {len(captions)} captions")
+            # Add PCA-reduced embedding features to tabular model
+            # Use min(10, n_posts//5) components to avoid overfitting
+            from sklearn.decomposition import PCA
+            n_components = min(10, max(3, len(captions) // 5))
+            pca = PCA(n_components=n_components, random_state=42)
+            emb_reduced = pca.fit_transform(self.embeddings)
+            for i in range(n_components):
+                col_name = f"emb_{i}"
+                df[col_name] = emb_reduced[:, i]
+                self.feature_cols.append(col_name)
+            self.pca = pca
+            logger.info(f"      Added {n_components} semantic features ({pca.explained_variance_ratio_.sum():.0%} variance captured)")
+
     def run_all(self) -> Dict[str, Any]:
         """Run all ML models. Returns results dict."""
         n = len(self.df)
@@ -130,6 +182,15 @@ class MLEngine:
         self.results["posting_cadence"] = self._optimal_cadence()
         self.results["momentum_score"] = self._momentum_score()
         self.results["root_cause"] = self._root_cause_analysis()
+
+        # Semantic AI models (require sentence-transformers)
+        if self.embeddings is not None:
+            self.results["topic_discovery"] = self._topic_discovery()
+            self.results["similar_posts"] = self._similar_post_predictor()
+            self.results["hashtag_clusters"] = self._hashtag_cluster_strategy()
+        else:
+            for key in ["topic_discovery", "similar_posts", "hashtag_clusters"]:
+                self.results[key] = {"status": "no_embeddings", "message": "Install sentence-transformers for semantic AI models"}
 
         return self.results
 
@@ -947,6 +1008,286 @@ class MLEngine:
                 "status": "ok",
                 "viral_explanations": viral_explanations,
                 "flop_explanations": flop_explanations,
+            }
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    # ──────────────────────────────────────────
+    # 11. TOPIC DISCOVERY (Semantic Clustering)
+    # ──────────────────────────────────────────
+
+    def _topic_discovery(self) -> Dict:
+        """
+        Discover content topics/themes from captions using semantic embeddings.
+        Clusters posts by meaning (not just keywords) and tracks engagement per topic.
+        Works across English, Korean, and Greek simultaneously.
+        """
+        if self.embeddings is None:
+            return {"status": "no_embeddings"}
+
+        df = self.df.copy()
+        n = len(df)
+        if n < 10:
+            return {"status": "need_more_data"}
+
+        try:
+            # Determine number of clusters (3-8 based on data size)
+            n_clusters = min(max(3, n // 15), 8)
+
+            km = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+            df["topic_id"] = km.fit_predict(self.embeddings)
+
+            # Name each topic by its most representative terms
+            topics = []
+            for tid in range(n_clusters):
+                mask = df["topic_id"] == tid
+                topic_posts = df[mask]
+
+                if len(topic_posts) == 0:
+                    continue
+
+                # Get representative caption (closest to cluster center)
+                center = km.cluster_centers_[tid]
+                topic_embeddings = self.embeddings[mask.values]
+                dists = np.linalg.norm(topic_embeddings - center, axis=1)
+                best_idx = np.argmin(dists)
+                representative = str(topic_posts.iloc[best_idx].get("title", ""))[:80]
+
+                # Extract top keywords from topic captions
+                captions = topic_posts["title"].fillna("").tolist()
+                try:
+                    tfidf = TfidfVectorizer(max_features=5, stop_words="english",
+                                           token_pattern=r"(?u)\b[#\w][\w]{2,}\b")
+                    tfidf.fit(captions)
+                    keywords = list(tfidf.get_feature_names_out())
+                except Exception:
+                    keywords = []
+
+                # Engagement stats
+                w = topic_posts["weight"].values if "weight" in topic_posts.columns else np.ones(len(topic_posts))
+                w_sum = w.sum()
+                avg_eng = float(np.average(topic_posts["engagement_rate"].values, weights=w)) if w_sum > 0 else 0
+
+                topics.append({
+                    "topic_id": int(tid),
+                    "post_count": len(topic_posts),
+                    "keywords": keywords,
+                    "representative_post": representative,
+                    "avg_engagement_rate": round(avg_eng, 4),
+                    "total_reach": int(topic_posts["reach"].sum()),
+                    "content_types": topic_posts["content_type"].value_counts().to_dict(),
+                })
+
+            # Sort by engagement
+            topics.sort(key=lambda x: x["avg_engagement_rate"], reverse=True)
+
+            # Overall topic distribution
+            overall_avg = float(df["engagement_rate"].mean())
+
+            return {
+                "status": "ok",
+                "n_topics": n_clusters,
+                "topics": topics,
+                "best_topic": topics[0] if topics else None,
+                "worst_topic": topics[-1] if topics else None,
+                "overall_avg_engagement": round(overall_avg, 4),
+            }
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    # ──────────────────────────────────────────
+    # 12. SIMILAR POST PREDICTOR
+    # ──────────────────────────────────────────
+
+    def _similar_post_predictor(self) -> Dict:
+        """
+        For each post, find the most similar past posts and predict engagement.
+        Uses cosine similarity on semantic embeddings + content type matching.
+        Shows which existing posts each new post resembles.
+        """
+        if self.embeddings is None:
+            return {"status": "no_embeddings"}
+
+        df = self.df.copy()
+        n = len(df)
+        if n < 10:
+            return {"status": "need_more_data"}
+
+        try:
+            # Compute pairwise cosine similarity
+            sim_matrix = cosine_similarity(self.embeddings)
+            np.fill_diagonal(sim_matrix, 0)  # Don't match with self
+
+            predictions = []
+            errors = []
+
+            for i in range(n):
+                # Find top 5 most similar posts
+                sim_scores = sim_matrix[i]
+                top_k = min(5, n - 1)
+                top_indices = np.argsort(sim_scores)[-top_k:][::-1]
+
+                if len(top_indices) == 0:
+                    continue
+
+                # Weighted prediction: more similar posts get more weight
+                neighbor_eng = df.iloc[top_indices]["engagement_rate"].values
+                neighbor_sims = sim_scores[top_indices]
+
+                if neighbor_sims.sum() > 0:
+                    predicted = float(np.average(neighbor_eng, weights=neighbor_sims))
+                else:
+                    predicted = float(neighbor_eng.mean())
+
+                actual = float(df.iloc[i]["engagement_rate"])
+                error = actual - predicted
+                errors.append(abs(error))
+
+                predictions.append({
+                    "post_idx": i,
+                    "actual_rate": round(actual, 4),
+                    "predicted_rate": round(predicted, 4),
+                    "error": round(error, 4),
+                    "top_similarity": round(float(sim_scores[top_indices[0]]), 3),
+                })
+
+            # Find most predictable and most surprising posts
+            predictions.sort(key=lambda x: abs(x["error"]))
+            most_predictable = predictions[:3]
+            most_surprising = predictions[-3:][::-1]
+
+            # Overall accuracy
+            mae = float(np.mean(errors)) if errors else 0
+            median_sim = float(np.median(sim_matrix[sim_matrix > 0])) if (sim_matrix > 0).any() else 0
+
+            # Recent posts: predict what to expect from similar content
+            recent_posts = []
+            df_sorted = df.sort_values("published_at", ascending=False)
+            for idx in df_sorted.index[:5]:
+                i = df.index.get_loc(idx)
+                sim_scores = sim_matrix[i]
+                top_indices = np.argsort(sim_scores)[-3:][::-1]
+                neighbor_eng = df.iloc[top_indices]["engagement_rate"].values
+                neighbor_sims = sim_scores[top_indices]
+                predicted = float(np.average(neighbor_eng, weights=neighbor_sims)) if neighbor_sims.sum() > 0 else float(neighbor_eng.mean())
+
+                title = str(df.iloc[i].get("title", ""))[:60]
+                similar_titles = [str(df.iloc[j].get("title", ""))[:40] for j in top_indices[:2]]
+
+                recent_posts.append({
+                    "title": title,
+                    "actual_rate": round(float(df.iloc[i]["engagement_rate"]), 4),
+                    "predicted_rate": round(predicted, 4),
+                    "similar_to": similar_titles,
+                    "similarity": round(float(sim_scores[top_indices[0]]), 3),
+                })
+
+            return {
+                "status": "ok",
+                "mean_absolute_error": round(mae, 4),
+                "median_similarity": round(median_sim, 3),
+                "most_predictable": most_predictable,
+                "most_surprising": most_surprising,
+                "recent_predictions": recent_posts,
+            }
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    # ──────────────────────────────────────────
+    # 13. HASHTAG CLUSTER STRATEGY
+    # ──────────────────────────────────────────
+
+    def _hashtag_cluster_strategy(self) -> Dict:
+        """
+        Clusters hashtags into semantic groups using embeddings.
+        Instead of analyzing individual hashtags, finds themes:
+        e.g., '#orthodoxy #orthodox #church' = religion cluster.
+        Tracks which clusters drive engagement.
+        """
+        if self.embeddings is None:
+            return {"status": "no_embeddings"}
+
+        df = self.df.copy()
+
+        # Extract all hashtags from all captions
+        all_hashtags = {}
+        for idx, row in df.iterrows():
+            caption = str(row.get("title", "") or "")
+            tags = re.findall(r"#(\w{2,})", caption)
+            eng_rate = float(row["engagement_rate"])
+            for tag in tags:
+                tag_lower = tag.lower()
+                if tag_lower not in all_hashtags:
+                    all_hashtags[tag_lower] = {"tag": f"#{tag_lower}", "posts": [], "engagement_rates": []}
+                all_hashtags[tag_lower]["posts"].append(idx)
+                all_hashtags[tag_lower]["engagement_rates"].append(eng_rate)
+
+        if len(all_hashtags) < 3:
+            return {"status": "insufficient_hashtags", "message": f"Only {len(all_hashtags)} unique hashtags found"}
+
+        # Embed all hashtag texts
+        hashtag_texts = [v["tag"] for v in all_hashtags.values()]
+        hashtag_keys = list(all_hashtags.keys())
+        tag_embeddings = _compute_embeddings(hashtag_texts)
+
+        if tag_embeddings is None:
+            return {"status": "embedding_failed"}
+
+        try:
+            # Cluster hashtags into semantic groups
+            n_clusters = min(max(2, len(hashtag_keys) // 3), 6)
+            km = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+            labels = km.fit_predict(tag_embeddings)
+
+            clusters = []
+            for cid in range(n_clusters):
+                cluster_mask = labels == cid
+                cluster_tags = [hashtag_keys[i] for i in range(len(hashtag_keys)) if cluster_mask[i]]
+
+                if not cluster_tags:
+                    continue
+
+                # Aggregate engagement for this cluster
+                all_eng = []
+                all_posts = set()
+                for tag in cluster_tags:
+                    info = all_hashtags[tag]
+                    all_eng.extend(info["engagement_rates"])
+                    all_posts.update(info["posts"])
+
+                avg_eng = float(np.mean(all_eng)) if all_eng else 0
+                # Name cluster by top 3 hashtags (by post count)
+                sorted_tags = sorted(cluster_tags, key=lambda t: len(all_hashtags[t]["posts"]), reverse=True)
+
+                clusters.append({
+                    "cluster_id": int(cid),
+                    "top_hashtags": [f"#{t}" for t in sorted_tags[:5]],
+                    "total_hashtags": len(cluster_tags),
+                    "total_posts": len(all_posts),
+                    "avg_engagement_rate": round(avg_eng, 4),
+                    "label": " / ".join(sorted_tags[:3]),
+                })
+
+            clusters.sort(key=lambda x: x["avg_engagement_rate"], reverse=True)
+
+            # Individual hashtag performance (top 10)
+            top_hashtags = []
+            for tag, info in all_hashtags.items():
+                if len(info["posts"]) >= 2:
+                    top_hashtags.append({
+                        "tag": f"#{tag}",
+                        "post_count": len(info["posts"]),
+                        "avg_engagement": round(float(np.mean(info["engagement_rates"])), 4),
+                    })
+            top_hashtags.sort(key=lambda x: x["avg_engagement"], reverse=True)
+
+            return {
+                "status": "ok",
+                "n_clusters": n_clusters,
+                "clusters": clusters,
+                "best_cluster": clusters[0] if clusters else None,
+                "top_individual_hashtags": top_hashtags[:10],
+                "total_unique_hashtags": len(all_hashtags),
             }
         except Exception as e:
             return {"status": "failed", "error": str(e)}
