@@ -220,4 +220,4 @@ The pipeline accumulates history: each week's data merges with previous weeks. P
 
 Internal tool for the Orthodox Korea Network (OKN) team.
 
-Built by Nikolaos Pinatsis / [CyberSystema](https://github.com/CyberSystema)
+Built by Nikolaos Pinatsis / [CyberSystema](https://cybersystema.com)
