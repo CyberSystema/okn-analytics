@@ -1,13 +1,11 @@
 name: OKN Analytics Pipeline
 
 on:
-  # Trigger when data files are pushed
   push:
     paths:
       - 'data/**/*.csv'
       - 'data/**/*.json'
 
-  # Manual trigger
   workflow_dispatch:
     inputs:
       mode:
@@ -20,8 +18,8 @@ on:
           - ingest-only
           - report-only
 
-  # Weekly schedule (every Monday 09:00 KST = 00:00 UTC)
   schedule:
+    # Every Monday 09:00 KST = 00:00 UTC
     - cron: '0 0 * * 1'
 
 permissions:
@@ -33,40 +31,57 @@ jobs:
     name: 📊 Run Analytics Pipeline
     timeout-minutes: 15
 
+    env:
+      PYTHON_VERSION: '3.11'
+      # Force sentence-transformers to use the cached hub directory
+      HF_HOME: /home/runner/.cache/huggingface
+      SENTENCE_TRANSFORMERS_HOME: /home/runner/.cache/huggingface/hub
+
     steps:
+      # ── CHECKOUT ──
       - name: ☦️ Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ── PYTHON ──
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
-      # Cache HuggingFace model (~118MB) between runs
-      - name: 🧠 Cache ML models
+      # ── CACHE: HuggingFace model (~118MB blobs) ──
+      - name: 🧠 Cache HuggingFace model
         uses: actions/cache@v4
+        id: hf-cache
         with:
-          path: ~/.cache/huggingface
-          key: huggingface-sentence-transformers-v1
+          path: /home/runner/.cache/huggingface/hub
+          key: hf-multilingual-minilm-v3-${{ runner.os }}
 
+      # ── INSTALL ──
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Prophet is optional
-          pip install prophet 2>/dev/null || echo "Prophet not available, using statistical forecasting"
+          # Prophet is optional — graceful fallback to statistical forecasting
+          pip install prophet 2>/dev/null || echo "⚠️ Prophet not available, using statistical forecasting"
 
+      # ── PRE-DOWNLOAD MODEL ──
+      # Ensures the full model (not just symlinks) is in cache
+      - name: 🧠 Verify ML model
+        run: |
+          python -c "
+          from sentence_transformers import SentenceTransformer
+          model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+          result = model.encode(['test'])
+          print(f'✅ Model ready — {result.shape[1]}d embeddings')
+          "
+
+      # ── RUN PIPELINE ──
       - name: 🔬 Run analytics pipeline
-        working-directory: ${{ github.workspace }}
-        env:
-          # Pre-download the model on first run, cached after
-          SENTENCE_TRANSFORMERS_HOME: ~/.cache/huggingface
         run: |
           MODE="${{ github.event.inputs.mode || 'full' }}"
-          
           if [ "$MODE" = "ingest-only" ]; then
             python scripts/main.py --ingest-only
           elif [ "$MODE" = "report-only" ]; then
@@ -75,14 +90,14 @@ jobs:
             python scripts/main.py
           fi
 
+      # ── COMMIT RESULTS ──
       - name: 📤 Commit and push reports
         run: |
           git config user.name "OKN Analytics Bot"
           git config user.email "analytics@orthodoxkorea.org"
-          
-          git add reports/ || true
-          git add history/ || true
-          
+
+          git add reports/ history/ || true
+
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -95,40 +110,42 @@ jobs:
           except:
               print('?')
           " 2>/dev/null || echo "?")
-            
+
             git commit -m "📊 Analytics report — ${TIMESTAMP} (${POST_COUNT} posts)"
             git push
             echo "✅ Reports committed and pushed"
           fi
 
+      # ── DEPLOY ──
       - name: 🚀 Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy reports/ --project-name=okn-analytics
+          command: pages deploy reports/ --project-name=okn-analytics --commit-dirty=true
 
+      # ── SUMMARY ──
       - name: 📋 Pipeline summary
         if: always()
         run: |
           echo "## 📊 OKN Analytics Pipeline Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f "reports/latest_summary.json" ]; then
             python -c "
           import json
           with open('reports/latest_summary.json') as f:
               data = json.load(f)
-          
+
           meta = data.get('meta', {})
           health = data.get('health', {})
           recs = data.get('recommendations', [])
-          
+
           print(f'**Total Posts:** {meta.get(\"total_posts\", \"N/A\")}')
           print(f'**Platforms:** {\", \".join(meta.get(\"platforms\", []))}')
           print(f'**Health:** {health.get(\"emoji\", \"\")} {health.get(\"status\", \"unknown\").replace(\"_\", \" \").title()}')
           print()
-          
+
           if recs:
               print('### 💡 Top Recommendations')
               print()
@@ -137,5 +154,5 @@ jobs:
                   print(f'- {icon} {r[\"message\"]}')
           " >> $GITHUB_STEP_SUMMARY
           else
-            echo "No report generated — check pipeline logs" >> $GITHUB_STEP_SUMMARY
+            echo "No summary file found — check pipeline logs" >> $GITHUB_STEP_SUMMARY
           fi

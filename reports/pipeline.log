@@ -3897,11 +3897,16 @@ HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-tran
    🔴 Viral content on Instagram is: short_video. Create more content in these formats.
 ============================================================
 ☦️  OKN ANALYTICS PIPELINE
+<<<<<<< Updated upstream
    Started: 2026-03-19 00:00:09
+=======
+   Started: 2026-03-19 01:56:24
+>>>>>>> Stashed changes
 ============================================================
 
 📥 STEP 1: Data Ingestion
 ----------------------------------------
+<<<<<<< Updated upstream
 📥 Ingesting instagram data from /home/runner/work/okn-analytics/okn-analytics/data/instagram
    ✅ instagram: 124 posts ingested
 📥 Ingesting youtube data from /home/runner/work/okn-analytics/okn-analytics/data/youtube
@@ -3909,18 +3914,35 @@ HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-tran
 📥 Ingesting facebook data from /home/runner/work/okn-analytics/okn-analytics/data/facebook
    ⚠️  facebook: No new data found
 📥 Ingesting tiktok data from /home/runner/work/okn-analytics/okn-analytics/data/tiktok
+=======
+📥 Ingesting instagram data from /Users/leontgmusic/Documents/okn-analytics/data/instagram
+   ✅ instagram: 124 posts ingested
+📥 Ingesting youtube data from /Users/leontgmusic/Documents/okn-analytics/data/youtube
+   ⚠️  youtube: No new data found
+📥 Ingesting facebook data from /Users/leontgmusic/Documents/okn-analytics/data/facebook
+   ⚠️  facebook: No new data found
+📥 Ingesting tiktok data from /Users/leontgmusic/Documents/okn-analytics/data/tiktok
+>>>>>>> Stashed changes
    📄 TikTok Content: 15 videos found
    ✅ tiktok: 15 posts ingested
 📂 Loaded 139 historical records (parquet)
    Merged: 139 older records updated with fresh metrics
+<<<<<<< Updated upstream
 💾 History saved: 139 records → /home/runner/work/okn-analytics/okn-analytics/history/unified_history.parquet
+=======
+💾 History saved: 139 records → /Users/leontgmusic/Documents/okn-analytics/history/unified_history.parquet
+>>>>>>> Stashed changes
 📊 Total unified dataset: 139 posts across 2 platforms
 
 ✅ Dataset: 139 posts across 2 platforms
 
 📥 STEP 1b: Account-Level Data
 ----------------------------------------
+<<<<<<< Updated upstream
    📈 Found Instagram account data: interactions.csv, audience.csv, reach.csv, views.csv, follows.csv, visits.csv
+=======
+   📈 Found Instagram account data: interactions.csv, views.csv, reach.csv, follows.csv, audience.csv, visits.csv
+>>>>>>> Stashed changes
    📈 follows: 309 days loaded
    📈 interactions: 366 days loaded
    📈 link_clicks: 366 days loaded
@@ -3928,7 +3950,11 @@ HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-tran
    📈 views: 366 days loaded
    📈 visits: 366 days loaded
    💾 Account daily (instagram): merged → 366 days
+<<<<<<< Updated upstream
    📈 Found TikTok account data: followeractivity.csv, followergender.csv, viewers.csv, overview.csv, followertopterritories.csv, followerhistory.csv
+=======
+   📈 Found TikTok account data: followerhistory.csv, followergender.csv, followeractivity.csv, overview.csv, viewers.csv, followertopterritories.csv
+>>>>>>> Stashed changes
    📈 TikTok Overview: 71 days
    📈 TikTok Viewers: 365 days
    📈 TikTok Followers: 71 days (10 → 3,117)
@@ -3972,6 +3998,7 @@ Chain [1] start processing
 Chain [1] done processing
    🧠 ML & Neural Network analysis...
       Loading multilingual embedding model...
+<<<<<<< Updated upstream
 Use pytorch device_name: cpu
 Load pretrained SentenceTransformer: paraphrase-multilingual-MiniLM-L12-v2
 HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
@@ -3994,11 +4021,54 @@ HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multi
 HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
 HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config.json "HTTP/1.1 200 OK"
       tiktok ML failed: [Errno 2] No such file or directory: '../../blobs/c06d5b49495f044e6380e68a60538be17a6bd5d1' -> '/home/runner/.cache/huggingface/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/snapshots/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config.json'
+=======
+Use pytorch device_name: mps
+Load pretrained SentenceTransformer: paraphrase-multilingual-MiniLM-L12-v2
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/modules.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config_sentence_transformers.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config_sentence_transformers.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/README.md "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/modules.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/sentence_bert_config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/tokenizer_config.json "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/tokenizer_config.json "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 "HTTP/1.1 200 OK"
+HTTP Request: HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/e8f8c211226b894fcb81acc59f3b34ba3efd5f42/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 "HTTP/1.1 200 OK"
+      Embeddings: 384d vectors for 124 captions
+      Added 10 semantic features (65% variance captured)
+   🧠 ML Engine (instagram): 124 posts
+      stopwordsiso not installed — using built-in stop words
+      instagram: NN R²=-6.0181, features=8, clusters=3
+      Embeddings: 384d vectors for 15 captions
+      Added 3 semantic features (67% variance captured)
+   🧠 ML Engine (tiktok): 15 posts
+      stopwordsiso not installed — using built-in stop words
+      tiktok: NN R²=-5.1121, features=5, clusters=3
+>>>>>>> Stashed changes
 
 📝 STEP 4: Report Generation
 ----------------------------------------
 📝 Generating report...
    📊 Generating charts...
+<<<<<<< Updated upstream
 📄 Report saved: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
    ✅ HTML Report: /home/runner/work/okn-analytics/okn-analytics/reports/weekly_report.html
    📄 Full results: /home/runner/work/okn-analytics/okn-analytics/reports/full_results.json
@@ -4006,6 +4076,15 @@ HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-tran
 ============================================================
 ✅ PIPELINE COMPLETE
    Finished: 2026-03-19 00:00:18
+=======
+📄 Report saved: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   ✅ HTML Report: /Users/leontgmusic/Documents/okn-analytics/reports/weekly_report.html
+   📄 Full results: /Users/leontgmusic/Documents/okn-analytics/reports/full_results.json
+
+============================================================
+✅ PIPELINE COMPLETE
+   Finished: 2026-03-19 01:56:34
+>>>>>>> Stashed changes
    Posts analyzed: 139
    Platforms: instagram, tiktok
    Report: reports/weekly_report.html
