@@ -1,6 +1,10 @@
 <div align="center">
 
-# ☦️ OKN Social Media Analytics Pipeline
+<img src="assets/okn_logo.png" alt="OKN" width="140" style="border-radius:50%">
+
+<br>
+
+# OKN Social Media Analytics Pipeline
 
 **Automated social media intelligence for the Orthodox Korea Network**
 
@@ -289,7 +293,11 @@ Monday:
 
 **Built by Nikolaos Pinatsis**
 
-[![CyberSystema](https://img.shields.io/badge/CyberSystema-cybersystema.com-00d4ff?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHJ4PSI0IiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iMyIgeT0iMTUiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjMDBkNGZmIj5DUzwvdGV4dD48L3N2Zz4=)](https://cybersystema.com)
+<a href="https://cybersystema.com" target="_blank">
+<img src="assets/cybersystema_logo.png" alt="CyberSystema" width="80">
+</a>
+
+[![CyberSystema](https://img.shields.io/badge/cybersystema.com-00d4ff?style=for-the-badge)](https://cybersystema.com)
 [![GitHub](https://img.shields.io/badge/GitHub-CyberSystema-181717?style=for-the-badge&logo=github)](https://github.com/CyberSystema)
 
 *Social media intelligence & data engineering*
