@@ -294,28 +294,35 @@ class ReportGenerator:
         now=datetime.now(); recs=self.analysis.get("recommendations",[])
         health=self.forecast.get("health",{}); meta=self.analysis.get("meta",{})
 
-        # Load OKN logo
+        # Load OKN logo (assets/ primary, reports/ fallback)
         logo_html = ""
-        for logo_name in ["okn_logo.png", "OKN_bg.png", "logo.png"]:
-            logo_path = REPORTS_DIR / logo_name
-            if logo_path.exists():
-                import base64 as b64mod
-                with open(logo_path, "rb") as f:
-                    logo_b64 = b64mod.b64encode(f.read()).decode("utf-8")
-                logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" alt="OKN">'
+        ASSETS_DIR = REPORTS_DIR.parent / "assets"
+        for search_dir in [ASSETS_DIR, REPORTS_DIR]:
+            for logo_name in ["okn_logo.png", "OKN_bg.png", "logo.png"]:
+                logo_path = search_dir / logo_name
+                if logo_path.exists():
+                    import base64 as b64mod
+                    with open(logo_path, "rb") as f:
+                        logo_b64 = b64mod.b64encode(f.read()).decode("utf-8")
+                    logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo" alt="OKN">'
+                    break
+            if logo_html:
                 break
 
-        # Load CyberSystema logo
+        # Load CyberSystema logo (assets/ primary, reports/ fallback)
         cs_logo_html = ""
         cs_logo_small = ""
-        for cs_name in ["cybersystema_logo.png", "cybersystema-logo-2x.png"]:
-            cs_path = REPORTS_DIR / cs_name
-            if cs_path.exists():
-                import base64 as b64mod
-                with open(cs_path, "rb") as f:
-                    cs_b64 = b64mod.b64encode(f.read()).decode("utf-8")
-                cs_logo_html = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo" alt="CyberSystema">'
-                cs_logo_small = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo-sm" alt="CS">'
+        for search_dir in [ASSETS_DIR, REPORTS_DIR]:
+            for cs_name in ["cybersystema_logo.png", "cybersystema-logo-2x.png"]:
+                cs_path = search_dir / cs_name
+                if cs_path.exists():
+                    import base64 as b64mod
+                    with open(cs_path, "rb") as f:
+                        cs_b64 = b64mod.b64encode(f.read()).decode("utf-8")
+                    cs_logo_html = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo" alt="CyberSystema">'
+                    cs_logo_small = f'<img src="data:image/png;base64,{cs_b64}" class="cs-logo-sm" alt="CS">'
+                    break
+            if cs_logo_html:
                 break
 
         platform_html = ""
@@ -376,7 +383,7 @@ a{{color:{BRANDING['primary_color']};text-decoration:none}}a:hover{{text-decorat
 {f'<div class="header-logo-wrap">{logo_html}</div>' if logo_html else ''}
 <h1>{BRANDING['report_title']}</h1>
 <div class="header-divider"></div>
-<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} by <a href="https://cybersystema.com" target="_blank" style="color:rgba(255,255,255,0.85);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4)">CyberSystema</a> &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
+<div class="sub">Generated: {now.strftime('%B %d, %Y at %H:%M')} KST by <a href="https://cybersystema.com" target="_blank" style="color:rgba(255,255,255,0.85);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4)">CyberSystema</a> &nbsp;•&nbsp; Data through: {meta.get('date_range',{}).get('latest','N/A')[:10]} &nbsp;•&nbsp; {meta.get('total_posts',0)} posts across {len(meta.get('platforms',[]))} platforms</div>
 <div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
 <div class="header-meta">Active since December 2025 &nbsp;•&nbsp; TikTok since January 6, 2026 &nbsp;•&nbsp; All times in KST</div>
 <div class="powered-badge">Powered by <a href="https://cybersystema.com" target="_blank">{cs_logo_small} CyberSystema</a></div>
