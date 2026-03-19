@@ -1,80 +1,53 @@
 <div align="center">
 
-<img src="assets/okn_logo.png" alt="OKN" width="140" style="border-radius:50%">
+<img src="assets/okn_logo.png" alt="OKN" width="140">
 
 <br>
 
-# OKN Social Media Analytics Pipeline
+# OKN Analytics
 
-**Automated social media intelligence for the Orthodox Korea Network**
+**Social media intelligence for the Orthodox Korea Network**
 
-[![Live Report](https://img.shields.io/badge/📊_Live_Report-okn--analytics.pages.dev-1a3a5c?style=for-the-badge)](https://okn-analytics.pages.dev)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![ML Models](https://img.shields.io/badge/ML_Models-14-c4953a?style=for-the-badge)](https://github.com/CyberSystema/okn-analytics)
-[![Platforms](https://img.shields.io/badge/Platforms-Instagram_•_TikTok-E4405F?style=for-the-badge)](https://github.com/CyberSystema/okn-analytics)
-
-A Python-based pipeline that processes weekly CSV exports, runs **14 ML & neural network models** (including multilingual semantic AI for English, Korean & Greek), and generates a comprehensive HTML intelligence report — deployed automatically via GitHub Actions to Cloudflare Pages.
-
-<br>
-
-**No APIs. No OAuth. No rate limits. Just data in, insights out.**
+[![Live Report](https://img.shields.io/badge/📊_Live_Report-okn--analytics.pages.dev-1a3a5c?style=flat-square)](https://okn-analytics.pages.dev)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![ML Models](https://img.shields.io/badge/ML_Models-14-c4953a?style=flat-square)](https://github.com/CyberSystema/okn-analytics)
 
 </div>
 
-<br>
+---
 
-## 🔄 How It Works
+A Python pipeline that processes weekly CSV exports from **Instagram** and **TikTok**, runs **14 ML models** (including multilingual semantic AI for English, Korean & Greek), and generates a comprehensive HTML intelligence report — deployed automatically via GitHub Actions to Cloudflare Pages.
 
-```
-  ┌─────────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────────┐
-  │  📥 Export   │────▶│  📤 Push  │────▶│  ⚙️ GitHub   │────▶│  🧠 14   │────▶│  📊 Report   │
-  │  CSV files   │     │  to repo  │     │   Actions    │     │ ML Models│     │  on CF Pages │
-  └─────────────┘     └──────────┘     └──────────────┘     └──────────┘     └──────────────┘
-  Meta Business Suite    git push        Runs automatically    Semantic AI       okn-analytics
-  TikTok Studio                          on every push         Neural Networks   .pages.dev
-```
+No APIs. No OAuth. No rate limits. Just data in, insights out.
 
-<br>
+## Features
 
-## ✨ Features
+- **Executive Summary** — plain-language weekly overview anyone on the team can read
+- **Per-platform analysis** — Instagram and TikTok tracked separately with correct methodologies
+- **14 ML & AI models** — from neural networks to multilingual semantic embeddings
+- **Recency-weighted** — recent data matters more, older data fades out automatically
+- **Trilingual NLP** — caption analysis across English, Korean (한국어) and Greek (Ελληνικά)
+- **Historical tracking** — data accumulates weekly, models improve over time
+- **Fully automated** — push CSVs → GitHub Actions → report deployed to Cloudflare Pages
 
-### 📋 Executive Summary
-> Every report opens with a **plain-language weekly summary** — no data science required. Perfect for the whole team.
-
-| Section | What it tells you |
-|---|---|
-| 🟢🟡🔴 **Health Pulse** | One sentence — "Things are great!" or "We need to adjust" |
-| 📊 **Key Numbers** | Total reach, interactions, followers gained, week-over-week |
-| ✅ **What's Working** | Best content types, best posting times, viral hits |
-| ⚠️ **What Needs Attention** | Declining reach, content fatigue, low comments |
-| 🎯 **This Week's Actions** | 3–4 specific things anyone on the team can do right now |
-
-### 📈 Analysis Engine
-- **Recency-weighted** — last 90 days get full weight, older data fades out
-- **Per-platform** sections — Instagram and TikTok never blended (different methodologies)
-- **Temporal patterns** — best hours and days to post in KST
-- **Growth trajectory** — reach, engagement, follower trend detection
-- **Anomaly detection** — viral hits and underperformers flagged automatically
-- **Cross-platform comparison** — with methodology disclaimers
-
-### 🧠 14 ML & Neural Network Models
+## ML Models
 
 <details>
-<summary><strong>Core Models (1–10)</strong> — run on all data</summary>
+<summary><strong>Core Models (1–10)</strong></summary>
 <br>
 
-| # | Model | Algorithm | What it does |
-|:---:|---|---|---|
-| 1 | **Feature Importance** | GradientBoosting | Ranks what drives engagement |
-| 2 | **Engagement Predictor** | MLP Neural Network (32→16→8) | Predicts engagement for new posts |
-| 3 | **Content Clusters** | KMeans | Groups posts: Top / Average / Low |
-| 4 | **Anomaly Detection** | IsolationForest | Finds statistically unusual posts |
-| 5 | **Caption NLP** | TF-IDF + stopwordsiso | Words correlated with engagement |
-| 6 | **Engagement Drivers** | Statistical correlation | Caption length, hashtags, emoji, etc. |
-| 7 | **Content Fatigue** | Weighted linear regression | Detects declining engagement per type |
-| 8 | **Optimal Cadence** | Cadence analysis | Finds ideal posts/week |
-| 9 | **Momentum Score** | Composite 0–100 | Forward-looking health metric |
-| 10 | **Root Cause Analysis** | Feature attribution | Explains WHY posts went viral or flopped |
+| # | Model | Purpose |
+|:---:|---|---|
+| 1 | Feature Importance | Ranks what drives engagement |
+| 2 | Neural Network Predictor | MLP (32→16→8) predicts engagement |
+| 3 | Content Clustering | Groups posts into performance tiers |
+| 4 | Anomaly Detection | Finds viral hits and flops |
+| 5 | Caption NLP | Words/hashtags correlated with engagement |
+| 6 | Engagement Drivers | Caption length, emoji, multilingual, timing |
+| 7 | Content Fatigue | Detects declining engagement per content type |
+| 8 | Optimal Cadence | Finds ideal posts/week |
+| 9 | Momentum Score | Forward-looking health metric (0–100) |
+| 10 | Root Cause Analysis | Explains WHY posts performed the way they did |
 
 </details>
 
@@ -82,132 +55,82 @@ A Python-based pipeline that processes weekly CSV exports, runs **14 ML & neural
 <summary><strong>Semantic AI Models (11–14)</strong> — powered by multilingual embeddings</summary>
 <br>
 
-> Uses `paraphrase-multilingual-MiniLM-L12-v2` — 384-dimensional vectors that understand **English, Korean, and Greek** simultaneously. Loaded once, shared across all 4 models.
+Uses `paraphrase-multilingual-MiniLM-L12-v2` — understands English, Korean and Greek simultaneously.
 
-| # | Model | What it does |
+| # | Model | Purpose |
 |:---:|---|---|
-| 11 | **Topic Discovery** | Clusters posts by *meaning* — finds themes like "feast days", "youth camp", "liturgy" |
-| 12 | **Similar Post Predictor** | Finds the 5 most similar past posts and predicts expected engagement |
-| 13 | **Hashtag Cluster Strategy** | Groups hashtags into semantic themes, tracks which clusters drive engagement |
-| 14 | **Semantic Features** | PCA-reduced caption embeddings fed into GradientBoosting as features |
+| 11 | Topic Discovery | Clusters posts by meaning across all three languages |
+| 12 | Similar Post Predictor | Predicts engagement based on similar past posts |
+| 13 | Hashtag Cluster Strategy | Groups hashtags into semantic themes |
+| 14 | Semantic Features | Caption embeddings as ML features for better predictions |
 
-These models gracefully skip if `sentence-transformers` is not installed.
+Gracefully skips if `sentence-transformers` is not installed.
 
 </details>
 
-### 🌐 Multilingual Intelligence
-
-The pipeline natively handles three languages across all analysis:
-
-| | English | Korean (한국어) | Greek (Ελληνικά) |
-|---|:---:|:---:|:---:|
-| Caption analysis | ✅ | ✅ | ✅ |
-| Stop words (2,824) | ✅ | ✅ | ✅ with accent stripping |
-| Semantic embeddings | ✅ | ✅ | ✅ |
-| Topic discovery | ✅ | ✅ | ✅ |
-| Hashtag clustering | ✅ | ✅ | ✅ |
-
-### 🎨 Report Design
-- Self-contained HTML with embedded charts and logos
-- **OKN logo** in header with gold gradient ring
-- **CyberSystema branding** — header badge, chart watermarks, built-by card, footer
-- Per-platform color-coded sections
-- All links open to [cybersystema.com](https://cybersystema.com)
-
-<br>
-
-## 📁 Repository Structure
-
-```
-okn-analytics/
-│
-├── 📂 data/
-│   ├── 📸 instagram/            ← Meta Business Suite exports
-│   │   ├── content.csv          ← Weekly content (renamed)
-│   │   ├── Follows.csv
-│   │   ├── Interactions.csv
-│   │   ├── Link clicks.csv
-│   │   ├── Reach.csv
-│   │   ├── Views.csv
-│   │   ├── Visits.csv
-│   │   └── Audience.csv
-│   └── 🎵 tiktok/              ← TikTok Studio exports
-│       ├── Content.csv
-│       ├── Overview.csv
-│       ├── Viewers.csv
-│       ├── FollowerHistory.csv
-│       ├── FollowerActivity.csv
-│       ├── FollowerGender.csv
-│       └── FollowerTopTerritories.csv
-│
-├── 📂 scripts/
-│   ├── main.py                  ← Pipeline orchestrator
-│   ├── config.py                ← Configuration & branding
-│   ├── ingest.py                ← Instagram data normalization
-│   ├── ingest_tiktok.py         ← TikTok + Greek date parser
-│   ├── ingest_account.py        ← Account daily metrics
-│   ├── analyze.py               ← Core analysis (8 modules)
-│   ├── report.py                ← HTML report + executive summary
-│   └── 📂 models/
-│       ├── ml_engine.py         ← 14 ML models
-│       ├── timing.py            ← Posting time optimization
-│       ├── scoring.py           ← Content scoring
-│       └── forecast.py          ← Growth forecasting
-│
-├── 📂 history/                  ← Auto-managed (grows weekly)
-├── 📂 reports/                  ← Generated output + logos
-├── 📂 .github/workflows/       ← CI/CD pipeline
-└── requirements.txt
-```
-
-<br>
-
-## 📥 Data Export Guides
-
-### 📸 Instagram (Meta Business Suite)
-
-> Exports are in **PST (America/Los_Angeles)** — the pipeline converts to KST automatically.
-
-1. Go to **Meta Business Suite** → Insights → Content
-2. Click **Export Data** → select date range → CSV format
-3. **Rename the file to `content.csv`** and place in `data/instagram/`
-4. Also export account files: Follows, Reach, Views, Visits, Interactions, Audience
-
-### 🎵 TikTok (TikTok Studio)
-
-> Exports use **Greek month names** (e.g., "15 Μαρτίου") — parsed automatically.
-
-1. Go to **TikTok Studio** → Analytics
-2. Export all available sections as CSV
-3. Place in `data/tiktok/`
-
-<br>
-
-## 🚀 Setup
+## Quick Start
 
 ```bash
-# Clone
 git clone https://github.com/CyberSystema/okn-analytics.git
 cd okn-analytics
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run
 python scripts/main.py
 ```
 
 ### Dependencies
 
-| Package | Purpose | Required? |
+| Package | Purpose | Required |
 |---|---|:---:|
-| pandas, numpy | Data processing | ✅ |
-| scikit-learn | ML models (1–10) | ✅ |
-| matplotlib, seaborn | Charts | ✅ |
-| stopwordsiso | Multilingual stop words | ✅ |
-| pyarrow | Parquet history storage | ✅ |
-| sentence-transformers | Semantic AI models (11–14) | Optional |
+| pandas, numpy, pyarrow | Data processing & history | ✅ |
+| scikit-learn | ML models 1–10 | ✅ |
+| matplotlib, stopwordsiso | Charts & trilingual NLP | ✅ |
+| sentence-transformers | Semantic AI models 11–14 | Optional |
 | prophet | Time series forecasting | Optional |
+
+## Weekly Workflow
+
+1. Export CSVs from **Meta Business Suite** (Instagram) and **TikTok Studio**
+2. Rename Instagram content export to `content.csv`
+3. Drop files in `data/instagram/` and `data/tiktok/`
+4. `git add . && git commit -m "Week N data" && git push`
+5. Report appears at [okn-analytics.pages.dev](https://okn-analytics.pages.dev) in ~2 minutes
+
+The pipeline accumulates history — each week's data merges with all previous weeks and ML models improve as data grows.
+
+## Project Structure
+
+```
+okn-analytics/
+├── data/
+│   ├── instagram/          ← Meta Business Suite CSV exports
+│   └── tiktok/             ← TikTok Studio CSV exports
+├── scripts/
+│   ├── main.py             ← Pipeline orchestrator
+│   ├── config.py           ← Configuration & branding
+│   ├── ingest.py           ← Instagram data normalization
+│   ├── ingest_tiktok.py    ← TikTok ingestion + Greek date parsing
+│   ├── ingest_account.py   ← Account-level daily metrics
+│   ├── analyze.py          ← Core analysis engine
+│   ├── report.py           ← HTML report + executive summary
+│   └── models/
+│       ├── ml_engine.py    ← 14 ML models
+│       ├── timing.py       ← Posting time optimization
+│       ├── scoring.py      ← Content scoring
+│       └── forecast.py     ← Growth forecasting
+├── history/                ← Auto-managed (grows weekly)
+├── reports/                ← Generated output
+├── assets/                 ← Logos
+└── .github/workflows/      ← CI/CD pipeline
+```
+
+## Configuration
+
+All settings in `scripts/config.py`:
+
+- **Timezone** — All times in KST. Instagram exports (PST) auto-converted.
+- **Recency weights** — Last 90 days = full weight, 90–180 days = 0.3, older = 0.1
+- **Branding** — OKN colors, logos, CyberSystema attribution
+- **Thresholds** — Engagement benchmarks, viral multiplier, posting cadence targets
 
 ### GitHub Actions Secrets
 
@@ -216,90 +139,20 @@ python scripts/main.py
 | `CLOUDFLARE_API_TOKEN` | Cloudflare Pages deploy token |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
 
-<br>
+## License
 
-## ⚙️ GitHub Actions Pipeline
-
-Runs automatically on every push to `data/`, weekly on Mondays, or manually.
-
-```
-☦️ Checkout  →  🐍 Python 3.11  →  🧠 Cache ML Model  →  📦 Install
-                                          ↓
-📋 Summary  ←  🚀 Deploy CF Pages  ←  📤 Commit  ←  🔬 Run Pipeline
-```
-
-| Step | What happens | Time |
-|---|---|---|
-| 🧠 Cache | HuggingFace model (118MB) cached between runs | ~3s (after first run) |
-| 📦 Install | All pip packages from cache | ~30s |
-| 🧠 Verify | Pre-downloads + tests embedding model | ~5s (cached) |
-| 🔬 Pipeline | Ingest → Analyze → 14 ML models → Report | ~10s |
-| 🚀 Deploy | Cloudflare Pages deployment | ~15s |
-
-**First run:** ~5 minutes (downloads PyTorch + model). **Every run after:** ~2 minutes.
-
-<br>
-
-## 🔧 Configuration
-
-Edit `scripts/config.py`:
-
-| Setting | Default | Description |
-|---|---|---|
-| `TIMELINE["active_since"]` | December 2025 | When OKN social media became consistent |
-| `TIMELINE["platform_start"]["tiktok"]` | January 6, 2026 | TikTok account creation |
-| `TIMELINE["recency_weights"]` | 90/180 days | How much weight recent vs old data gets |
-| `TIMEZONE` | Asia/Seoul | All times displayed in KST |
-| `BRANDING` | OKN colors | Navy, Byzantine gold, deep red |
-
-<br>
-
-## 📅 Weekly Workflow
-
-```
-Monday:
-  1. Export CSV from Meta Business Suite (last 60 days is enough)
-  2. Rename content export → content.csv
-  3. Export account files (Follows, Views, etc.)
-  4. Export TikTok CSVs
-  5. git add . && git commit -m "Week N data" && git push
-  6. ☕ Wait ~2 minutes
-  7. Report live at okn-analytics.pages.dev
-```
-
-> 💡 The pipeline **accumulates history** — each week's data merges with all previous weeks. Post metrics update to latest values. ML models improve as data grows.
-
-<br>
-
-## 📝 Technical Notes
-
-| Topic | Detail |
-|---|---|
-| Instagram engagement rate | interactions ÷ reach |
-| TikTok engagement rate | interactions ÷ views (different denominator) |
-| Export timezone | PST (America/Los_Angeles) → auto-converted to KST |
-| Greek stop words | Unicode accent stripping (NFKD normalization) for τής → της matching |
-| Stop words total | 2,824 across English, Greek, Korean via `stopwordsiso` |
-| Semantic model | `paraphrase-multilingual-MiniLM-L12-v2` (384d, 50+ languages) |
-| Chart rendering | DejaVu Sans — Korean Hangul filtered for compatibility |
-| History format | Parquet (CSV fallback if pyarrow unavailable) |
-| ML weighting | All models use recency-weighted `sample_weight` |
-
-<br>
+Internal tool for the Orthodox Korea Network.
 
 ---
 
 <div align="center">
 
-**Built by Nikolaos Pinatsis**
-
-<a href="https://cybersystema.com" target="_blank">
-<img src="assets/cybersystema_logo.png" alt="CyberSystema" width="80">
+<a href="https://cybersystema.com">
+<img src="assets/cybersystema_logo.png" alt="CyberSystema" width="60">
 </a>
 
-[![CyberSystema](https://img.shields.io/badge/cybersystema.com-00d4ff?style=for-the-badge)](https://cybersystema.com)
-[![GitHub](https://img.shields.io/badge/GitHub-CyberSystema-181717?style=for-the-badge&logo=github)](https://github.com/CyberSystema)
+<br>
 
-*Social media intelligence & data engineering*
+Built by [Nikolaos Pinatsis](https://github.com/CyberSystema) · [cybersystema.com](https://cybersystema.com)
 
 </div>
