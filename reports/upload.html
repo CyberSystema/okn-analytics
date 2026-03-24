@@ -208,15 +208,21 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 
 <script>
 /* ═══════════════════════════════════════
-   FILE DETECTION RULES
+   FILE DETECTION RULES — SCORE-BASED
    ═══════════════════════════════════════
 
-   Each rule has:
-   - targetName: what the file gets renamed to
-   - platform: which platform it belongs to
-   - detectByHeaders: function(headers, firstRows) → true/false
-   - detectByFilename: function(filename) → true/false
-   - label: friendly display name
+   Every rule defines scoring functions that return a confidence number.
+   For each file, ALL rules are evaluated. Highest total score wins.
+   No order dependency. No first-match fragility.
+
+   Scoring guideline:
+     Unique header (only this file has it):  20
+     Specific header combination:            10
+     Generic header (e.g. "date"):            2
+     Row content keyword:                     5
+     Exact filename match:                   15
+     Filename contains keyword:               8
+     Filename contains partial keyword:       4
 */
 
 const DETECT_RULES = [
@@ -225,57 +231,57 @@ const DETECT_RULES = [
     targetName: 'content.csv',
     platform: 'instagram',
     label: 'Content Export',
-    detectByHeaders: (h) => hasAll(h, ['post id', 'publish time']),
-    detectByFilename: (f) => /^\w{3}-\d{1,2}-\d{4}_\w{3}-\d{1,2}-\d{4}_\d+\.csv$/i.test(f) || eq(f, 'content.csv'),
+    scoreHeaders: (h) => (has(h,'post id') ? 20 : 0) + (has(h,'publish time') ? 20 : 0),
+    scoreFilename: (f) => /^\w{3}-\d{1,2}-\d{4}_\w{3}-\d{1,2}-\d{4}_\d+\.csv$/i.test(f) ? 15 : (eq(f,'content.csv') ? 12 : 0),
   },
   {
     targetName: 'Follows.csv',
     platform: 'instagram',
     label: 'Follows',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'follow'),
-    detectByFilename: (f) => inc(f, 'follow') && !inc(f, 'follower'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (rowHas(rows,'follows') && !rowHas(rows,'follower') ? 10 : 0),
+    scoreFilename: (f) => eq(f,'follows.csv') ? 15 : (inc(f,'follow') && !inc(f,'follower') ? 8 : 0),
   },
   {
     targetName: 'Interactions.csv',
     platform: 'instagram',
     label: 'Interactions',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'interaction'),
-    detectByFilename: (f) => inc(f, 'interaction'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (rowHas(rows,'interaction') ? 10 : 0),
+    scoreFilename: (f) => eq(f,'interactions.csv') ? 15 : (inc(f,'interaction') ? 8 : 0),
   },
   {
     targetName: 'Link clicks.csv',
     platform: 'instagram',
     label: 'Link Clicks',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'link'),
-    detectByFilename: (f) => inc(f, 'link') && inc(f, 'click'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (rowHas(rows,'link click') ? 10 : (rowHas(rows,'link') ? 5 : 0)),
+    scoreFilename: (f) => eq(f,'link clicks.csv') ? 15 : (inc(f,'link') && inc(f,'click') ? 10 : (inc(f,'link_click') || inc(f,'linkclick') ? 8 : 0)),
   },
   {
     targetName: 'Reach.csv',
     platform: 'instagram',
     label: 'Reach',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'reach'),
-    detectByFilename: (f) => inc(f, 'reach'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (has(h,'reach') ? 15 : (rowHas(rows,'reach') ? 8 : 0)),
+    scoreFilename: (f) => eq(f,'reach.csv') ? 15 : (inc(f,'reach') ? 8 : 0),
   },
   {
     targetName: 'Views.csv',
     platform: 'instagram',
     label: 'Views',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'view') && !containsText(rows, 'video'),
-    detectByFilename: (f) => eq(f, 'views.csv'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (has(h,'views') && !has(h,'video views') ? 12 : (rowHas(rows,'views') && !rowHas(rows,'video view') ? 5 : 0)),
+    scoreFilename: (f) => eq(f,'views.csv') ? 15 : 0,
   },
   {
     targetName: 'Visits.csv',
     platform: 'instagram',
     label: 'Visits',
-    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'visit'),
-    detectByFilename: (f) => inc(f, 'visit'),
+    scoreHeaders: (h, rows) => (has(h,'date') ? 2 : 0) + (has(h,'visits') ? 15 : (rowHas(rows,'visit') ? 8 : 0)),
+    scoreFilename: (f) => eq(f,'visits.csv') ? 15 : (inc(f,'visit') ? 8 : 0),
   },
   {
     targetName: 'Audience.csv',
     platform: 'instagram',
     label: 'Audience',
-    detectByHeaders: (h) => hasAll(h, ['country']) || hasAll(h, ['age']),
-    detectByFilename: (f) => inc(f, 'audience'),
+    scoreHeaders: (h) => (has(h,'country') ? 20 : 0) + (has(h,'age') ? 15 : 0) + (has(h,'city') ? 10 : 0),
+    scoreFilename: (f) => eq(f,'audience.csv') ? 15 : (inc(f,'audience') ? 8 : 0),
   },
 
   // ── TIKTOK ──
@@ -283,59 +289,90 @@ const DETECT_RULES = [
     targetName: 'Content.csv',
     platform: 'tiktok',
     label: 'Content',
-    detectByHeaders: (h) => hasAll(h, ['video title']) || (hasAny(h, ['total views', 'total likes']) && hasAny(h, ['video link', 'post time'])),
-    detectByFilename: (f) => eq(f, 'content.csv'),
+    scoreHeaders: (h) => (has(h,'video title') ? 20 : 0) + (has(h,'total views') ? 15 : 0) + (has(h,'total likes') ? 10 : 0) + (has(h,'video link') ? 10 : 0) + (has(h,'post time') ? 10 : 0),
+    scoreFilename: (f) => eq(f,'content.csv') ? 10 : 0,
   },
   {
     targetName: 'Overview.csv',
     platform: 'tiktok',
     label: 'Overview',
-    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['video views', 'profile views']),
-    detectByFilename: (f) => inc(f, 'overview'),
+    scoreHeaders: (h) => (has(h,'date') ? 2 : 0) + (has(h,'video views') ? 20 : 0) + (has(h,'profile views') ? 15 : 0) + (has(h,'likes') ? 5 : 0),
+    scoreFilename: (f) => eq(f,'overview.csv') ? 15 : (inc(f,'overview') ? 8 : 0),
   },
   {
     targetName: 'Viewers.csv',
     platform: 'tiktok',
     label: 'Viewers',
-    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['viewer', 'views']) && !hasAny(h, ['video views']),
-    detectByFilename: (f) => inc(f, 'viewer'),
-  },
-  {
-    targetName: 'FollowerHistory.csv',
-    platform: 'tiktok',
-    label: 'Follower History',
-    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['total followers', 'followers']),
-    detectByFilename: (f) => inc(f, 'followerhistory') || (inc(f, 'follower') && inc(f, 'history')),
+    scoreHeaders: (h) => (has(h,'date') ? 2 : 0) + (has(h,'viewer') ? 20 : 0) + (!has(h,'video views') && !has(h,'profile views') ? 3 : 0),
+    scoreFilename: (f) => eq(f,'viewers.csv') ? 15 : (inc(f,'viewer') ? 8 : 0),
   },
   {
     targetName: 'FollowerActivity.csv',
     platform: 'tiktok',
     label: 'Follower Activity',
-    detectByHeaders: (h) => hasAny(h, ['hour']),
-    detectByFilename: (f) => inc(f, 'followeractivity') || (inc(f, 'follower') && inc(f, 'activity')),
+    scoreHeaders: (h) => (has(h,'hour') ? 25 : 0),
+    scoreFilename: (f) => eq(f,'followeractivity.csv') ? 15 : (inc(f,'activity') ? 8 : (inc(f,'followeractivity') ? 12 : 0)),
+  },
+  {
+    targetName: 'FollowerHistory.csv',
+    platform: 'tiktok',
+    label: 'Follower History',
+    scoreHeaders: (h) => (has(h,'date') ? 2 : 0) + (has(h,'total followers') ? 25 : (has(h,'followers') && !has(h,'hour') && !has(h,'gender') ? 12 : 0)),
+    scoreFilename: (f) => eq(f,'followerhistory.csv') ? 15 : (inc(f,'followerhistory') ? 12 : (inc(f,'follower') && inc(f,'history') ? 8 : 0)),
   },
   {
     targetName: 'FollowerGender.csv',
     platform: 'tiktok',
     label: 'Follower Gender',
-    detectByHeaders: (h) => hasAny(h, ['gender']),
-    detectByFilename: (f) => inc(f, 'gender'),
+    scoreHeaders: (h) => (has(h,'gender') ? 25 : 0),
+    scoreFilename: (f) => eq(f,'followergender.csv') ? 15 : (inc(f,'gender') ? 8 : 0),
   },
   {
     targetName: 'FollowerTopTerritories.csv',
     platform: 'tiktok',
     label: 'Top Territories',
-    detectByHeaders: (h) => hasAny(h, ['territory', 'territories', 'country', 'region']),
-    detectByFilename: (f) => inc(f, 'territor'),
+    scoreHeaders: (h) => (has(h,'territory') ? 25 : 0) + (has(h,'territories') ? 20 : 0) + (has(h,'region') ? 10 : 0),
+    scoreFilename: (f) => eq(f,'followertopterritories.csv') ? 15 : (inc(f,'territor') ? 8 : 0),
   },
 ];
 
-// Detection helpers
-function hasAll(headers, needed) { return needed.every(n => headers.some(h => h.includes(n))); }
-function hasAny(headers, any) { return any.some(n => headers.some(h => h.includes(n))); }
-function containsText(rows, text) { return rows.toLowerCase().includes(text); }
+// Scoring helpers
+function has(headers, text) { return headers.some(h => h.includes(text)); }
+function rowHas(rows, text) { return rows.toLowerCase().includes(text); }
 function inc(filename, text) { return filename.toLowerCase().includes(text.toLowerCase()); }
 function eq(filename, text) { return filename.toLowerCase().trim() === text.toLowerCase().trim(); }
+
+// Minimum score to accept a match
+const MIN_SCORE = 10;
+
+/**
+ * Score-based file detection.
+ * Evaluates ALL rules, picks the highest-scoring match.
+ * Returns { rule, score, platform } or null.
+ */
+function detectFile(filename, headers, firstRows) {
+  const scores = DETECT_RULES.map(rule => {
+    const headerScore = rule.scoreHeaders(headers, firstRows);
+    const filenameScore = rule.scoreFilename(filename);
+    return { rule, score: headerScore + filenameScore, headerScore, filenameScore };
+  });
+
+  // Sort by score descending
+  scores.sort((a, b) => b.score - a.score);
+
+  const best = scores[0];
+  const runnerUp = scores[1];
+
+  if (!best || best.score < MIN_SCORE) return null;
+
+  return {
+    rule: best.rule,
+    score: best.score,
+    // Flag if the top two scores are very close (ambiguous)
+    ambiguous: runnerUp && runnerUp.score >= MIN_SCORE && (best.score - runnerUp.score) < 5,
+    runnerUp: runnerUp && runnerUp.score >= MIN_SCORE ? runnerUp.rule : null,
+  };
+}
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let currentPlatform = 'instagram';
@@ -467,31 +504,20 @@ async function handleFiles(files) {
     }
 
     const {headers, firstRows} = await readFileHead(file);
+    const match = detectFile(file.name, headers, firstRows);
 
-    // Detect
-    const platformRules = DETECT_RULES.filter(r => r.platform === currentPlatform);
-    const otherRules = DETECT_RULES.filter(r => r.platform !== currentPlatform);
-    let found = null;
+    let found;
 
-    for (const rule of platformRules) {
-      if (rule.detectByHeaders(headers, firstRows) || rule.detectByFilename(file.name)) {
-        found = {file, rule, status: 'ok'};
-        break;
-      }
-    }
-
-    if (!found) {
-      for (const rule of otherRules) {
-        if (rule.detectByHeaders(headers, firstRows) || rule.detectByFilename(file.name)) {
-          const otherName = rule.platform === 'instagram' ? 'Instagram' : 'TikTok';
-          found = {file, rule, status: 'warn', warnMsg: `This looks like a ${otherName} file (${rule.label}). Switch to the ${otherName} tab to upload it.`};
-          break;
-        }
-      }
-    }
-
-    if (!found) {
+    if (!match) {
+      // No rule scored above threshold
       found = {file, rule: null, status: 'err', errMsg: 'Could not identify this file. Make sure it\'s a valid analytics export.'};
+    } else if (match.rule.platform !== currentPlatform) {
+      // Best match belongs to the other platform
+      const otherName = match.rule.platform === 'instagram' ? 'Instagram' : 'TikTok';
+      found = {file, rule: match.rule, status: 'warn', warnMsg: `This looks like a ${otherName} file (${match.rule.label}). Switch to the ${otherName} tab to upload it.`};
+    } else {
+      // Good match on current platform
+      found = {file, rule: match.rule, status: 'ok'};
     }
 
     // Check duplicate within this platform
