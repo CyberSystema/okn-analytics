@@ -1,10 +1,15 @@
 name: OKN Analytics Pipeline
 
+# ══════════════════════════════════════
+# TRIGGERS
+# ══════════════════════════════════════
+
 on:
   push:
     paths:
       - 'data/**/*.csv'
       - 'data/**/*.json'
+      - 'scripts/**'
 
   workflow_dispatch:
     inputs:
@@ -17,13 +22,27 @@ on:
           - full
           - ingest-only
           - report-only
+      reset_history:
+        description: 'Delete history and rebuild from scratch'
+        required: false
+        default: false
+        type: boolean
 
   schedule:
     # Every Monday 09:00 KST = 00:00 UTC
     - cron: '0 0 * * 1'
 
+# Prevent parallel runs — history corruption risk
+concurrency:
+  group: okn-pipeline
+  cancel-in-progress: false
+
 permissions:
   contents: write
+
+# ══════════════════════════════════════
+# PIPELINE
+# ══════════════════════════════════════
 
 jobs:
   analyze:
@@ -33,25 +52,26 @@ jobs:
 
     env:
       PYTHON_VERSION: '3.11'
-      # Force sentence-transformers to use the cached hub directory
       HF_HOME: /home/runner/.cache/huggingface
       SENTENCE_TRANSFORMERS_HOME: /home/runner/.cache/huggingface/hub
+      # Opt into Node 24 ahead of June 2026 deprecation
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-      # ── CHECKOUT ──
+      # ── 1. CHECKOUT ──
       - name: ☦️ Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      # ── PYTHON ──
-      - name: 🐍 Set up Python
+      # ── 2. PYTHON ──
+      - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
-      # ── CACHE: HuggingFace model (~118MB blobs) ──
+      # ── 3. ML MODEL CACHE ──
       - name: 🧠 Cache HuggingFace model
         uses: actions/cache@v4
         id: hf-cache
@@ -59,105 +79,125 @@ jobs:
           path: /home/runner/.cache/huggingface/hub
           key: hf-multilingual-minilm-v3-${{ runner.os }}
 
-      # ── INSTALL ──
+      # ── 4. INSTALL ──
       - name: 📦 Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          # Prophet is optional — graceful fallback to statistical forecasting
-          pip install prophet 2>/dev/null || echo "⚠️ Prophet not available, using statistical forecasting"
+          python -m pip install --upgrade pip --quiet
+          pip install -r requirements.txt --quiet
 
-      # ── PRE-DOWNLOAD MODEL ──
-      # Ensures the full model (not just symlinks) is in cache
+      # ── 5. VERIFY MODEL ──
       - name: 🧠 Verify ML model
         run: |
           python -c "
           from sentence_transformers import SentenceTransformer
           model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
           result = model.encode(['test'])
-          print(f'✅ Model ready — {result.shape[1]}d embeddings')
+          print(f'✅ Model loaded — {result.shape[1]}d embeddings')
           "
 
-      # ── RUN PIPELINE ──
+      # ── 6. RESET HISTORY (optional) ──
+      - name: 🗑️ Reset history
+        if: github.event.inputs.reset_history == 'true'
+        run: |
+          rm -f history/unified_history.parquet history/unified_history.csv
+          rm -f history/account_daily_*.csv history/demographics_history_*.jsonl
+          echo "🗑️ History cleared — will rebuild from current data"
+
+      # ── 7. RUN PIPELINE ──
       - name: 🔬 Run analytics pipeline
         run: |
           MODE="${{ github.event.inputs.mode || 'full' }}"
-          if [ "$MODE" = "ingest-only" ]; then
-            python scripts/main.py --ingest-only
-          elif [ "$MODE" = "report-only" ]; then
-            python scripts/main.py --report-only
-          else
-            python scripts/main.py
-          fi
+          case "$MODE" in
+            ingest-only)  python scripts/main.py --ingest-only ;;
+            report-only)  python scripts/main.py --report-only ;;
+            *)            python scripts/main.py ;;
+          esac
 
-      # ── COMMIT RESULTS ──
-      - name: 📤 Commit and push reports
+      # ── 8. COMMIT RESULTS ──
+      - name: 📤 Commit results
         run: |
           git config user.name "OKN Analytics Bot"
           git config user.email "analytics@orthodoxkorea.org"
-
           git add reports/ history/ || true
 
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
             POST_COUNT=$(python -c "
           import pandas as pd
           try:
-              df = pd.read_csv('history/unified_history.csv')
+              df = pd.read_parquet('history/unified_history.parquet')
               print(len(df))
           except:
-              print('?')
+              try:
+                  df = pd.read_csv('history/unified_history.csv')
+                  print(len(df))
+              except:
+                  print('?')
           " 2>/dev/null || echo "?")
 
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
             git commit -m "📊 Analytics report — ${TIMESTAMP} (${POST_COUNT} posts)"
             git push
-            echo "✅ Reports committed and pushed"
+            echo "✅ Committed and pushed"
           fi
 
-      # ── DEPLOY ──
-      - name: 📁 Copy assets to deploy directory
+      # ── 9. PREPARE DEPLOY ──
+      - name: 📁 Prepare deploy directory
         run: |
-          cp -r assets/ reports/assets/ 2>/dev/null || echo "No assets directory"
+          # Copy assets so logos are available on the live site
+          cp -r assets/ reports/assets/ 2>/dev/null || true
 
+      # ── 10. DEPLOY ──
       - name: 🚀 Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy reports/ --project-name=okn-analytics --commit-dirty=true
-          wranglerVersion: '3'
 
-      # ── SUMMARY ──
+      # ── 11. SUMMARY ──
       - name: 📋 Pipeline summary
         if: always()
         run: |
-          echo "## 📊 OKN Analytics Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 OKN Analytics Pipeline" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ -f "reports/latest_summary.json" ]; then
-            python -c "
-          import json
-          with open('reports/latest_summary.json') as f:
-              data = json.load(f)
+          if [ -f "reports/full_results.json" ]; then
+            python << 'PYEOF' >> $GITHUB_STEP_SUMMARY
+          import json, sys
+
+          try:
+              with open('reports/full_results.json') as f:
+                  data = json.load(f)
+          except Exception:
+              print("Could not read results file")
+              sys.exit(0)
 
           meta = data.get('meta', {})
           health = data.get('health', {})
           recs = data.get('recommendations', [])
 
-          print(f'**Total Posts:** {meta.get(\"total_posts\", \"N/A\")}')
-          print(f'**Platforms:** {\", \".join(meta.get(\"platforms\", []))}')
-          print(f'**Health:** {health.get(\"emoji\", \"\")} {health.get(\"status\", \"unknown\").replace(\"_\", \" \").title()}')
+          posts = meta.get('total_posts', '?')
+          platforms = ', '.join(meta.get('platforms', []))
+          status = health.get('status', 'unknown').replace('_', ' ').title()
+          emoji = health.get('emoji', '📊')
+
+          print(f'| Metric | Value |')
+          print(f'|--------|-------|')
+          print(f'| Posts | **{posts}** |')
+          print(f'| Platforms | {platforms} |')
+          print(f'| Health | {emoji} {status} |')
           print()
 
           if recs:
               print('### 💡 Top Recommendations')
               print()
+              icons = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}
               for r in recs[:5]:
-                  icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(r['priority'], '⚪')
-                  print(f'- {icon} {r[\"message\"]}')
-          " >> $GITHUB_STEP_SUMMARY
+                  icon = icons.get(r.get('priority', ''), '⚪')
+                  print(f'- {icon} {r["message"]}')
+          PYEOF
           else
-            echo "No summary file found — check pipeline logs" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ No results file — check pipeline logs" >> $GITHUB_STEP_SUMMARY
           fi
