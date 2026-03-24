@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{overflow-x:hidden}
 body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#2c2c2c;line-height:1.6;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.wrap{max-width:520px;width:100%;margin:24px;padding:0}
+.wrap{max-width:560px;width:100%;margin:24px;padding:0}
 
 /* Header */
 .hdr{background:linear-gradient(160deg,#1a3a5c 0%,#1e4a6e 35%,#2a3a5c 60%,#8b1a1a 100%);color:white;padding:36px 32px 28px;border-radius:16px 16px 0 0;text-align:center;position:relative;overflow:hidden}
@@ -19,15 +19,17 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 /* Card */
 .card{background:white;border-radius:0 0 16px 16px;padding:28px 32px 32px;border:1px solid #e8e4dc;border-top:none}
 
-/* Auth screen */
+/* Auth */
 .auth-section{text-align:center}
 .auth-section p{color:#888;font-size:14px;margin-bottom:20px}
 .input-wrap{position:relative;margin-bottom:16px}
 .input-wrap input{width:100%;padding:14px 18px;border:2px solid #e0dcd4;border-radius:10px;font-size:15px;outline:none;transition:border 0.2s}
 .input-wrap input:focus{border-color:#1a3a5c}
 
-/* Upload screen */
+/* Upload area */
 .upload-section{display:none}
+
+/* Platform tabs */
 .platform-tabs{display:flex;gap:8px;margin-bottom:20px}
 .ptab{flex:1;padding:12px;border:2px solid #e0dcd4;border-radius:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;background:white}
 .ptab:hover{border-color:#1a3a5c;background:#f5f8fb}
@@ -41,24 +43,45 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 .dropzone p{color:#888;font-size:14px}
 .dropzone .dz-hint{font-size:11px;color:#aaa;margin-top:8px}
 
+/* Steps */
+.step-bar{display:flex;gap:4px;margin-bottom:20px}
+.step{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#bbb;background:#f5f5f5;transition:all 0.3s}
+.step.active{color:#1a3a5c;background:#e8f0f8}
+.step.done{color:#38a169;background:#f0faf0}
+
 /* File list */
-.file-list{margin-bottom:20px}
-.file-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafbfc;border:1px solid #eee;border-radius:8px;margin-bottom:6px;font-size:13px}
-.file-item .fi-name{font-weight:600;color:#1a3a5c;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file-item .fi-size{color:#888;margin:0 12px;flex-shrink:0}
-.file-item .fi-remove{color:#e53e3e;cursor:pointer;font-size:16px;flex-shrink:0;padding:0 4px}
-.file-item .fi-status{font-size:12px;flex-shrink:0;margin-left:8px}
-.fi-ok{color:#38a169}.fi-err{color:#e53e3e}
+.file-list{margin-bottom:16px}
+.file-item{display:flex;align-items:center;padding:12px 14px;background:#fafbfc;border:1px solid #eee;border-radius:10px;margin-bottom:8px;font-size:13px;gap:10px;transition:border 0.2s}
+.file-item.ok{border-color:#c6f6d5}
+.file-item.warn{border-color:#fefcbf;background:#fffdf5}
+.file-item.err{border-color:#fed7d7;background:#fff8f8}
+.fi-icon{font-size:20px;flex-shrink:0}
+.fi-body{flex:1;min-width:0}
+.fi-orig{font-size:12px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-detected{font-weight:600;color:#1a3a5c}
+.fi-arrow{color:#c4953a;font-size:11px;margin:0 2px}
+.fi-size{color:#888;font-size:11px}
+.fi-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:600;flex-shrink:0}
+.badge-ok{background:#f0faf0;color:#38a169}
+.badge-warn{background:#fffbf0;color:#d69e2e}
+.badge-err{background:#fff5f5;color:#e53e3e}
+.fi-remove{color:#ccc;cursor:pointer;font-size:16px;flex-shrink:0;padding:0 4px;transition:color 0.2s}
+.fi-remove:hover{color:#e53e3e}
+
+/* Warning message */
+.fi-warn-msg{font-size:11px;color:#d69e2e;margin-top:4px}
+.fi-warn-msg button{font-size:11px;color:#1a3a5c;background:none;border:none;cursor:pointer;text-decoration:underline;font-weight:600;padding:0;margin-left:4px}
 
 /* Buttons */
 .btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
 .btn-primary{background:#1a3a5c;color:white}.btn-primary:hover{background:#254d73}
-.btn-primary:disabled{background:#999;cursor:not-allowed}
-.btn-back{background:transparent;color:#888;font-size:13px;margin-top:12px;padding:8px}
-.btn-back:hover{color:#1a3a5c}
+.btn-primary:disabled{background:#bbb;cursor:not-allowed}
+.btn-secondary{background:#f5f5f5;color:#666;margin-top:8px;font-size:13px;padding:10px}.btn-secondary:hover{background:#eee;color:#333}
+.btn-back{background:transparent;color:#888;font-size:13px;margin-top:12px;padding:8px}.btn-back:hover{color:#1a3a5c}
+.btn-row{display:flex;gap:8px;margin-top:12px}.btn-row .btn{flex:1}
 
 /* Status */
-.status{padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:14px;display:none}
+.status{padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:14px;display:none;line-height:1.5}
 .status.info{display:block;background:#e8f4f8;color:#1a5276;border:1px solid #bee3f8}
 .status.ok{display:block;background:#f0faf0;color:#276749;border:1px solid #c6f6d5}
 .status.err{display:block;background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
@@ -70,11 +93,18 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 .progress-fill{height:100%;background:linear-gradient(90deg,#1a3a5c,#c4953a);border-radius:3px;transition:width 0.3s;width:0%}
 .progress-text{font-size:12px;color:#888;margin-top:6px;text-align:center}
 
-/* Allowed files */
-.allowed{margin-top:16px;padding:14px;background:#fafbfc;border-radius:10px;border:1px solid #eee}
-.allowed h4{font-size:12px;color:#1a3a5c;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.allowed-list{display:flex;flex-wrap:wrap;gap:4px}
-.allowed-tag{font-size:11px;padding:3px 8px;background:#e8f4f8;color:#1a5276;border-radius:4px}
+/* Confirm overlay */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:white;border-radius:16px;padding:28px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto}
+.confirm-box h3{font-size:18px;color:#1a3a5c;margin-bottom:4px}
+.confirm-box .cb-sub{color:#888;font-size:13px;margin-bottom:16px}
+.confirm-list{margin-bottom:20px}
+.confirm-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fafbfc;border-radius:8px;margin-bottom:6px;font-size:13px}
+.confirm-item .ci-icon{font-size:16px}
+.confirm-item .ci-name{font-weight:600;color:#1a3a5c}
+.confirm-item .ci-arrow{color:#c4953a;margin:0 4px}
+.confirm-item .ci-dest{color:#666}
 
 /* Footer */
 .foot{text-align:center;margin-top:16px;font-size:11px;color:#aaa}
@@ -88,6 +118,8 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
   .card{padding:20px}
   .dropzone{padding:24px 16px}
   .platform-tabs{gap:6px}.ptab{padding:10px 8px;font-size:13px}.ptab .icon{font-size:20px}
+  .file-item{flex-wrap:wrap;gap:6px}
+  .confirm-box{padding:20px}
 }
 </style>
 </head>
@@ -95,7 +127,7 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 <div class="wrap">
   <div class="hdr">
     <h1>📤 Upload Analytics Data</h1>
-    <p>Upload your weekly CSV exports from Instagram &amp; TikTok</p>
+    <p>Upload your weekly CSV exports — files are auto-detected and renamed</p>
   </div>
   <div class="card">
 
@@ -112,6 +144,14 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
     <!-- UPLOAD -->
     <div class="upload-section" id="uploadSection">
 
+      <!-- Step indicator -->
+      <div class="step-bar">
+        <div class="step active" id="step1">1. Add Files</div>
+        <div class="step" id="step2">2. Review</div>
+        <div class="step" id="step3">3. Upload</div>
+      </div>
+
+      <!-- Platform tabs -->
       <div class="platform-tabs">
         <div class="ptab active" data-platform="instagram" onclick="selectPlatform('instagram',this)">
           <span class="icon">📸</span>Instagram
@@ -121,103 +161,211 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
         </div>
       </div>
 
+      <!-- Dropzone -->
       <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
         <div class="dz-icon">📁</div>
-        <p>Drop CSV files here or <strong>click to browse</strong></p>
-        <div class="dz-hint">Only recognized CSV files • Max 5MB each</div>
+        <p>Drop your <strong id="dzPlatformName">Instagram</strong> CSV files here</p>
+        <div class="dz-hint">Files are auto-detected by their content — no renaming needed</div>
       </div>
       <input type="file" id="fileInput" multiple accept=".csv" style="display:none" onchange="handleFiles(this.files)">
 
+      <!-- Detected files -->
       <div class="file-list" id="fileList"></div>
 
       <div class="status" id="uploadStatus"></div>
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-text" id="progressText">Uploading...</div>
+        <div class="progress-text" id="progressText"></div>
       </div>
 
-      <button class="btn btn-primary" id="uploadBtn" onclick="uploadFiles()" disabled>Upload to Pipeline</button>
-
-      <div class="allowed" id="allowedFiles">
-        <h4>Accepted files for <span id="allowedPlatform">Instagram</span></h4>
-        <div class="allowed-list" id="allowedList"></div>
-      </div>
-
+      <button class="btn btn-primary" id="uploadBtn" onclick="showConfirm()" disabled>Review &amp; Upload</button>
       <button class="btn btn-back" onclick="logout()">← Sign out</button>
     </div>
   </div>
-  <div class="foot">OKN Analytics Pipeline • <a href="https://cybersystema.com" target="_blank">CyberSystema</a></div>
+  <div class="foot">
+    <a href="weekly_report.html">← Back to Report</a> &nbsp;•&nbsp;
+    OKN Analytics Pipeline &nbsp;•&nbsp; <a href="https://cybersystema.com" target="_blank">CyberSystema</a>
+  </div>
+</div>
+
+<!-- Confirm overlay -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Confirm Upload</h3>
+    <div class="cb-sub">These files will be uploaded to <strong id="confirmPlatform"></strong>:</div>
+    <div class="confirm-list" id="confirmList"></div>
+    <div class="status info" style="display:block;margin-bottom:16px;font-size:13px">
+      After uploading, the analytics pipeline will run automatically and the report will update in ~2 minutes.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="hideConfirm()">Cancel</button>
+      <button class="btn btn-primary" id="confirmBtn" onclick="doUpload()">Upload Now</button>
+    </div>
+  </div>
 </div>
 
 <script>
 /* ═══════════════════════════════════════
-   CONFIGURATION
-   ═══════════════════════════════════════ */
+   FILE DETECTION RULES
+   ═══════════════════════════════════════
 
-const ALLOWED_FILES = {
-  instagram: {
-    names: ['content.csv', 'follows.csv', 'interactions.csv', 'link clicks.csv', 'reach.csv', 'views.csv', 'visits.csv', 'audience.csv'],
-    headers: {
-      'content.csv': ['Post ID', 'Publish time'],
-      'follows.csv': ['Date'],
-      'interactions.csv': ['Date'],
-      'link clicks.csv': ['Date'],
-      'reach.csv': ['Date'],
-      'views.csv': ['Date'],
-      'visits.csv': ['Date'],
-      'audience.csv': ['Country'],
-    }
+   Each rule has:
+   - targetName: what the file gets renamed to
+   - platform: which platform it belongs to
+   - detectByHeaders: function(headers, firstRows) → true/false
+   - detectByFilename: function(filename) → true/false
+   - label: friendly display name
+*/
+
+const DETECT_RULES = [
+  // ── INSTAGRAM ──
+  {
+    targetName: 'content.csv',
+    platform: 'instagram',
+    label: 'Content Export',
+    detectByHeaders: (h) => hasAll(h, ['post id', 'publish time']),
+    detectByFilename: (f) => /^\w{3}-\d{1,2}-\d{4}_\w{3}-\d{1,2}-\d{4}_\d+\.csv$/i.test(f) || eq(f, 'content.csv'),
   },
-  tiktok: {
-    names: ['content.csv', 'overview.csv', 'viewers.csv', 'followerhistory.csv', 'followeractivity.csv', 'followergender.csv', 'followertopterritories.csv'],
-    headers: {
-      'content.csv': ['Video title', 'Total views'],
-      'overview.csv': ['Date'],
-      'viewers.csv': ['Date'],
-      'followerhistory.csv': ['Date'],
-      'followeractivity.csv': ['Hour'],
-      'followergender.csv': ['Gender'],
-      'followertopterritories.csv': ['Territory'],
-    }
-  }
-};
+  {
+    targetName: 'Follows.csv',
+    platform: 'instagram',
+    label: 'Follows',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'follow'),
+    detectByFilename: (f) => inc(f, 'follow') && !inc(f, 'follower'),
+  },
+  {
+    targetName: 'Interactions.csv',
+    platform: 'instagram',
+    label: 'Interactions',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'interaction'),
+    detectByFilename: (f) => inc(f, 'interaction'),
+  },
+  {
+    targetName: 'Link clicks.csv',
+    platform: 'instagram',
+    label: 'Link Clicks',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'link'),
+    detectByFilename: (f) => inc(f, 'link') && inc(f, 'click'),
+  },
+  {
+    targetName: 'Reach.csv',
+    platform: 'instagram',
+    label: 'Reach',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'reach'),
+    detectByFilename: (f) => inc(f, 'reach'),
+  },
+  {
+    targetName: 'Views.csv',
+    platform: 'instagram',
+    label: 'Views',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'view') && !containsText(rows, 'video'),
+    detectByFilename: (f) => eq(f, 'views.csv'),
+  },
+  {
+    targetName: 'Visits.csv',
+    platform: 'instagram',
+    label: 'Visits',
+    detectByHeaders: (h, rows) => hasAll(h, ['date']) && containsText(rows, 'visit'),
+    detectByFilename: (f) => inc(f, 'visit'),
+  },
+  {
+    targetName: 'Audience.csv',
+    platform: 'instagram',
+    label: 'Audience',
+    detectByHeaders: (h) => hasAll(h, ['country']) || hasAll(h, ['age']),
+    detectByFilename: (f) => inc(f, 'audience'),
+  },
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  // ── TIKTOK ──
+  {
+    targetName: 'Content.csv',
+    platform: 'tiktok',
+    label: 'Content',
+    detectByHeaders: (h) => hasAll(h, ['video title']) || (hasAny(h, ['total views', 'total likes']) && hasAny(h, ['video link', 'post time'])),
+    detectByFilename: (f) => eq(f, 'content.csv'),
+  },
+  {
+    targetName: 'Overview.csv',
+    platform: 'tiktok',
+    label: 'Overview',
+    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['video views', 'profile views']),
+    detectByFilename: (f) => inc(f, 'overview'),
+  },
+  {
+    targetName: 'Viewers.csv',
+    platform: 'tiktok',
+    label: 'Viewers',
+    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['viewer', 'views']) && !hasAny(h, ['video views']),
+    detectByFilename: (f) => inc(f, 'viewer'),
+  },
+  {
+    targetName: 'FollowerHistory.csv',
+    platform: 'tiktok',
+    label: 'Follower History',
+    detectByHeaders: (h) => hasAll(h, ['date']) && hasAny(h, ['total followers', 'followers']),
+    detectByFilename: (f) => inc(f, 'followerhistory') || (inc(f, 'follower') && inc(f, 'history')),
+  },
+  {
+    targetName: 'FollowerActivity.csv',
+    platform: 'tiktok',
+    label: 'Follower Activity',
+    detectByHeaders: (h) => hasAny(h, ['hour']),
+    detectByFilename: (f) => inc(f, 'followeractivity') || (inc(f, 'follower') && inc(f, 'activity')),
+  },
+  {
+    targetName: 'FollowerGender.csv',
+    platform: 'tiktok',
+    label: 'Follower Gender',
+    detectByHeaders: (h) => hasAny(h, ['gender']),
+    detectByFilename: (f) => inc(f, 'gender'),
+  },
+  {
+    targetName: 'FollowerTopTerritories.csv',
+    platform: 'tiktok',
+    label: 'Top Territories',
+    detectByHeaders: (h) => hasAny(h, ['territory', 'territories', 'country', 'region']),
+    detectByFilename: (f) => inc(f, 'territor'),
+  },
+];
+
+// Detection helpers
+function hasAll(headers, needed) { return needed.every(n => headers.some(h => h.includes(n))); }
+function hasAny(headers, any) { return any.some(n => headers.some(h => h.includes(n))); }
+function containsText(rows, text) { return rows.toLowerCase().includes(text); }
+function inc(filename, text) { return filename.toLowerCase().includes(text.toLowerCase()); }
+function eq(filename, text) { return filename.toLowerCase().trim() === text.toLowerCase().trim(); }
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let currentPlatform = 'instagram';
-let selectedFiles = [];
+let detectedFiles = []; // {file, rule, status, warnMsg}
 let authToken = '';
 
 /* ═══════════════════════════════════════
    AUTH
    ═══════════════════════════════════════ */
 
-document.getElementById('passInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') authenticate();
-});
+document.getElementById('passInput').addEventListener('keydown', e => { if(e.key==='Enter') authenticate(); });
 
 async function authenticate() {
   const pass = document.getElementById('passInput').value.trim();
   if (!pass) return showAuthStatus('Please enter the password', 'err');
-
   const btn = document.getElementById('authBtn');
   btn.disabled = true; btn.textContent = 'Verifying...';
-
   try {
     const res = await fetch('/api/upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'auth', password: pass })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'auth', password: pass})
     });
     const data = await res.json();
     if (data.ok) {
       authToken = data.token;
       document.getElementById('authSection').style.display = 'none';
       document.getElementById('uploadSection').style.display = 'block';
-      updateAllowedList();
     } else {
       showAuthStatus(data.error || 'Wrong password', 'err');
     }
-  } catch (e) {
+  } catch(e) {
     showAuthStatus('Connection error — try again', 'err');
   }
   btn.disabled = false; btn.textContent = 'Sign In';
@@ -225,12 +373,13 @@ async function authenticate() {
 
 function logout() {
   authToken = '';
-  selectedFiles = [];
+  detectedFiles = [];
   document.getElementById('authSection').style.display = 'block';
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('passInput').value = '';
-  document.getElementById('fileList').innerHTML = '';
+  renderFiles();
   showUploadStatus('', '');
+  updateSteps(1);
 }
 
 function showAuthStatus(msg, type) {
@@ -239,173 +388,293 @@ function showAuthStatus(msg, type) {
 }
 
 /* ═══════════════════════════════════════
-   PLATFORM
+   PLATFORM SELECTION
    ═══════════════════════════════════════ */
 
 function selectPlatform(platform, tab) {
   currentPlatform = platform;
   document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
-  selectedFiles = [];
-  document.getElementById('fileList').innerHTML = '';
-  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('dzPlatformName').textContent = platform === 'instagram' ? 'Instagram' : 'TikTok';
+  detectedFiles = [];
+  renderFiles();
   showUploadStatus('', '');
-  updateAllowedList();
-}
-
-function updateAllowedList() {
-  const names = ALLOWED_FILES[currentPlatform].names;
-  document.getElementById('allowedPlatform').textContent = currentPlatform === 'instagram' ? 'Instagram' : 'TikTok';
-  document.getElementById('allowedList').innerHTML = names.map(n => `<span class="allowed-tag">${n}</span>`).join('');
+  updateSteps(1);
 }
 
 /* ═══════════════════════════════════════
-   FILE HANDLING
+   FILE HANDLING & AUTO-DETECTION
    ═══════════════════════════════════════ */
 
-// Drag & drop
 const dz = document.getElementById('dropzone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 
 async function handleFiles(files) {
-  const allowed = ALLOWED_FILES[currentPlatform].names;
-
   for (const file of files) {
-    const name = file.name.toLowerCase().trim();
-
-    // Check extension
-    if (!name.endsWith('.csv')) {
-      addFileItem(file.name, file.size, 'Only CSV files allowed', false);
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'Not a CSV file'});
       continue;
     }
-
-    // Check filename
-    if (!allowed.includes(name)) {
-      addFileItem(file.name, file.size, 'Not a recognized file', false);
-      continue;
-    }
-
-    // Check size
     if (file.size > MAX_FILE_SIZE) {
-      addFileItem(file.name, file.size, 'File too large (max 5MB)', false);
+      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'File too large (max 5MB)'});
       continue;
     }
 
-    // Check duplicate
-    if (selectedFiles.some(f => f.name.toLowerCase() === name)) {
-      addFileItem(file.name, file.size, 'Already added', false);
-      continue;
-    }
+    const {headers, firstRows} = await readFileHead(file);
+    const result = detectFile(file.name, headers, firstRows);
 
-    // Validate CSV headers
-    const valid = await validateHeaders(file);
-    if (!valid) {
-      addFileItem(file.name, file.size, 'Wrong format — check the file', false);
-      continue;
+    if (result.status === 'ok' || result.status === 'warn') {
+      // Check duplicate target
+      const dup = detectedFiles.find(d => d.rule && d.rule.targetName === result.rule.targetName && d.status !== 'err');
+      if (dup) {
+        detectedFiles.push({file, rule: result.rule, status: 'err', errMsg: `Duplicate — "${result.rule.label}" already added`});
+        continue;
+      }
     }
-
-    selectedFiles.push(file);
-    addFileItem(file.name, file.size, '✓ Ready', true);
+    detectedFiles.push(result);
   }
 
-  document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
   document.getElementById('fileInput').value = '';
+  renderFiles();
+  updateSteps(detectedFiles.filter(f => f.status !== 'err').length > 0 ? 2 : 1);
 }
 
-async function validateHeaders(file) {
-  return new Promise((resolve) => {
+async function readFileHead(file) {
+  return new Promise(resolve => {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = e => {
       const text = e.target.result;
-      const firstLine = text.split('\n')[0].replace(/"/g, '').trim();
-      const headers = firstLine.split(',').map(h => h.trim());
-
-      const expected = ALLOWED_FILES[currentPlatform].headers[file.name.toLowerCase()];
-      if (!expected) { resolve(true); return; }
-
-      const found = expected.every(h => headers.some(fh => fh.toLowerCase().includes(h.toLowerCase())));
-      resolve(found);
+      const lines = text.split('\n');
+      const headerLine = (lines[0] || '').replace(/"/g, '').replace(/\ufeff/g, '').trim();
+      const headers = headerLine.split(',').map(h => h.trim().toLowerCase());
+      const firstRows = lines.slice(0, 5).join('\n');
+      resolve({headers, firstRows});
     };
-    reader.onerror = () => resolve(false);
-    reader.readAsText(file.slice(0, 2048)); // Only read first 2KB for headers
+    reader.onerror = () => resolve({headers: [], firstRows: ''});
+    reader.readAsText(file.slice(0, 4096));
   });
 }
 
-function addFileItem(name, size, status, ok) {
-  const list = document.getElementById('fileList');
-  const sizeStr = size < 1024 ? size + ' B' : size < 1024*1024 ? (size/1024).toFixed(1) + ' KB' : (size/1024/1024).toFixed(1) + ' MB';
-  const div = document.createElement('div');
-  div.className = 'file-item';
-  div.innerHTML = `
-    <span class="fi-name">${name}</span>
-    <span class="fi-size">${sizeStr}</span>
-    <span class="fi-status ${ok ? 'fi-ok' : 'fi-err'}">${status}</span>
-    ${ok ? `<span class="fi-remove" onclick="removeFile('${name}',this)">✕</span>` : ''}
-  `;
-  list.appendChild(div);
+function detectFile(filename, headers, firstRows) {
+  const platformRules = DETECT_RULES.filter(r => r.platform === currentPlatform);
+  const otherRules = DETECT_RULES.filter(r => r.platform !== currentPlatform);
+
+  // Try matching by headers first (strongest signal), then filename
+  for (const rule of platformRules) {
+    const headerMatch = rule.detectByHeaders(headers, firstRows);
+    const nameMatch = rule.detectByFilename(filename);
+    if (headerMatch || nameMatch) {
+      return {file: {name: filename, size: arguments[0]?.size}, rule, status: 'ok'};
+    }
+  }
+
+  // Didn't match current platform — check if it belongs to the OTHER platform
+  for (const rule of otherRules) {
+    const headerMatch = rule.detectByHeaders(headers, firstRows);
+    const nameMatch = rule.detectByFilename(filename);
+    if (headerMatch || nameMatch) {
+      const otherName = rule.platform === 'instagram' ? 'Instagram' : 'TikTok';
+      return {
+        file: {name: filename}, rule, status: 'warn',
+        warnMsg: `This looks like a ${otherName} file (${rule.label}). Did you mean to upload it to ${otherName}?`
+      };
+    }
+  }
+
+  return {file: {name: filename}, rule: null, status: 'err', errMsg: 'Could not identify this file. Please check it\'s a valid analytics export.'};
 }
 
-function removeFile(name, el) {
-  selectedFiles = selectedFiles.filter(f => f.name.toLowerCase() !== name.toLowerCase());
-  el.closest('.file-item').remove();
-  document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
+// Re-wrap detectFile to pass actual file object
+const _origHandleFiles = handleFiles;
+handleFiles = async function(files) {
+  for (const file of files) {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'Not a CSV file'});
+      continue;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'File too large (max 5MB)'});
+      continue;
+    }
+
+    const {headers, firstRows} = await readFileHead(file);
+
+    // Detect
+    const platformRules = DETECT_RULES.filter(r => r.platform === currentPlatform);
+    const otherRules = DETECT_RULES.filter(r => r.platform !== currentPlatform);
+    let found = null;
+
+    for (const rule of platformRules) {
+      if (rule.detectByHeaders(headers, firstRows) || rule.detectByFilename(file.name)) {
+        found = {file, rule, status: 'ok'};
+        break;
+      }
+    }
+
+    if (!found) {
+      for (const rule of otherRules) {
+        if (rule.detectByHeaders(headers, firstRows) || rule.detectByFilename(file.name)) {
+          const otherName = rule.platform === 'instagram' ? 'Instagram' : 'TikTok';
+          found = {file, rule, status: 'warn', warnMsg: `This looks like a ${otherName} file (${rule.label}). Switch to the ${otherName} tab to upload it.`};
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      found = {file, rule: null, status: 'err', errMsg: 'Could not identify this file. Make sure it\'s a valid analytics export.'};
+    }
+
+    // Check duplicate
+    if (found.status === 'ok') {
+      const dup = detectedFiles.find(d => d.rule && d.rule.targetName === found.rule.targetName && d.status === 'ok');
+      if (dup) {
+        found = {file, rule: found.rule, status: 'err', errMsg: `"${found.rule.label}" already added`};
+      }
+    }
+
+    detectedFiles.push(found);
+  }
+
+  document.getElementById('fileInput').value = '';
+  renderFiles();
+  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
+  updateSteps(okCount > 0 ? 2 : 1);
+  document.getElementById('uploadBtn').disabled = okCount === 0;
+};
+
+/* ═══════════════════════════════════════
+   RENDER FILE LIST
+   ═══════════════════════════════════════ */
+
+function renderFiles() {
+  const list = document.getElementById('fileList');
+  list.innerHTML = '';
+  detectedFiles.forEach((d, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item ' + d.status;
+
+    let icon = d.status === 'ok' ? '✅' : d.status === 'warn' ? '⚠️' : '❌';
+    let badge = '', body = '';
+    const sizeStr = d.file.size ? (d.file.size < 1024*1024 ? (d.file.size/1024).toFixed(1)+' KB' : (d.file.size/1024/1024).toFixed(1)+' MB') : '';
+
+    if (d.status === 'ok') {
+      badge = '<span class="fi-badge badge-ok">Detected</span>';
+      body = `<div class="fi-detected">${d.rule.label}</div>
+              <div class="fi-orig">${d.file.name} <span class="fi-arrow">→</span> ${d.rule.targetName} <span class="fi-size">${sizeStr}</span></div>`;
+    } else if (d.status === 'warn') {
+      badge = '<span class="fi-badge badge-warn">Wrong platform?</span>';
+      body = `<div class="fi-detected">${d.file.name}</div>
+              <div class="fi-warn-msg">${d.warnMsg}</div>`;
+    } else {
+      badge = '<span class="fi-badge badge-err">Error</span>';
+      body = `<div class="fi-detected">${d.file.name}</div>
+              <div class="fi-orig" style="color:#c53030">${d.errMsg}</div>`;
+    }
+
+    div.innerHTML = `<span class="fi-icon">${icon}</span><div class="fi-body">${body}</div>${badge}<span class="fi-remove" onclick="removeFile(${i})">✕</span>`;
+    list.appendChild(div);
+  });
+
+  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
+  document.getElementById('uploadBtn').disabled = okCount === 0;
+}
+
+function removeFile(index) {
+  detectedFiles.splice(index, 1);
+  renderFiles();
+  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
+  updateSteps(okCount > 0 ? 2 : 1);
 }
 
 /* ═══════════════════════════════════════
-   UPLOAD
+   STEP BAR
    ═══════════════════════════════════════ */
 
-async function uploadFiles() {
-  if (selectedFiles.length === 0) return;
+function updateSteps(active) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step' + i);
+    el.className = 'step' + (i < active ? ' done' : i === active ? ' active' : '');
+  }
+}
+
+/* ═══════════════════════════════════════
+   CONFIRM & UPLOAD
+   ═══════════════════════════════════════ */
+
+function showConfirm() {
+  const okFiles = detectedFiles.filter(f => f.status === 'ok');
+  if (okFiles.length === 0) return;
+
+  const platName = currentPlatform === 'instagram' ? 'Instagram' : 'TikTok';
+  document.getElementById('confirmPlatform').textContent = platName;
+
+  const list = document.getElementById('confirmList');
+  list.innerHTML = okFiles.map(d =>
+    `<div class="confirm-item">
+      <span class="ci-icon">📄</span>
+      <span class="ci-name">${d.file.name}</span>
+      <span class="ci-arrow">→</span>
+      <span class="ci-dest">data/${currentPlatform}/${d.rule.targetName}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function hideConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+}
+
+async function doUpload() {
+  hideConfirm();
+  const okFiles = detectedFiles.filter(f => f.status === 'ok');
+  if (okFiles.length === 0) return;
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true;
   showUploadStatus('Uploading files...', 'uploading');
   showProgress(true);
+  updateSteps(3);
 
-  let uploaded = 0;
-  let errors = [];
+  let uploaded = 0, errors = [];
 
-  for (const file of selectedFiles) {
-    updateProgress(uploaded, selectedFiles.length, `Uploading ${file.name}...`);
+  for (const d of okFiles) {
+    updateProgress(uploaded, okFiles.length, `Uploading ${d.rule.label}...`);
 
     try {
-      const content = await readFileBase64(file);
+      const content = await readFileBase64(d.file);
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           action: 'upload',
           token: authToken,
           platform: currentPlatform,
-          filename: file.name,
-          content: content,
+          filename: d.rule.targetName,
+          content,
         })
       });
-
       const data = await res.json();
-      if (!data.ok) {
-        errors.push(`${file.name}: ${data.error}`);
-      }
-    } catch (e) {
-      errors.push(`${file.name}: Upload failed`);
+      if (!data.ok) errors.push(`${d.rule.label}: ${data.error}`);
+    } catch(e) {
+      errors.push(`${d.rule.label}: Upload failed`);
     }
     uploaded++;
-    updateProgress(uploaded, selectedFiles.length, uploaded === selectedFiles.length ? 'Done!' : `Uploading...`);
+    updateProgress(uploaded, okFiles.length, uploaded === okFiles.length ? 'Done!' : 'Uploading...');
   }
 
   if (errors.length === 0) {
-    showUploadStatus(`✅ ${uploaded} file(s) uploaded successfully! The analytics pipeline will run automatically.`, 'ok');
+    showUploadStatus(`✅ ${uploaded} file(s) uploaded successfully! The analytics pipeline will run automatically and the report will update in ~2 minutes.`, 'ok');
+    detectedFiles = [];
+    renderFiles();
   } else {
     showUploadStatus(`⚠️ ${uploaded - errors.length}/${uploaded} uploaded. Errors: ${errors.join('; ')}`, 'err');
   }
 
-  selectedFiles = [];
-  document.getElementById('fileList').innerHTML = '';
   setTimeout(() => showProgress(false), 2000);
-  btn.disabled = true;
 }
 
 function readFileBase64(file) {
@@ -421,19 +690,11 @@ function showUploadStatus(msg, type) {
   const el = document.getElementById('uploadStatus');
   el.innerHTML = msg; el.className = 'status ' + (type || '');
 }
-
-function showProgress(show) {
-  document.getElementById('progressWrap').style.display = show ? 'block' : 'none';
-}
-
+function showProgress(show) { document.getElementById('progressWrap').style.display = show ? 'block' : 'none'; }
 function updateProgress(current, total, text) {
-  const pct = Math.round((current / total) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFill').style.width = Math.round((current/total)*100) + '%';
   document.getElementById('progressText').textContent = text;
 }
-
-/* Init */
-updateAllowedList();
 </script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 /**
  * OKN Analytics — Upload API (Cloudflare Pages Function)
  * =====================================================
- * Secure file upload endpoint that validates and commits CSV files
- * to the GitHub repository.
+ * Secure file upload endpoint. Validates and commits CSV files
+ * to the GitHub repository. Files arrive pre-renamed by the frontend.
  *
- * Required Cloudflare environment variables (set in Pages dashboard):
+ * Required Cloudflare environment variables:
  *   UPLOAD_PASSWORD_HASH  — SHA-256 hex hash of the team password
  *   GITHUB_PAT            — Fine-grained GitHub Personal Access Token
  *   GITHUB_REPO           — e.g. "CyberSystema/okn-analytics"
@@ -12,27 +12,34 @@
  */
 
 // ══════════════════════════════════════
-// ALLOWED FILES — whitelist
+// ALLOWED TARGET FILES (case-insensitive check)
 // ══════════════════════════════════════
 
 const ALLOWED = {
   instagram: [
-    'content.csv', 'follows.csv', 'interactions.csv', 'link clicks.csv',
-    'reach.csv', 'views.csv', 'visits.csv', 'audience.csv',
+    'content.csv', 'Follows.csv', 'Interactions.csv', 'Link clicks.csv',
+    'Reach.csv', 'Views.csv', 'Visits.csv', 'Audience.csv',
   ],
   tiktok: [
-    'content.csv', 'overview.csv', 'viewers.csv', 'followerhistory.csv',
-    'followeractivity.csv', 'followergender.csv', 'followertopterritories.csv',
+    'Content.csv', 'Overview.csv', 'Viewers.csv', 'FollowerHistory.csv',
+    'FollowerActivity.csv', 'FollowerGender.csv', 'FollowerTopTerritories.csv',
   ],
 };
 
+// Build case-insensitive lookup: lowercase → correct case
+const FILENAME_MAP = {};
+for (const [platform, files] of Object.entries(ALLOWED)) {
+  FILENAME_MAP[platform] = {};
+  for (const f of files) {
+    FILENAME_MAP[platform][f.toLowerCase()] = f;
+  }
+}
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-
-// Rate limiting: in-memory (resets on cold start, but good enough)
-const rateLimits = new Map();
-const RATE_LIMIT_MAX = 20; // per hour
+const RATE_LIMIT_MAX = 30; // per hour per IP
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
+const rateLimits = new Map();
 
 // ══════════════════════════════════════
 // MAIN HANDLER
@@ -40,46 +47,43 @@ const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const headers = corsHeaders();
 
-  // CORS headers
-  const headers = {
+  try {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    if (isRateLimited(ip)) {
+      return respond({ ok: false, error: 'Too many requests. Try again later.' }, 429, headers);
+    }
+
+    const body = await request.json();
+
+    if (body.action === 'auth') {
+      return await handleAuth(body, env, headers);
+    } else if (body.action === 'upload') {
+      return await handleUpload(body, env, headers, ip);
+    } else {
+      return respond({ ok: false, error: 'Invalid action' }, 400, headers);
+    }
+  } catch (e) {
+    return respond({ ok: false, error: 'Server error' }, 500, headers);
+  }
+}
+
+export async function onRequestOptions() {
+  return new Response(null, { headers: corsHeaders() });
+}
+
+function corsHeaders() {
+  return {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
-
-  try {
-    // Rate limit by IP
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ ok: false, error: 'Too many requests. Try again later.' }), { status: 429, headers });
-    }
-
-    const body = await request.json();
-    const action = body.action;
-
-    if (action === 'auth') {
-      return await handleAuth(body, env, headers);
-    } else if (action === 'upload') {
-      return await handleUpload(body, env, headers, ip);
-    } else {
-      return new Response(JSON.stringify({ ok: false, error: 'Invalid action' }), { status: 400, headers });
-    }
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'Server error' }), { status: 500, headers });
-  }
 }
 
-// Handle OPTIONS for CORS preflight
-export async function onRequestOptions() {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+function respond(data, status, headers) {
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 // ══════════════════════════════════════
@@ -89,25 +93,21 @@ export async function onRequestOptions() {
 async function handleAuth(body, env, headers) {
   const password = body.password;
   if (!password || typeof password !== 'string') {
-    return new Response(JSON.stringify({ ok: false, error: 'Password required' }), { status: 400, headers });
+    return respond({ ok: false, error: 'Password required' }, 400, headers);
   }
 
-  // Hash the submitted password and compare
-  const hash = await sha256(password);
   const storedHash = (env.UPLOAD_PASSWORD_HASH || '').toLowerCase().trim();
-
   if (!storedHash) {
-    return new Response(JSON.stringify({ ok: false, error: 'Upload not configured. Set UPLOAD_PASSWORD_HASH in Cloudflare.' }), { status: 500, headers });
+    return respond({ ok: false, error: 'Upload not configured. Set UPLOAD_PASSWORD_HASH.' }, 500, headers);
   }
 
+  const hash = await sha256(password);
   if (hash !== storedHash) {
-    return new Response(JSON.stringify({ ok: false, error: 'Wrong password' }), { status: 401, headers });
+    return respond({ ok: false, error: 'Wrong password' }, 401, headers);
   }
 
-  // Generate session token (HMAC-signed, 1hr expiry)
   const token = await generateToken(env);
-
-  return new Response(JSON.stringify({ ok: true, token }), { status: 200, headers });
+  return respond({ ok: true, token }, 200, headers);
 }
 
 // ══════════════════════════════════════
@@ -115,88 +115,62 @@ async function handleAuth(body, env, headers) {
 // ══════════════════════════════════════
 
 async function handleUpload(body, env, headers, ip) {
-  // Verify session token
-  const tokenValid = await verifyToken(body.token, env);
-  if (!tokenValid) {
-    return new Response(JSON.stringify({ ok: false, error: 'Session expired. Please sign in again.' }), { status: 401, headers });
+  // Verify session
+  if (!await verifyToken(body.token, env)) {
+    return respond({ ok: false, error: 'Session expired. Please sign in again.' }, 401, headers);
   }
 
   const { platform, filename, content } = body;
 
   // Validate platform
   if (!platform || !ALLOWED[platform]) {
-    return new Response(JSON.stringify({ ok: false, error: 'Invalid platform' }), { status: 400, headers });
+    return respond({ ok: false, error: 'Invalid platform' }, 400, headers);
   }
 
-  // Validate filename
-  const normalizedName = (filename || '').toLowerCase().trim();
-  if (!ALLOWED[platform].includes(normalizedName)) {
-    return new Response(JSON.stringify({ ok: false, error: `File "${filename}" is not allowed for ${platform}` }), { status: 400, headers });
+  // Validate filename (case-insensitive)
+  if (!filename || typeof filename !== 'string') {
+    return respond({ ok: false, error: 'No filename' }, 400, headers);
+  }
+  const normalizedName = filename.toLowerCase().trim();
+  const correctName = FILENAME_MAP[platform][normalizedName];
+  if (!correctName) {
+    return respond({ ok: false, error: `File "${filename}" is not allowed for ${platform}` }, 400, headers);
   }
 
-  // Validate content exists and is base64
+  // Validate content
   if (!content || typeof content !== 'string') {
-    return new Response(JSON.stringify({ ok: false, error: 'No file content' }), { status: 400, headers });
+    return respond({ ok: false, error: 'No file content' }, 400, headers);
   }
 
-  // Check file size (base64 is ~33% larger than raw)
-  const estimatedSize = (content.length * 3) / 4;
-  if (estimatedSize > MAX_FILE_SIZE) {
-    return new Response(JSON.stringify({ ok: false, error: 'File too large (max 5MB)' }), { status: 400, headers });
+  // Check size (base64 is ~33% larger)
+  if ((content.length * 3 / 4) > MAX_FILE_SIZE) {
+    return respond({ ok: false, error: 'File too large (max 5MB)' }, 400, headers);
   }
 
-  // Validate it looks like a CSV (decode first few bytes)
+  // Validate it looks like CSV
   try {
     const decoded = atob(content.slice(0, 1000));
-    if (!decoded.includes(',') && !decoded.includes('\t')) {
-      return new Response(JSON.stringify({ ok: false, error: 'File does not appear to be a valid CSV' }), { status: 400, headers });
+    if (!decoded.includes(',') && !decoded.includes('\t') && !decoded.includes('\n')) {
+      return respond({ ok: false, error: 'File does not appear to be a valid CSV' }, 400, headers);
     }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'Invalid file encoding' }), { status: 400, headers });
+    return respond({ ok: false, error: 'Invalid file encoding' }, 400, headers);
   }
 
-  // Construct the path — ONLY data/instagram/ or data/tiktok/
-  // Use the original filename case for TikTok (capitalized), lowercase for Instagram
-  let targetFilename = filename;
-  if (platform === 'instagram') {
-    // Instagram files: match the expected case
-    const caseMap = {
-      'content.csv': 'content.csv',
-      'follows.csv': 'Follows.csv',
-      'interactions.csv': 'Interactions.csv',
-      'link clicks.csv': 'Link clicks.csv',
-      'reach.csv': 'Reach.csv',
-      'views.csv': 'Views.csv',
-      'visits.csv': 'Visits.csv',
-      'audience.csv': 'Audience.csv',
-    };
-    targetFilename = caseMap[normalizedName] || filename;
-  } else if (platform === 'tiktok') {
-    const caseMap = {
-      'content.csv': 'Content.csv',
-      'overview.csv': 'Overview.csv',
-      'viewers.csv': 'Viewers.csv',
-      'followerhistory.csv': 'FollowerHistory.csv',
-      'followeractivity.csv': 'FollowerActivity.csv',
-      'followergender.csv': 'FollowerGender.csv',
-      'followertopterritories.csv': 'FollowerTopTerritories.csv',
-    };
-    targetFilename = caseMap[normalizedName] || filename;
-  }
-
-  const path = `data/${platform}/${targetFilename}`;
+  // Build safe path — ONLY data/{platform}/
+  const path = `data/${platform}/${correctName}`;
 
   // Commit to GitHub
   try {
-    const result = await commitToGitHub(env, path, content, `📤 Upload ${targetFilename} (${platform})`);
+    const result = await commitToGitHub(env, path, content, `📤 Upload ${correctName} (${platform})`);
     if (result.ok) {
       recordRateLimit(ip);
-      return new Response(JSON.stringify({ ok: true, path, message: 'File uploaded successfully' }), { status: 200, headers });
+      return respond({ ok: true, path }, 200, headers);
     } else {
-      return new Response(JSON.stringify({ ok: false, error: result.error }), { status: 500, headers });
+      return respond({ ok: false, error: result.error }, 500, headers);
     }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'GitHub commit failed: ' + e.message }), { status: 500, headers });
+    return respond({ ok: false, error: 'GitHub commit failed: ' + e.message }, 500, headers);
   }
 }
 
@@ -209,59 +183,44 @@ async function commitToGitHub(env, path, contentBase64, message) {
   const token = env.GITHUB_PAT;
   const branch = env.GITHUB_BRANCH || 'main';
 
-  if (!token) {
-    return { ok: false, error: 'GitHub token not configured' };
-  }
+  if (!token) return { ok: false, error: 'GitHub token not configured' };
 
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const authHeaders = {
+    'Authorization': `Bearer ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'OKN-Analytics-Upload',
+  };
 
-  // Check if file already exists (need SHA to update)
+  // Get existing file SHA (needed for updates)
   let sha = null;
   try {
-    const existing = await fetch(apiUrl + `?ref=${branch}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'OKN-Analytics-Upload',
-      },
-    });
+    const existing = await fetch(apiUrl + `?ref=${branch}`, { headers: authHeaders });
     if (existing.status === 200) {
       const data = await existing.json();
       sha = data.sha;
     }
-  } catch (e) {
-    // File doesn't exist yet, that's fine
-  }
+  } catch (e) { /* file doesn't exist yet */ }
 
-  // Create or update file
-  const payload = {
-    message,
-    content: contentBase64,
-    branch,
-  };
+  // Create or update
+  const payload = { message, content: contentBase64, branch };
   if (sha) payload.sha = sha;
 
   const res = await fetch(apiUrl, {
     method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'OKN-Analytics-Upload',
-      'Content-Type': 'application/json',
-    },
+    headers: { ...authHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 
   if (res.status === 200 || res.status === 201) {
     return { ok: true };
-  } else {
-    const err = await res.json().catch(() => ({}));
-    return { ok: false, error: err.message || `GitHub API error (${res.status})` };
   }
+  const err = await res.json().catch(() => ({}));
+  return { ok: false, error: err.message || `GitHub API error (${res.status})` };
 }
 
 // ══════════════════════════════════════
-// CRYPTO & TOKEN UTILS
+// CRYPTO & TOKENS
 // ══════════════════════════════════════
 
 async function sha256(text) {
@@ -275,28 +234,21 @@ async function generateToken(env) {
   const payload = Date.now().toString();
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
-  const sigHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return payload + '.' + sigHex;
+  return payload + '.' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function verifyToken(token, env) {
   if (!token || typeof token !== 'string') return false;
   const parts = token.split('.');
   if (parts.length !== 2) return false;
-
   const timestamp = parseInt(parts[0]);
-  if (isNaN(timestamp)) return false;
+  if (isNaN(timestamp) || Date.now() - timestamp > TOKEN_EXPIRY_MS) return false;
 
-  // Check expiry
-  if (Date.now() - timestamp > TOKEN_EXPIRY_MS) return false;
-
-  // Verify signature
   const secret = env.TOKEN_SECRET || 'okn-default-secret';
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(parts[0]));
-  const sigHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  return sigHex === parts[1];
+  const expected = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return expected === parts[1];
 }
 
 // ══════════════════════════════════════
@@ -307,11 +259,7 @@ function isRateLimited(ip) {
   const now = Date.now();
   const record = rateLimits.get(ip);
   if (!record) return false;
-  // Clean old entries
-  if (now - record.start > RATE_LIMIT_WINDOW) {
-    rateLimits.delete(ip);
-    return false;
-  }
+  if (now - record.start > RATE_LIMIT_WINDOW) { rateLimits.delete(ip); return false; }
   return record.count >= RATE_LIMIT_MAX;
 }
 
