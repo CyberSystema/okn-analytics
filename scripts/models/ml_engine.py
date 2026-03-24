@@ -218,7 +218,7 @@ class MLEngine:
             hidden_layer_sizes=(32, 16, 8),
             activation="relu",
             solver="adam",
-            max_iter=1000,
+            max_iter=2000,
             random_state=42,
             early_stopping=True,
             validation_fraction=0.15,
