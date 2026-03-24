@@ -382,7 +382,7 @@ def apply_column_map(df: pd.DataFrame, col_map: dict, platform: str) -> pd.DataF
                 result.loc[mask_failed, "published_at"],
                 errors="coerce",
             )
-        # Instagram exports are in local time (e.g., America/Los_Angeles) without timezone info — localize to that timezone first before converting to KST
+        # Instagram exports from Meta Business Suite are in PST (America/Los_Angeles)
         result["published_at"] = parsed.dt.tz_localize("America/Los_Angeles", ambiguous="NaT", nonexistent="NaT")
         result["published_at"] = to_kst(result["published_at"])
     else:
@@ -457,14 +457,20 @@ def merge_with_history(new_data: pd.DataFrame) -> pd.DataFrame:
             logger.warning(f"Could not load CSV fallback: {e}")
 
     if history is not None:
-        # New data goes AFTER history so keep="last" keeps the fresh metrics
+        # Tag new data with ingestion timestamp so dedup always picks the freshest
+        new_data = new_data.copy()
+        new_data["_ingested_at"] = pd.Timestamp.now(tz="UTC")
+        if "_ingested_at" not in history.columns:
+            history["_ingested_at"] = pd.Timestamp("2020-01-01", tz="UTC")
+
         combined = pd.concat([history, new_data], ignore_index=True)
     else:
-        combined = new_data
+        combined = new_data.copy()
+        combined["_ingested_at"] = pd.Timestamp.now(tz="UTC")
 
-    # Deduplicate — keep the LATEST version of each post (freshest metrics)
+    # Deduplicate — keep the LATEST ingested version of each post (freshest metrics)
     before = len(combined)
-    combined = combined.sort_values("published_at", ascending=True)
+    combined = combined.sort_values("_ingested_at", ascending=True)
     combined = combined.drop_duplicates(
         subset=["post_id", "platform"],
         keep="last",
@@ -472,6 +478,9 @@ def merge_with_history(new_data: pd.DataFrame) -> pd.DataFrame:
     dupes = before - len(combined)
     if dupes > 0:
         logger.info(f"   Merged: {dupes} older records updated with fresh metrics")
+
+    # Drop the internal column before returning
+    combined = combined.drop(columns=["_ingested_at"], errors="ignore")
 
     return combined
 

@@ -29,10 +29,12 @@ class PostingTimeModel:
 
     def __init__(self, df: pd.DataFrame):
         self.df = df.copy()
-        self.df["published_at"] = pd.to_datetime(self.df["published_at"], errors="coerce")
+        self.df["published_at"] = pd.to_datetime(self.df["published_at"], errors="coerce", utc=True)
         self.df = self.df.dropna(subset=["published_at"])
-        self.df["hour"] = self.df["published_at"].dt.hour
-        self.df["day_of_week"] = self.df["published_at"].dt.day_name()
+        # Always extract time features in KST
+        kst = self.df["published_at"].dt.tz_convert("Asia/Seoul")
+        self.df["hour"] = kst.dt.hour
+        self.df["day_of_week"] = kst.dt.day_name()
         # Recency weights
         if "weight" not in self.df.columns:
             self.df["weight"] = compute_recency_weights(self.df["published_at"])

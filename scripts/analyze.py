@@ -25,6 +25,15 @@ from config import PLATFORMS, ANALYSIS, CONTENT_CATEGORIES, TIMEZONE, TIMELINE, 
 logger = logging.getLogger("okn.analyze")
 
 
+def _friendly_type(name):
+    """Convert content_type slugs to readable labels."""
+    return {
+        "short_video": "Short Video", "long_video": "Long Video", "image": "Image",
+        "carousel": "Carousel", "story": "Story", "live": "Live Stream",
+        "text_post": "Text Post", "link_post": "Link Post", "other": "Other",
+    }.get(name, name.replace("_", " ").title())
+
+
 def _safe_weighted_avg(values, weights):
     """Compute weighted average, safe against empty/zero weights/NaN."""
     values = np.asarray(values, dtype=float)
@@ -60,9 +69,10 @@ class OKNAnalyzer:
             self.df.loc[valid_mask, "day_of_week"] = kst_times.dt.day_name()
             self.df.loc[valid_mask, "hour"] = kst_times.dt.hour
 
-            # isocalendar().week can have NA for NaT rows — fill with 0
-            iso = self.df["published_at"].dt.isocalendar()
-            self.df["week"] = iso["week"].fillna(0).astype(int)
+            # isocalendar — use KST dates so week boundaries align with Korean calendar
+            iso = kst_times.dt.isocalendar()
+            self.df.loc[valid_mask, "week"] = iso["week"].values
+            self.df["week"] = self.df["week"].fillna(0).astype(int)
 
             self.df.loc[valid_mask, "year_week"] = kst_times.dt.strftime("%Y-W%U")
             self.df.loc[valid_mask, "month"] = kst_times.dt.to_period("M").astype(str)
@@ -542,7 +552,7 @@ class OKNAnalyzer:
                 recs.append({
                     "priority": "high",
                     "category": "content",
-                    "message": f"On {pname}, your best content type is '{best['type']}' with {best['engagement_rate']:.1%} avg engagement ({best['count']} posts). Create more of this.",
+                    "message": f"On {pname}, your best content type is '{_friendly_type(best['type'])}' with {best['engagement_rate']:.1%} avg engagement ({best['count']} posts). Create more of this.",
                 })
 
         # Timing recommendations
@@ -640,11 +650,11 @@ class OKNAnalyzer:
                 pname = PLATFORMS.get(platform, {}).get("name", platform)
                 p_viral = [v for v in viral if v["platform"] == platform]
                 if p_viral:
-                    viral_types = set(v["content_type"] for v in p_viral)
+                    viral_types = set(_friendly_type(v["content_type"]) for v in p_viral)
                     recs.append({
                         "priority": "high",
                         "category": "content",
-                        "message": f"Viral content on {pname} is: {', '.join(viral_types)}. Create more content in these formats.",
+                        "message": f"Viral content on {pname}: {', '.join(viral_types)}. Create more content in these formats.",
                     })
 
         # Methodology note
@@ -692,7 +702,11 @@ class OKNAnalyzer:
         if len(series) < 2:
             return "insufficient_data"
 
-        values = np.asarray(series.dropna(), dtype=float)
+        values = series.dropna().values
+        try:
+            values = values.astype(float)
+        except (ValueError, TypeError):
+            return "insufficient_data"
 
         if len(values) < 2:
             return "insufficient_data"

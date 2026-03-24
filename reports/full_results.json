@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-03-23T02:36:15.366414",
+  "generated_at": "2026-03-24T14:58:06.465447",
   "analysis": {
     "meta": {
-      "generated_at": "2026-03-23T02:35:56.694164",
+      "generated_at": "2026-03-24T14:57:56.443487",
       "total_posts": 139,
       "platforms": [
         "instagram",
@@ -1204,12 +1204,12 @@
       {
         "priority": "high",
         "category": "content",
-        "message": "On Instagram, your best content type is 'short_video' with 19.6% avg engagement (19 posts). Create more of this."
+        "message": "On Instagram, your best content type is 'Short Video' with 19.6% avg engagement (19 posts). Create more of this."
       },
       {
         "priority": "high",
         "category": "content",
-        "message": "On TikTok, your best content type is 'short_video' with 9.7% avg engagement (15 posts). Create more of this."
+        "message": "On TikTok, your best content type is 'Short Video' with 9.7% avg engagement (15 posts). Create more of this."
       },
       {
         "priority": "high",
@@ -1224,12 +1224,12 @@
       {
         "priority": "high",
         "category": "content",
-        "message": "Viral content on Instagram is: short_video. Create more content in these formats."
+        "message": "Viral content on Instagram: Short Video. Create more content in these formats."
       },
       {
         "priority": "high",
         "category": "content",
-        "message": "Viral content on TikTok is: short_video. Create more content in these formats."
+        "message": "Viral content on TikTok: Short Video. Create more content in these formats."
       },
       {
         "priority": "medium",
@@ -1930,7 +1930,7 @@
   "forecast": {
     "horizon_days": 0,
     "method_used": "prophet",
-    "generated_at": "2026-03-23T02:35:57.280909",
+    "generated_at": "2026-03-24T14:57:56.746884",
     "reach": {
       "method": "prophet",
       "historical_weeks": 44,
@@ -1964,7 +1964,7 @@
     "instagram_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-03-23T02:35:57.665451",
+      "generated_at": "2026-03-24T14:57:57.002417",
       "reach": {
         "method": "prophet",
         "historical_weeks": 41,
@@ -2000,7 +2000,7 @@
     "tiktok_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-03-23T02:35:57.945429",
+      "generated_at": "2026-03-24T14:57:57.216437",
       "reach": {
         "method": "linear_trend_ma",
         "historical_weeks": 5,

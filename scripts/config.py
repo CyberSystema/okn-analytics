@@ -30,11 +30,14 @@ def compute_recency_weights(dates: pd.Series, reference_date=None) -> pd.Series:
     
     reference_date: the "now" anchor (defaults to max date in the series).
     """
-    dates = pd.to_datetime(dates, errors="coerce")
+    dates = pd.to_datetime(dates, errors="coerce", utc=True)
     if reference_date is None:
         reference_date = dates.max()
     if pd.isna(reference_date):
         return pd.Series(1.0, index=dates.index)
+    # Ensure reference_date is also tz-aware
+    if hasattr(reference_date, 'tzinfo') and reference_date.tzinfo is None:
+        reference_date = reference_date.tz_localize("UTC")
 
     rw = TIMELINE["recency_weights"]
     days_ago = (reference_date - dates).dt.total_seconds() / 86400
