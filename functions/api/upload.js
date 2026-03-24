@@ -1,8 +1,8 @@
 /**
  * OKN Analytics — Upload API (Cloudflare Pages Function)
  * =====================================================
- * Secure file upload endpoint. Validates and commits CSV files
- * to the GitHub repository. Files arrive pre-renamed by the frontend.
+ * Secure file upload endpoint. Validates CSV files and commits them
+ * to GitHub as a SINGLE commit using the Git Data API (trees).
  *
  * Required Cloudflare environment variables:
  *   UPLOAD_PASSWORD_HASH  — SHA-256 hex hash of the team password
@@ -12,7 +12,7 @@
  */
 
 // ══════════════════════════════════════
-// ALLOWED TARGET FILES (case-insensitive check)
+// ALLOWED TARGET FILES
 // ══════════════════════════════════════
 
 const ALLOWED = {
@@ -26,7 +26,7 @@ const ALLOWED = {
   ],
 };
 
-// Build case-insensitive lookup: lowercase → correct case
+// Case-insensitive lookup → correct filename
 const FILENAME_MAP = {};
 for (const [platform, files] of Object.entries(ALLOWED)) {
   FILENAME_MAP[platform] = {};
@@ -35,9 +35,10 @@ for (const [platform, files] of Object.entries(ALLOWED)) {
   }
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-const RATE_LIMIT_MAX = 30; // per hour per IP
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_BATCH_SIZE = 15;
+const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
 const rateLimits = new Map();
 
@@ -59,13 +60,16 @@ export async function onRequestPost(context) {
 
     if (body.action === 'auth') {
       return await handleAuth(body, env, headers);
+    } else if (body.action === 'upload_batch') {
+      return await handleBatchUpload(body, env, headers, ip);
     } else if (body.action === 'upload') {
-      return await handleUpload(body, env, headers, ip);
+      // Legacy single-file upload (backwards compatibility)
+      return await handleSingleUpload(body, env, headers, ip);
     } else {
       return respond({ ok: false, error: 'Invalid action' }, 400, headers);
     }
   } catch (e) {
-    return respond({ ok: false, error: 'Server error' }, 500, headers);
+    return respond({ ok: false, error: 'Server error: ' + e.message }, 500, headers);
   }
 }
 
@@ -111,61 +115,78 @@ async function handleAuth(body, env, headers) {
 }
 
 // ══════════════════════════════════════
-// UPLOAD
+// VALIDATE A SINGLE FILE
 // ══════════════════════════════════════
 
-async function handleUpload(body, env, headers, ip) {
-  // Verify session
+function validateFile(platform, filename, content) {
+  if (!platform || !ALLOWED[platform]) {
+    return { ok: false, error: 'Invalid platform' };
+  }
+  if (!filename || typeof filename !== 'string') {
+    return { ok: false, error: 'No filename' };
+  }
+
+  const correctName = FILENAME_MAP[platform][filename.toLowerCase().trim()];
+  if (!correctName) {
+    return { ok: false, error: `"${filename}" is not allowed for ${platform}` };
+  }
+
+  if (!content || typeof content !== 'string') {
+    return { ok: false, error: 'No file content' };
+  }
+  if ((content.length * 3 / 4) > MAX_FILE_SIZE) {
+    return { ok: false, error: `${correctName} is too large (max 5MB)` };
+  }
+
+  try {
+    const decoded = atob(content.slice(0, 1000));
+    if (!decoded.includes(',') && !decoded.includes('\t') && !decoded.includes('\n')) {
+      return { ok: false, error: `${correctName} does not appear to be a valid CSV` };
+    }
+  } catch (e) {
+    return { ok: false, error: `${correctName} has invalid encoding` };
+  }
+
+  return { ok: true, correctName, path: `data/${platform}/${correctName}` };
+}
+
+// ══════════════════════════════════════
+// BATCH UPLOAD — single commit
+// ══════════════════════════════════════
+
+async function handleBatchUpload(body, env, headers, ip) {
   if (!await verifyToken(body.token, env)) {
     return respond({ ok: false, error: 'Session expired. Please sign in again.' }, 401, headers);
   }
 
-  const { platform, filename, content } = body;
-
-  // Validate platform
-  if (!platform || !ALLOWED[platform]) {
-    return respond({ ok: false, error: 'Invalid platform' }, 400, headers);
+  const files = body.files;
+  if (!Array.isArray(files) || files.length === 0) {
+    return respond({ ok: false, error: 'No files provided' }, 400, headers);
+  }
+  if (files.length > MAX_BATCH_SIZE) {
+    return respond({ ok: false, error: `Too many files (max ${MAX_BATCH_SIZE})` }, 400, headers);
   }
 
-  // Validate filename (case-insensitive)
-  if (!filename || typeof filename !== 'string') {
-    return respond({ ok: false, error: 'No filename' }, 400, headers);
-  }
-  const normalizedName = filename.toLowerCase().trim();
-  const correctName = FILENAME_MAP[platform][normalizedName];
-  if (!correctName) {
-    return respond({ ok: false, error: `File "${filename}" is not allowed for ${platform}` }, 400, headers);
-  }
-
-  // Validate content
-  if (!content || typeof content !== 'string') {
-    return respond({ ok: false, error: 'No file content' }, 400, headers);
-  }
-
-  // Check size (base64 is ~33% larger)
-  if ((content.length * 3 / 4) > MAX_FILE_SIZE) {
-    return respond({ ok: false, error: 'File too large (max 5MB)' }, 400, headers);
-  }
-
-  // Validate it looks like CSV
-  try {
-    const decoded = atob(content.slice(0, 1000));
-    if (!decoded.includes(',') && !decoded.includes('\t') && !decoded.includes('\n')) {
-      return respond({ ok: false, error: 'File does not appear to be a valid CSV' }, 400, headers);
+  // Validate every file before touching GitHub
+  const validated = [];
+  for (const f of files) {
+    const result = validateFile(f.platform, f.filename, f.content);
+    if (!result.ok) {
+      return respond({ ok: false, error: result.error }, 400, headers);
     }
-  } catch (e) {
-    return respond({ ok: false, error: 'Invalid file encoding' }, 400, headers);
+    validated.push({ path: result.path, content: f.content, name: result.correctName });
   }
 
-  // Build safe path — ONLY data/{platform}/
-  const path = `data/${platform}/${correctName}`;
-
-  // Commit to GitHub
+  // Commit all files as a single commit
   try {
-    const result = await commitToGitHub(env, path, content, `📤 Upload ${correctName} (${platform})`);
+    const fileNames = validated.map(v => v.name).join(', ');
+    const platforms = [...new Set(files.map(f => f.platform))].join(' & ');
+    const message = `📤 Upload ${validated.length} file(s): ${fileNames} (${platforms})`;
+
+    const result = await batchCommitToGitHub(env, validated, message);
     if (result.ok) {
       recordRateLimit(ip);
-      return respond({ ok: true, path }, 200, headers);
+      return respond({ ok: true, files: validated.length, commit: result.sha }, 200, headers);
     } else {
       return respond({ ok: false, error: result.error }, 500, headers);
     }
@@ -175,48 +196,138 @@ async function handleUpload(body, env, headers, ip) {
 }
 
 // ══════════════════════════════════════
-// GITHUB API
+// SINGLE UPLOAD — legacy, one file
 // ══════════════════════════════════════
 
-async function commitToGitHub(env, path, contentBase64, message) {
+async function handleSingleUpload(body, env, headers, ip) {
+  if (!await verifyToken(body.token, env)) {
+    return respond({ ok: false, error: 'Session expired. Please sign in again.' }, 401, headers);
+  }
+
+  const result = validateFile(body.platform, body.filename, body.content);
+  if (!result.ok) {
+    return respond({ ok: false, error: result.error }, 400, headers);
+  }
+
+  try {
+    const message = `📤 Upload ${result.correctName} (${body.platform})`;
+    const commitResult = await batchCommitToGitHub(env, [{ path: result.path, content: body.content }], message);
+    if (commitResult.ok) {
+      recordRateLimit(ip);
+      return respond({ ok: true, path: result.path }, 200, headers);
+    } else {
+      return respond({ ok: false, error: commitResult.error }, 500, headers);
+    }
+  } catch (e) {
+    return respond({ ok: false, error: 'GitHub commit failed: ' + e.message }, 500, headers);
+  }
+}
+
+// ══════════════════════════════════════
+// GITHUB GIT DATA API — atomic commit
+// ══════════════════════════════════════
+//
+// Uses the Git Data API to create a single commit with multiple files:
+//   1. Get current branch HEAD → commit SHA
+//   2. Get that commit's tree SHA
+//   3. Create a blob for each file
+//   4. Create a new tree with all blobs
+//   5. Create a new commit with that tree
+//   6. Update the branch ref to the new commit
+//
+
+async function batchCommitToGitHub(env, files, message) {
   const repo = env.GITHUB_REPO || 'CyberSystema/okn-analytics';
   const token = env.GITHUB_PAT;
   const branch = env.GITHUB_BRANCH || 'main';
 
   if (!token) return { ok: false, error: 'GitHub token not configured' };
 
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
-  const authHeaders = {
-    'Authorization': `Bearer ${token}`,
-    'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'OKN-Analytics-Upload',
-  };
-
-  // Get existing file SHA (needed for updates)
-  let sha = null;
-  try {
-    const existing = await fetch(apiUrl + `?ref=${branch}`, { headers: authHeaders });
-    if (existing.status === 200) {
-      const data = await existing.json();
-      sha = data.sha;
-    }
-  } catch (e) { /* file doesn't exist yet */ }
-
-  // Create or update
-  const payload = { message, content: contentBase64, branch };
-  if (sha) payload.sha = sha;
-
-  const res = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { ...authHeaders, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+  const api = `https://api.github.com/repos/${repo}`;
+  const gh = (url, opts = {}) => fetch(url, {
+    ...opts,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'OKN-Analytics-Upload',
+      'Content-Type': 'application/json',
+      ...(opts.headers || {}),
+    },
   });
 
-  if (res.status === 200 || res.status === 201) {
-    return { ok: true };
+  // 1. Get current HEAD
+  const refRes = await gh(`${api}/git/ref/heads/${branch}`);
+  if (!refRes.ok) {
+    return { ok: false, error: `Cannot read branch (${refRes.status})` };
   }
-  const err = await res.json().catch(() => ({}));
-  return { ok: false, error: err.message || `GitHub API error (${res.status})` };
+  const refData = await refRes.json();
+  const headSha = refData.object.sha;
+
+  // 2. Get the tree SHA from the HEAD commit
+  const commitRes = await gh(`${api}/git/commits/${headSha}`);
+  if (!commitRes.ok) {
+    return { ok: false, error: `Cannot read commit (${commitRes.status})` };
+  }
+  const commitData = await commitRes.json();
+  const baseTreeSha = commitData.tree.sha;
+
+  // 3. Create a blob for each file
+  const treeItems = [];
+  for (const file of files) {
+    const blobRes = await gh(`${api}/git/blobs`, {
+      method: 'POST',
+      body: JSON.stringify({ content: file.content, encoding: 'base64' }),
+    });
+    if (!blobRes.ok) {
+      const err = await blobRes.json().catch(() => ({}));
+      return { ok: false, error: `Blob creation failed for ${file.path}: ${err.message || blobRes.status}` };
+    }
+    const blobData = await blobRes.json();
+    treeItems.push({
+      path: file.path,
+      mode: '100644',  // regular file
+      type: 'blob',
+      sha: blobData.sha,
+    });
+  }
+
+  // 4. Create a new tree
+  const treeRes = await gh(`${api}/git/trees`, {
+    method: 'POST',
+    body: JSON.stringify({ base_tree: baseTreeSha, tree: treeItems }),
+  });
+  if (!treeRes.ok) {
+    const err = await treeRes.json().catch(() => ({}));
+    return { ok: false, error: `Tree creation failed: ${err.message || treeRes.status}` };
+  }
+  const treeData = await treeRes.json();
+
+  // 5. Create a new commit
+  const newCommitRes = await gh(`${api}/git/commits`, {
+    method: 'POST',
+    body: JSON.stringify({
+      message,
+      tree: treeData.sha,
+      parents: [headSha],
+    }),
+  });
+  if (!newCommitRes.ok) {
+    const err = await newCommitRes.json().catch(() => ({}));
+    return { ok: false, error: `Commit creation failed: ${err.message || newCommitRes.status}` };
+  }
+  const newCommitData = await newCommitRes.json();
+
+  // 6. Update the branch ref
+  const updateRes = await gh(`${api}/git/refs/heads/${branch}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sha: newCommitData.sha }),
+  });
+  if (!updateRes.ok) {
+    const err = await updateRes.json().catch(() => ({}));
+    return { ok: false, error: `Ref update failed: ${err.message || updateRes.status}` };
+  }
+
+  return { ok: true, sha: newCommitData.sha };
 }
 
 // ══════════════════════════════════════

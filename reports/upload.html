@@ -656,46 +656,53 @@ async function doUpload() {
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true;
-  showUploadStatus('Uploading files...', 'uploading');
+  showUploadStatus('Preparing files...', 'uploading');
   showProgress(true);
   updateSteps(3);
 
-  let uploaded = 0, errors = [];
-
-  for (const d of toUpload) {
-    updateProgress(uploaded, toUpload.length, `Uploading ${d.rule.label} (${d.platform})...`);
-
+  // Read all files to base64 first
+  const files = [];
+  for (let i = 0; i < toUpload.length; i++) {
+    const d = toUpload[i];
+    updateProgress(i, toUpload.length + 1, `Reading ${d.rule.label}...`);
     try {
       const content = await readFileBase64(d.file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          action: 'upload',
-          token: authToken,
-          platform: d.platform,
-          filename: d.rule.targetName,
-          content,
-        })
-      });
-      const data = await res.json();
-      if (!data.ok) errors.push(`${d.rule.label}: ${data.error}`);
+      files.push({ platform: d.platform, filename: d.rule.targetName, content });
     } catch(e) {
-      errors.push(`${d.rule.label}: Upload failed`);
+      showUploadStatus(`❌ Failed to read ${d.rule.label}: ${e.message}`, 'err');
+      btn.disabled = false;
+      setTimeout(() => showProgress(false), 1000);
+      return;
     }
-    uploaded++;
-    updateProgress(uploaded, toUpload.length, uploaded === toUpload.length ? 'Done!' : 'Uploading...');
   }
 
-  if (errors.length === 0) {
-    showUploadStatus(`✅ ${uploaded} file(s) uploaded successfully! The analytics pipeline will run automatically and the report will update in ~2 minutes.`, 'ok');
-    allFiles = { instagram: [], tiktok: [] };
-    renderFiles();
-    updateSteps(1);
-  } else {
-    showUploadStatus(`⚠️ ${uploaded - errors.length}/${uploaded} uploaded. Errors: ${errors.join('; ')}`, 'err');
+  // Send all files in one request → one commit
+  updateProgress(toUpload.length, toUpload.length + 1, `Uploading ${files.length} files as one commit...`);
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        action: 'upload_batch',
+        token: authToken,
+        files,
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      updateProgress(1, 1, 'Done!');
+      showUploadStatus(`✅ ${files.length} file(s) uploaded in a single commit! The analytics pipeline will run automatically and the report will update in ~2 minutes.`, 'ok');
+      allFiles = { instagram: [], tiktok: [] };
+      renderFiles();
+      updateSteps(1);
+    } else {
+      showUploadStatus(`❌ Upload failed: ${data.error}`, 'err');
+    }
+  } catch(e) {
+    showUploadStatus(`❌ Upload failed: ${e.message}`, 'err');
   }
 
+  btn.disabled = false;
   setTimeout(() => showProgress(false), 2000);
 }
 
