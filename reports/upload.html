@@ -352,11 +352,18 @@ async function authenticate() {
   const btn = document.getElementById('authBtn');
   btn.disabled = true; btn.textContent = 'Verifying...';
   try {
-    const res = await fetch('functions/api/upload', {
+    const res = await fetch('/api/upload', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({action: 'auth', password: pass})
     });
+    // Check if we got HTML back (= function not deployed, 404 page)
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      showAuthStatus('Upload API not available (HTTP ' + res.status + '). This usually means the Cloudflare Function is not deployed. Check: 1) functions/api/upload.js exists in reports/ 2) Cloudflare env vars are set 3) Redeploy the site.', 'err');
+      btn.disabled = false; btn.textContent = 'Sign In';
+      return;
+    }
     const data = await res.json();
     if (data.ok) {
       authToken = data.token;
@@ -366,7 +373,7 @@ async function authenticate() {
       showAuthStatus(data.error || 'Wrong password', 'err');
     }
   } catch(e) {
-    showAuthStatus('Connection error — try again', 'err');
+    showAuthStatus('Cannot connect to /api/upload — Error: ' + e.message, 'err');
   }
   btn.disabled = false; btn.textContent = 'Sign In';
 }
