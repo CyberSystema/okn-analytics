@@ -35,6 +35,8 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 .ptab:hover{border-color:#1a3a5c;background:#f5f8fb}
 .ptab.active{border-color:#1a3a5c;background:#1a3a5c;color:white}
 .ptab .icon{font-size:24px;display:block;margin-bottom:4px}
+.ptab-badge{position:absolute;top:-6px;right:-6px;background:#c4953a;color:white;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white}
+.ptab{position:relative}
 
 /* Dropzone */
 .dropzone{border:2px dashed #c4953a;border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;background:#fdfcfa}
@@ -337,7 +339,7 @@ function eq(filename, text) { return filename.toLowerCase().trim() === text.toLo
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 let currentPlatform = 'instagram';
-let detectedFiles = []; // {file, rule, status, warnMsg}
+let allFiles = { instagram: [], tiktok: [] }; // per-platform file lists
 let authToken = '';
 
 /* ═══════════════════════════════════════
@@ -380,7 +382,7 @@ async function authenticate() {
 
 function logout() {
   authToken = '';
-  detectedFiles = [];
+  allFiles = { instagram: [], tiktok: [] };
   document.getElementById('authSection').style.display = 'block';
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('passInput').value = '';
@@ -403,10 +405,27 @@ function selectPlatform(platform, tab) {
   document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
   tab.classList.add('active');
   document.getElementById('dzPlatformName').textContent = platform === 'instagram' ? 'Instagram' : 'TikTok';
-  detectedFiles = [];
   renderFiles();
   showUploadStatus('', '');
-  updateSteps(1);
+  updateStepState();
+}
+
+function updateTabBadges() {
+  document.querySelectorAll('.ptab').forEach(tab => {
+    const p = tab.dataset.platform;
+    const count = allFiles[p].filter(f => f.status === 'ok').length;
+    let badge = tab.querySelector('.ptab-badge');
+    if (count > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'ptab-badge';
+        tab.appendChild(badge);
+      }
+      badge.textContent = count;
+    } else if (badge) {
+      badge.remove();
+    }
+  });
 }
 
 /* ═══════════════════════════════════════
@@ -417,36 +436,6 @@ const dz = document.getElementById('dropzone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-
-async function handleFiles(files) {
-  for (const file of files) {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'Not a CSV file'});
-      continue;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'File too large (max 5MB)'});
-      continue;
-    }
-
-    const {headers, firstRows} = await readFileHead(file);
-    const result = detectFile(file.name, headers, firstRows);
-
-    if (result.status === 'ok' || result.status === 'warn') {
-      // Check duplicate target
-      const dup = detectedFiles.find(d => d.rule && d.rule.targetName === result.rule.targetName && d.status !== 'err');
-      if (dup) {
-        detectedFiles.push({file, rule: result.rule, status: 'err', errMsg: `Duplicate — "${result.rule.label}" already added`});
-        continue;
-      }
-    }
-    detectedFiles.push(result);
-  }
-
-  document.getElementById('fileInput').value = '';
-  renderFiles();
-  updateSteps(detectedFiles.filter(f => f.status !== 'err').length > 0 ? 2 : 1);
-}
 
 async function readFileHead(file) {
   return new Promise(resolve => {
@@ -464,45 +453,16 @@ async function readFileHead(file) {
   });
 }
 
-function detectFile(filename, headers, firstRows) {
-  const platformRules = DETECT_RULES.filter(r => r.platform === currentPlatform);
-  const otherRules = DETECT_RULES.filter(r => r.platform !== currentPlatform);
+async function handleFiles(files) {
+  const list = allFiles[currentPlatform];
 
-  // Try matching by headers first (strongest signal), then filename
-  for (const rule of platformRules) {
-    const headerMatch = rule.detectByHeaders(headers, firstRows);
-    const nameMatch = rule.detectByFilename(filename);
-    if (headerMatch || nameMatch) {
-      return {file: {name: filename, size: arguments[0]?.size}, rule, status: 'ok'};
-    }
-  }
-
-  // Didn't match current platform — check if it belongs to the OTHER platform
-  for (const rule of otherRules) {
-    const headerMatch = rule.detectByHeaders(headers, firstRows);
-    const nameMatch = rule.detectByFilename(filename);
-    if (headerMatch || nameMatch) {
-      const otherName = rule.platform === 'instagram' ? 'Instagram' : 'TikTok';
-      return {
-        file: {name: filename}, rule, status: 'warn',
-        warnMsg: `This looks like a ${otherName} file (${rule.label}). Did you mean to upload it to ${otherName}?`
-      };
-    }
-  }
-
-  return {file: {name: filename}, rule: null, status: 'err', errMsg: 'Could not identify this file. Please check it\'s a valid analytics export.'};
-}
-
-// Re-wrap detectFile to pass actual file object
-const _origHandleFiles = handleFiles;
-handleFiles = async function(files) {
   for (const file of files) {
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'Not a CSV file'});
+      list.push({file, rule: null, status: 'err', errMsg: 'Not a CSV file'});
       continue;
     }
     if (file.size > MAX_FILE_SIZE) {
-      detectedFiles.push({file, rule: null, status: 'err', errMsg: 'File too large (max 5MB)'});
+      list.push({file, rule: null, status: 'err', errMsg: 'File too large (max 5MB)'});
       continue;
     }
 
@@ -534,22 +494,20 @@ handleFiles = async function(files) {
       found = {file, rule: null, status: 'err', errMsg: 'Could not identify this file. Make sure it\'s a valid analytics export.'};
     }
 
-    // Check duplicate
+    // Check duplicate within this platform
     if (found.status === 'ok') {
-      const dup = detectedFiles.find(d => d.rule && d.rule.targetName === found.rule.targetName && d.status === 'ok');
+      const dup = list.find(d => d.rule && d.rule.targetName === found.rule.targetName && d.status === 'ok');
       if (dup) {
         found = {file, rule: found.rule, status: 'err', errMsg: `"${found.rule.label}" already added`};
       }
     }
 
-    detectedFiles.push(found);
+    list.push(found);
   }
 
   document.getElementById('fileInput').value = '';
   renderFiles();
-  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
-  updateSteps(okCount > 0 ? 2 : 1);
-  document.getElementById('uploadBtn').disabled = okCount === 0;
+  updateStepState();
 };
 
 /* ═══════════════════════════════════════
@@ -559,7 +517,9 @@ handleFiles = async function(files) {
 function renderFiles() {
   const list = document.getElementById('fileList');
   list.innerHTML = '';
-  detectedFiles.forEach((d, i) => {
+  const files = allFiles[currentPlatform];
+
+  files.forEach((d, i) => {
     const div = document.createElement('div');
     div.className = 'file-item ' + d.status;
 
@@ -581,19 +541,29 @@ function renderFiles() {
               <div class="fi-orig" style="color:#c53030">${d.errMsg}</div>`;
     }
 
-    div.innerHTML = `<span class="fi-icon">${icon}</span><div class="fi-body">${body}</div>${badge}<span class="fi-remove" onclick="removeFile(${i})">✕</span>`;
+    div.innerHTML = `<span class="fi-icon">${icon}</span><div class="fi-body">${body}</div>${badge}<span class="fi-remove" onclick="removeFile('${currentPlatform}',${i})">✕</span>`;
     list.appendChild(div);
   });
 
-  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
-  document.getElementById('uploadBtn').disabled = okCount === 0;
+  updateTabBadges();
+  const totalOk = allFiles.instagram.filter(f => f.status === 'ok').length + allFiles.tiktok.filter(f => f.status === 'ok').length;
+  document.getElementById('uploadBtn').disabled = totalOk === 0;
 }
 
-function removeFile(index) {
-  detectedFiles.splice(index, 1);
+function removeFile(platform, index) {
+  allFiles[platform].splice(index, 1);
   renderFiles();
-  const okCount = detectedFiles.filter(f => f.status === 'ok').length;
-  updateSteps(okCount > 0 ? 2 : 1);
+  updateStepState();
+}
+
+function getTotalOkCount() {
+  return allFiles.instagram.filter(f => f.status === 'ok').length + allFiles.tiktok.filter(f => f.status === 'ok').length;
+}
+
+function updateStepState() {
+  const total = getTotalOkCount();
+  updateSteps(total > 0 ? 2 : 1);
+  document.getElementById('uploadBtn').disabled = total === 0;
 }
 
 /* ═══════════════════════════════════════
@@ -612,22 +582,33 @@ function updateSteps(active) {
    ═══════════════════════════════════════ */
 
 function showConfirm() {
-  const okFiles = detectedFiles.filter(f => f.status === 'ok');
-  if (okFiles.length === 0) return;
+  if (getTotalOkCount() === 0) return;
 
-  const platName = currentPlatform === 'instagram' ? 'Instagram' : 'TikTok';
-  document.getElementById('confirmPlatform').textContent = platName;
-
+  // Build list across both platforms
   const list = document.getElementById('confirmList');
-  list.innerHTML = okFiles.map(d =>
-    `<div class="confirm-item">
-      <span class="ci-icon">📄</span>
-      <span class="ci-name">${d.file.name}</span>
-      <span class="ci-arrow">→</span>
-      <span class="ci-dest">data/${currentPlatform}/${d.rule.targetName}</span>
-    </div>`
-  ).join('');
+  let html = '';
 
+  for (const platform of ['instagram', 'tiktok']) {
+    const okFiles = allFiles[platform].filter(f => f.status === 'ok');
+    if (okFiles.length === 0) continue;
+    const pName = platform === 'instagram' ? '📸 Instagram' : '🎵 TikTok';
+    html += `<div style="font-weight:600;color:#1a3a5c;margin:12px 0 6px;font-size:13px">${pName}</div>`;
+    html += okFiles.map(d =>
+      `<div class="confirm-item">
+        <span class="ci-icon">📄</span>
+        <span class="ci-name">${d.file.name}</span>
+        <span class="ci-arrow">→</span>
+        <span class="ci-dest">data/${platform}/${d.rule.targetName}</span>
+      </div>`
+    ).join('');
+  }
+
+  document.getElementById('confirmPlatform').textContent =
+    (allFiles.instagram.some(f => f.status === 'ok') && allFiles.tiktok.some(f => f.status === 'ok'))
+      ? 'Instagram & TikTok'
+      : allFiles.instagram.some(f => f.status === 'ok') ? 'Instagram' : 'TikTok';
+
+  list.innerHTML = html;
   document.getElementById('confirmOverlay').classList.add('show');
 }
 
@@ -637,8 +618,15 @@ function hideConfirm() {
 
 async function doUpload() {
   hideConfirm();
-  const okFiles = detectedFiles.filter(f => f.status === 'ok');
-  if (okFiles.length === 0) return;
+
+  // Collect all ok files with their platform
+  const toUpload = [];
+  for (const platform of ['instagram', 'tiktok']) {
+    for (const d of allFiles[platform].filter(f => f.status === 'ok')) {
+      toUpload.push({...d, platform});
+    }
+  }
+  if (toUpload.length === 0) return;
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true;
@@ -648,8 +636,8 @@ async function doUpload() {
 
   let uploaded = 0, errors = [];
 
-  for (const d of okFiles) {
-    updateProgress(uploaded, okFiles.length, `Uploading ${d.rule.label}...`);
+  for (const d of toUpload) {
+    updateProgress(uploaded, toUpload.length, `Uploading ${d.rule.label} (${d.platform})...`);
 
     try {
       const content = await readFileBase64(d.file);
@@ -659,7 +647,7 @@ async function doUpload() {
         body: JSON.stringify({
           action: 'upload',
           token: authToken,
-          platform: currentPlatform,
+          platform: d.platform,
           filename: d.rule.targetName,
           content,
         })
@@ -670,13 +658,14 @@ async function doUpload() {
       errors.push(`${d.rule.label}: Upload failed`);
     }
     uploaded++;
-    updateProgress(uploaded, okFiles.length, uploaded === okFiles.length ? 'Done!' : 'Uploading...');
+    updateProgress(uploaded, toUpload.length, uploaded === toUpload.length ? 'Done!' : 'Uploading...');
   }
 
   if (errors.length === 0) {
     showUploadStatus(`✅ ${uploaded} file(s) uploaded successfully! The analytics pipeline will run automatically and the report will update in ~2 minutes.`, 'ok');
-    detectedFiles = [];
+    allFiles = { instagram: [], tiktok: [] };
     renderFiles();
+    updateSteps(1);
   } else {
     showUploadStatus(`⚠️ ${uploaded - errors.length}/${uploaded} uploaded. Errors: ${errors.join('; ')}`, 'err');
   }
