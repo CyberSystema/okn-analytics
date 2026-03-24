@@ -539,6 +539,7 @@ table{{font-size:11px}}th,td{{padding:6px 8px}}
 <div class="health">{health.get('emoji','📊')} Growth: <strong>{health.get('status','unknown').replace('_',' ').title()}</strong> — {health.get('message','Collecting data...')}</div>
 <div class="header-meta">Active since December 2025 &nbsp;•&nbsp; TikTok since January 6, 2026 &nbsp;•&nbsp; All times in KST</div>
 <div class="powered-badge">Powered by <a href="https://cybersystema.com" target="_blank">{cs_logo_small} CyberSystema</a></div>
+<div style="margin-top:8px"><a href="upload.html" style="color:rgba(255,255,255,0.5);font-size:11px;text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.3)">📤 Upload New Data</a></div>
 </div>
 {summary_html}
 {platform_html}

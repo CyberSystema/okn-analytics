@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OKN Analytics — Upload Data</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{overflow-x:hidden}
+body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#2c2c2c;line-height:1.6;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.wrap{max-width:520px;width:100%;margin:24px;padding:0}
+
+/* Header */
+.hdr{background:linear-gradient(160deg,#1a3a5c 0%,#1e4a6e 35%,#2a3a5c 60%,#8b1a1a 100%);color:white;padding:36px 32px 28px;border-radius:16px 16px 0 0;text-align:center;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(196,149,58,0.08) 0%,transparent 50%);pointer-events:none}
+.hdr h1{font-size:22px;margin-bottom:4px;letter-spacing:0.5px;font-weight:700}
+.hdr p{opacity:0.75;font-size:13px}
+
+/* Card */
+.card{background:white;border-radius:0 0 16px 16px;padding:28px 32px 32px;border:1px solid #e8e4dc;border-top:none}
+
+/* Auth screen */
+.auth-section{text-align:center}
+.auth-section p{color:#888;font-size:14px;margin-bottom:20px}
+.input-wrap{position:relative;margin-bottom:16px}
+.input-wrap input{width:100%;padding:14px 18px;border:2px solid #e0dcd4;border-radius:10px;font-size:15px;outline:none;transition:border 0.2s}
+.input-wrap input:focus{border-color:#1a3a5c}
+
+/* Upload screen */
+.upload-section{display:none}
+.platform-tabs{display:flex;gap:8px;margin-bottom:20px}
+.ptab{flex:1;padding:12px;border:2px solid #e0dcd4;border-radius:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;background:white}
+.ptab:hover{border-color:#1a3a5c;background:#f5f8fb}
+.ptab.active{border-color:#1a3a5c;background:#1a3a5c;color:white}
+.ptab .icon{font-size:24px;display:block;margin-bottom:4px}
+
+/* Dropzone */
+.dropzone{border:2px dashed #c4953a;border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;background:#fdfcfa}
+.dropzone:hover,.dropzone.dragover{background:#faf6ee;border-color:#1a3a5c}
+.dropzone .dz-icon{font-size:36px;margin-bottom:8px}
+.dropzone p{color:#888;font-size:14px}
+.dropzone .dz-hint{font-size:11px;color:#aaa;margin-top:8px}
+
+/* File list */
+.file-list{margin-bottom:20px}
+.file-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fafbfc;border:1px solid #eee;border-radius:8px;margin-bottom:6px;font-size:13px}
+.file-item .fi-name{font-weight:600;color:#1a3a5c;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-item .fi-size{color:#888;margin:0 12px;flex-shrink:0}
+.file-item .fi-remove{color:#e53e3e;cursor:pointer;font-size:16px;flex-shrink:0;padding:0 4px}
+.file-item .fi-status{font-size:12px;flex-shrink:0;margin-left:8px}
+.fi-ok{color:#38a169}.fi-err{color:#e53e3e}
+
+/* Buttons */
+.btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:#1a3a5c;color:white}.btn-primary:hover{background:#254d73}
+.btn-primary:disabled{background:#999;cursor:not-allowed}
+.btn-back{background:transparent;color:#888;font-size:13px;margin-top:12px;padding:8px}
+.btn-back:hover{color:#1a3a5c}
+
+/* Status */
+.status{padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:14px;display:none}
+.status.info{display:block;background:#e8f4f8;color:#1a5276;border:1px solid #bee3f8}
+.status.ok{display:block;background:#f0faf0;color:#276749;border:1px solid #c6f6d5}
+.status.err{display:block;background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
+.status.uploading{display:block;background:#fffbf0;color:#975a16;border:1px solid #fefcbf}
+
+/* Progress */
+.progress-wrap{display:none;margin-bottom:16px}
+.progress-bar{height:6px;background:#e0dcd4;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1a3a5c,#c4953a);border-radius:3px;transition:width 0.3s;width:0%}
+.progress-text{font-size:12px;color:#888;margin-top:6px;text-align:center}
+
+/* Allowed files */
+.allowed{margin-top:16px;padding:14px;background:#fafbfc;border-radius:10px;border:1px solid #eee}
+.allowed h4{font-size:12px;color:#1a3a5c;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.allowed-list{display:flex;flex-wrap:wrap;gap:4px}
+.allowed-tag{font-size:11px;padding:3px 8px;background:#e8f4f8;color:#1a5276;border-radius:4px}
+
+/* Footer */
+.foot{text-align:center;margin-top:16px;font-size:11px;color:#aaa}
+.foot a{color:#999}
+
+/* Responsive */
+@media(max-width:560px){
+  body{align-items:flex-start}
+  .wrap{margin:12px}
+  .hdr{padding:28px 20px 22px;border-radius:12px 12px 0 0}.hdr h1{font-size:18px}
+  .card{padding:20px}
+  .dropzone{padding:24px 16px}
+  .platform-tabs{gap:6px}.ptab{padding:10px 8px;font-size:13px}.ptab .icon{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <h1>📤 Upload Analytics Data</h1>
+    <p>Upload your weekly CSV exports from Instagram &amp; TikTok</p>
+  </div>
+  <div class="card">
+
+    <!-- AUTH -->
+    <div class="auth-section" id="authSection">
+      <p>Enter the team password to access the upload area</p>
+      <div class="input-wrap">
+        <input type="password" id="passInput" placeholder="Team password" autocomplete="off">
+      </div>
+      <div class="status" id="authStatus"></div>
+      <button class="btn btn-primary" id="authBtn" onclick="authenticate()">Sign In</button>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="upload-section" id="uploadSection">
+
+      <div class="platform-tabs">
+        <div class="ptab active" data-platform="instagram" onclick="selectPlatform('instagram',this)">
+          <span class="icon">📸</span>Instagram
+        </div>
+        <div class="ptab" data-platform="tiktok" onclick="selectPlatform('tiktok',this)">
+          <span class="icon">🎵</span>TikTok
+        </div>
+      </div>
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">📁</div>
+        <p>Drop CSV files here or <strong>click to browse</strong></p>
+        <div class="dz-hint">Only recognized CSV files • Max 5MB each</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".csv" style="display:none" onchange="handleFiles(this.files)">
+
+      <div class="file-list" id="fileList"></div>
+
+      <div class="status" id="uploadStatus"></div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">Uploading...</div>
+      </div>
+
+      <button class="btn btn-primary" id="uploadBtn" onclick="uploadFiles()" disabled>Upload to Pipeline</button>
+
+      <div class="allowed" id="allowedFiles">
+        <h4>Accepted files for <span id="allowedPlatform">Instagram</span></h4>
+        <div class="allowed-list" id="allowedList"></div>
+      </div>
+
+      <button class="btn btn-back" onclick="logout()">← Sign out</button>
+    </div>
+  </div>
+  <div class="foot">OKN Analytics Pipeline • <a href="https://cybersystema.com" target="_blank">CyberSystema</a></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════ */
+
+const ALLOWED_FILES = {
+  instagram: {
+    names: ['content.csv', 'follows.csv', 'interactions.csv', 'link clicks.csv', 'reach.csv', 'views.csv', 'visits.csv', 'audience.csv'],
+    headers: {
+      'content.csv': ['Post ID', 'Publish time'],
+      'follows.csv': ['Date'],
+      'interactions.csv': ['Date'],
+      'link clicks.csv': ['Date'],
+      'reach.csv': ['Date'],
+      'views.csv': ['Date'],
+      'visits.csv': ['Date'],
+      'audience.csv': ['Country'],
+    }
+  },
+  tiktok: {
+    names: ['content.csv', 'overview.csv', 'viewers.csv', 'followerhistory.csv', 'followeractivity.csv', 'followergender.csv', 'followertopterritories.csv'],
+    headers: {
+      'content.csv': ['Video title', 'Total views'],
+      'overview.csv': ['Date'],
+      'viewers.csv': ['Date'],
+      'followerhistory.csv': ['Date'],
+      'followeractivity.csv': ['Hour'],
+      'followergender.csv': ['Gender'],
+      'followertopterritories.csv': ['Territory'],
+    }
+  }
+};
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+let currentPlatform = 'instagram';
+let selectedFiles = [];
+let authToken = '';
+
+/* ═══════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════ */
+
+document.getElementById('passInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') authenticate();
+});
+
+async function authenticate() {
+  const pass = document.getElementById('passInput').value.trim();
+  if (!pass) return showAuthStatus('Please enter the password', 'err');
+
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true; btn.textContent = 'Verifying...';
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'auth', password: pass })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      authToken = data.token;
+      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('uploadSection').style.display = 'block';
+      updateAllowedList();
+    } else {
+      showAuthStatus(data.error || 'Wrong password', 'err');
+    }
+  } catch (e) {
+    showAuthStatus('Connection error — try again', 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Sign In';
+}
+
+function logout() {
+  authToken = '';
+  selectedFiles = [];
+  document.getElementById('authSection').style.display = 'block';
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('passInput').value = '';
+  document.getElementById('fileList').innerHTML = '';
+  showUploadStatus('', '');
+}
+
+function showAuthStatus(msg, type) {
+  const el = document.getElementById('authStatus');
+  el.textContent = msg; el.className = 'status ' + type;
+}
+
+/* ═══════════════════════════════════════
+   PLATFORM
+   ═══════════════════════════════════════ */
+
+function selectPlatform(platform, tab) {
+  currentPlatform = platform;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  selectedFiles = [];
+  document.getElementById('fileList').innerHTML = '';
+  document.getElementById('uploadBtn').disabled = true;
+  showUploadStatus('', '');
+  updateAllowedList();
+}
+
+function updateAllowedList() {
+  const names = ALLOWED_FILES[currentPlatform].names;
+  document.getElementById('allowedPlatform').textContent = currentPlatform === 'instagram' ? 'Instagram' : 'TikTok';
+  document.getElementById('allowedList').innerHTML = names.map(n => `<span class="allowed-tag">${n}</span>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   FILE HANDLING
+   ═══════════════════════════════════════ */
+
+// Drag & drop
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+async function handleFiles(files) {
+  const allowed = ALLOWED_FILES[currentPlatform].names;
+
+  for (const file of files) {
+    const name = file.name.toLowerCase().trim();
+
+    // Check extension
+    if (!name.endsWith('.csv')) {
+      addFileItem(file.name, file.size, 'Only CSV files allowed', false);
+      continue;
+    }
+
+    // Check filename
+    if (!allowed.includes(name)) {
+      addFileItem(file.name, file.size, 'Not a recognized file', false);
+      continue;
+    }
+
+    // Check size
+    if (file.size > MAX_FILE_SIZE) {
+      addFileItem(file.name, file.size, 'File too large (max 5MB)', false);
+      continue;
+    }
+
+    // Check duplicate
+    if (selectedFiles.some(f => f.name.toLowerCase() === name)) {
+      addFileItem(file.name, file.size, 'Already added', false);
+      continue;
+    }
+
+    // Validate CSV headers
+    const valid = await validateHeaders(file);
+    if (!valid) {
+      addFileItem(file.name, file.size, 'Wrong format — check the file', false);
+      continue;
+    }
+
+    selectedFiles.push(file);
+    addFileItem(file.name, file.size, '✓ Ready', true);
+  }
+
+  document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
+  document.getElementById('fileInput').value = '';
+}
+
+async function validateHeaders(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const firstLine = text.split('\n')[0].replace(/"/g, '').trim();
+      const headers = firstLine.split(',').map(h => h.trim());
+
+      const expected = ALLOWED_FILES[currentPlatform].headers[file.name.toLowerCase()];
+      if (!expected) { resolve(true); return; }
+
+      const found = expected.every(h => headers.some(fh => fh.toLowerCase().includes(h.toLowerCase())));
+      resolve(found);
+    };
+    reader.onerror = () => resolve(false);
+    reader.readAsText(file.slice(0, 2048)); // Only read first 2KB for headers
+  });
+}
+
+function addFileItem(name, size, status, ok) {
+  const list = document.getElementById('fileList');
+  const sizeStr = size < 1024 ? size + ' B' : size < 1024*1024 ? (size/1024).toFixed(1) + ' KB' : (size/1024/1024).toFixed(1) + ' MB';
+  const div = document.createElement('div');
+  div.className = 'file-item';
+  div.innerHTML = `
+    <span class="fi-name">${name}</span>
+    <span class="fi-size">${sizeStr}</span>
+    <span class="fi-status ${ok ? 'fi-ok' : 'fi-err'}">${status}</span>
+    ${ok ? `<span class="fi-remove" onclick="removeFile('${name}',this)">✕</span>` : ''}
+  `;
+  list.appendChild(div);
+}
+
+function removeFile(name, el) {
+  selectedFiles = selectedFiles.filter(f => f.name.toLowerCase() !== name.toLowerCase());
+  el.closest('.file-item').remove();
+  document.getElementById('uploadBtn').disabled = selectedFiles.length === 0;
+}
+
+/* ═══════════════════════════════════════
+   UPLOAD
+   ═══════════════════════════════════════ */
+
+async function uploadFiles() {
+  if (selectedFiles.length === 0) return;
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  showUploadStatus('Uploading files...', 'uploading');
+  showProgress(true);
+
+  let uploaded = 0;
+  let errors = [];
+
+  for (const file of selectedFiles) {
+    updateProgress(uploaded, selectedFiles.length, `Uploading ${file.name}...`);
+
+    try {
+      const content = await readFileBase64(file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'upload',
+          token: authToken,
+          platform: currentPlatform,
+          filename: file.name,
+          content: content,
+        })
+      });
+
+      const data = await res.json();
+      if (!data.ok) {
+        errors.push(`${file.name}: ${data.error}`);
+      }
+    } catch (e) {
+      errors.push(`${file.name}: Upload failed`);
+    }
+    uploaded++;
+    updateProgress(uploaded, selectedFiles.length, uploaded === selectedFiles.length ? 'Done!' : `Uploading...`);
+  }
+
+  if (errors.length === 0) {
+    showUploadStatus(`✅ ${uploaded} file(s) uploaded successfully! The analytics pipeline will run automatically.`, 'ok');
+  } else {
+    showUploadStatus(`⚠️ ${uploaded - errors.length}/${uploaded} uploaded. Errors: ${errors.join('; ')}`, 'err');
+  }
+
+  selectedFiles = [];
+  document.getElementById('fileList').innerHTML = '';
+  setTimeout(() => showProgress(false), 2000);
+  btn.disabled = true;
+}
+
+function readFileBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showUploadStatus(msg, type) {
+  const el = document.getElementById('uploadStatus');
+  el.innerHTML = msg; el.className = 'status ' + (type || '');
+}
+
+function showProgress(show) {
+  document.getElementById('progressWrap').style.display = show ? 'block' : 'none';
+}
+
+function updateProgress(current, total, text) {
+  const pct = Math.round((current / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = text;
+}
+
+/* Init */
+updateAllowedList();
+</script>
+</body>
+</html>
