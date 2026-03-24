@@ -352,7 +352,7 @@ async function authenticate() {
   const btn = document.getElementById('authBtn');
   btn.disabled = true; btn.textContent = 'Verifying...';
   try {
-    const res = await fetch('/api/upload', {
+    const res = await fetch('functions/api/upload', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({action: 'auth', password: pass})
