@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-03-24T23:44:49.623240",
+  "generated_at": "2026-03-24T23:53:48.075422",
   "meta": {
-    "generated_at": "2026-03-24T23:44:30.048127",
-    "total_posts": 139,
+    "generated_at": "2026-03-24T23:53:31.012697",
+    "total_posts": 143,
     "platforms": [
       "instagram",
       "tiktok"
     ],
     "date_range": {
       "earliest": "2025-03-22 09:03:00+00:00",
-      "latest": "2026-03-15 15:46:00+00:00"
+      "latest": "2026-03-21 23:45:00+00:00"
     }
   },
   "health": {
-    "status": "stable",
-    "emoji": "\ud83d\udcca",
-    "message": "Growth is stable. Look for opportunities to accelerate.",
-    "signal_score": 0.33
+    "status": "strong_growth",
+    "emoji": "\ud83d\ude80",
+    "message": "OKN's social presence is growing well across key metrics.",
+    "signal_score": 1.0
   },
   "recommendations": [
     {
       "priority": "high",
       "category": "content",
-      "message": "On Instagram, your best content type is 'Short Video' with 19.6% avg engagement (19 posts). Create more of this."
+      "message": "On Instagram, your best content type is 'Short Video' with 17.8% avg engagement (19 posts). Create more of this."
     },
     {
       "priority": "high",
@@ -42,7 +42,7 @@
     {
       "priority": "high",
       "category": "content",
-      "message": "Viral content on Instagram: Short Video. Create more content in these formats."
+      "message": "Viral content on Instagram: Short Video, Image, Carousel. Create more content in these formats."
     },
     {
       "priority": "high",
@@ -52,7 +52,7 @@
     {
       "priority": "medium",
       "category": "timing",
-      "message": "Best performing day is Thursday. Consider making this your primary posting day."
+      "message": "Best performing day is Saturday. Consider making this your primary posting day."
     },
     {
       "priority": "medium",
@@ -62,7 +62,7 @@
     {
       "priority": "low",
       "category": "platform",
-      "message": "Instagram is outperforming industry benchmark by 16.5%! Keep up the great work."
+      "message": "Instagram is outperforming industry benchmark by 14.6%! Keep up the great work."
     },
     {
       "priority": "low",
