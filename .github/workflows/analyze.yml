@@ -117,12 +117,17 @@ jobs:
           fi
 
       # ── DEPLOY ──
+      - name: 📁 Copy assets to deploy directory
+        run: |
+          cp -r assets/ reports/assets/ 2>/dev/null || echo "No assets directory"
+
       - name: 🚀 Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy reports/ --project-name=okn-analytics --commit-dirty=true
+          wranglerVersion: '3'
 
       # ── SUMMARY ──
       - name: 📋 Pipeline summary
