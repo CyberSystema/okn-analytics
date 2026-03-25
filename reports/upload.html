@@ -96,17 +96,25 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 .progress-text{font-size:12px;color:#888;margin-top:6px;text-align:center}
 
 /* Confirm overlay */
-.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
 .confirm-overlay.show{display:flex}
-.confirm-box{background:white;border-radius:16px;padding:28px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto}
-.confirm-box h3{font-size:18px;color:#1a3a5c;margin-bottom:4px}
-.confirm-box .cb-sub{color:#888;font-size:13px;margin-bottom:16px}
-.confirm-list{margin-bottom:20px}
-.confirm-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fafbfc;border-radius:8px;margin-bottom:6px;font-size:13px}
-.confirm-item .ci-icon{font-size:16px}
-.confirm-item .ci-name{font-weight:600;color:#1a3a5c}
-.confirm-item .ci-arrow{color:#c4953a;margin:0 4px}
-.confirm-item .ci-dest{color:#666}
+.confirm-box{background:white;border-radius:16px;padding:0;max-width:460px;width:100%;max-height:80vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.confirm-header{background:linear-gradient(135deg,#1a3a5c,#2a5a8c);padding:20px 24px;color:white}
+.confirm-header h3{font-size:18px;font-weight:700;margin-bottom:2px}
+.confirm-header .cb-sub{color:rgba(255,255,255,0.75);font-size:13px}
+.confirm-body{padding:20px 24px;overflow-y:auto;max-height:calc(80vh - 180px)}
+.confirm-plat{font-weight:600;color:#1a3a5c;font-size:12px;text-transform:uppercase;letter-spacing:0.8px;padding:12px 0 6px;border-bottom:1px solid #eee;margin-bottom:8px}
+.confirm-plat:first-child{padding-top:0}
+.confirm-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8f9fb;border-radius:10px;margin-bottom:6px;font-size:13px;border:1px solid #eef0f4;transition:background 0.15s}
+.confirm-item:hover{background:#eef2f8}
+.ci-icon{font-size:18px;flex-shrink:0}
+.ci-body{flex:1;min-width:0}
+.ci-name{font-weight:600;color:#1a3a5c;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-dest{font-size:11px;color:#888;display:block;margin-top:1px}
+.confirm-note{display:flex;align-items:flex-start;gap:8px;padding:12px 14px;background:#f0f7ff;border-radius:10px;border:1px solid #d0e3f7;font-size:12px;color:#1a5276;line-height:1.5;margin-top:12px}
+.confirm-note-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.confirm-footer{padding:16px 24px;background:#fafbfc;border-top:1px solid #eee;display:flex;gap:10px}
+.confirm-footer .btn{flex:1}
 
 /* Footer */
 .foot{text-align:center;margin-top:16px;font-size:11px;color:#aaa}
@@ -121,7 +129,10 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
   .dropzone{padding:24px 16px}
   .platform-tabs{gap:6px}.ptab{padding:10px 8px;font-size:13px}.ptab .icon{font-size:20px}
   .file-item{flex-wrap:wrap;gap:6px}
-  .confirm-box{padding:20px}
+  .confirm-box{border-radius:12px}
+  .confirm-header{padding:16px 20px}
+  .confirm-body{padding:16px 20px}
+  .confirm-footer{padding:14px 20px}
 }
 </style>
 </head>
@@ -193,13 +204,18 @@ body{font-family:'Segoe UI','Noto Sans KR',sans-serif;background:#f8f6f0;color:#
 <!-- Confirm overlay -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
-    <h3>Confirm Upload</h3>
-    <div class="cb-sub">These files will be uploaded to <strong id="confirmPlatform"></strong>:</div>
-    <div class="confirm-list" id="confirmList"></div>
-    <div class="status info" style="display:block;margin-bottom:16px;font-size:13px">
-      After uploading, the analytics pipeline will run automatically and the report will update in ~2 minutes.
+    <div class="confirm-header">
+      <h3>📤 Confirm Upload</h3>
+      <div class="cb-sub">The following files will be uploaded to <strong id="confirmPlatform"></strong></div>
     </div>
-    <div class="btn-row">
+    <div class="confirm-body">
+      <div id="confirmList"></div>
+      <div class="confirm-note">
+        <span class="confirm-note-icon">ℹ️</span>
+        <span>All files will be uploaded in a single commit. The analytics pipeline will run automatically and the report will update in approximately 5 minutes.</span>
+      </div>
+    </div>
+    <div class="confirm-footer">
       <button class="btn btn-secondary" onclick="hideConfirm()">Cancel</button>
       <button class="btn btn-primary" id="confirmBtn" onclick="doUpload()">Upload Now</button>
     </div>
@@ -610,23 +626,25 @@ function updateSteps(active) {
 function showConfirm() {
   if (getTotalOkCount() === 0) return;
 
-  // Build list across both platforms
   const list = document.getElementById('confirmList');
   let html = '';
+  let totalFiles = 0;
 
   for (const platform of ['instagram', 'tiktok']) {
     const okFiles = allFiles[platform].filter(f => f.status === 'ok');
     if (okFiles.length === 0) continue;
     const pName = platform === 'instagram' ? '📸 Instagram' : '🎵 TikTok';
-    html += `<div style="font-weight:600;color:#1a3a5c;margin:12px 0 6px;font-size:13px">${pName}</div>`;
+    html += `<div class="confirm-plat">${pName} — ${okFiles.length} file(s)</div>`;
     html += okFiles.map(d =>
       `<div class="confirm-item">
         <span class="ci-icon">📄</span>
-        <span class="ci-name">${d.file.name}</span>
-        <span class="ci-arrow">→</span>
-        <span class="ci-dest">data/${platform}/${d.rule.targetName}</span>
+        <div class="ci-body">
+          <span class="ci-name">${d.rule.label}</span>
+          <span class="ci-dest">${d.file.name} → data/${platform}/${d.rule.targetName}</span>
+        </div>
       </div>`
     ).join('');
+    totalFiles += okFiles.length;
   }
 
   document.getElementById('confirmPlatform').textContent =
@@ -691,7 +709,7 @@ async function doUpload() {
     const data = await res.json();
     if (data.ok) {
       updateProgress(1, 1, 'Done!');
-      showUploadStatus(`✅ ${files.length} file(s) uploaded in a single commit! The analytics pipeline will run automatically and the report will update in ~2 minutes.`, 'ok');
+      showUploadStatus(`✅ ${files.length} file(s) uploaded in a single commit! The analytics pipeline will run automatically and the report will update in ~5 minutes.`, 'ok');
       allFiles = { instagram: [], tiktok: [] };
       renderFiles();
       updateSteps(1);

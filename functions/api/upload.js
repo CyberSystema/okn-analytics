@@ -181,7 +181,9 @@ async function handleBatchUpload(body, env, headers, ip) {
   try {
     const fileNames = validated.map(v => v.name).join(', ');
     const platforms = [...new Set(files.map(f => f.platform))].join(' & ');
-    const message = `📤 Upload ${validated.length} file(s): ${fileNames} (${platforms})`;
+    const now = new Date();
+    const dateStr = String(now.getUTCDate()).padStart(2,'0') + String(now.getUTCMonth()+1).padStart(2,'0') + now.getUTCFullYear();
+    const message = `📤 Update analytics data (${dateStr})\n\n${validated.length} file(s): ${fileNames}\nPlatform(s): ${platforms}`;
 
     const result = await batchCommitToGitHub(env, validated, message);
     if (result.ok) {
@@ -210,7 +212,9 @@ async function handleSingleUpload(body, env, headers, ip) {
   }
 
   try {
-    const message = `📤 Upload ${result.correctName} (${body.platform})`;
+    const now = new Date();
+    const dateStr = String(now.getUTCDate()).padStart(2,'0') + String(now.getUTCMonth()+1).padStart(2,'0') + now.getUTCFullYear();
+    const message = `📤 Update analytics data (${dateStr})\n\n${result.correctName} (${body.platform})`;
     const commitResult = await batchCommitToGitHub(env, [{ path: result.path, content: body.content }], message);
     if (commitResult.ok) {
       recordRateLimit(ip);
