@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-05-11T03:49:51.143214",
+  "generated_at": "2026-05-18T03:58:32.266542",
   "analysis": {
     "meta": {
-      "generated_at": "2026-05-11T03:49:32.534576",
+      "generated_at": "2026-05-18T03:58:14.582729",
       "total_posts": 143,
       "platforms": [
         "instagram",
@@ -1215,7 +1215,7 @@
       {
         "priority": "high",
         "category": "content",
-        "message": "Viral content on Instagram: Image, Carousel, Short Video. Create more content in these formats."
+        "message": "Viral content on Instagram: Image, Short Video, Carousel. Create more content in these formats."
       },
       {
         "priority": "high",
@@ -1939,10 +1939,10 @@
   "forecast": {
     "horizon_days": 0,
     "method_used": "prophet",
-    "generated_at": "2026-05-11T03:49:33.324321",
+    "generated_at": "2026-05-18T03:58:15.178593",
     "reach": {
       "method": "prophet",
-      "historical_weeks": 43,
+      "historical_weeks": 44,
       "current_weekly_avg": 127937,
       "trend_direction": "up",
       "forecast": [],
@@ -1950,7 +1950,7 @@
     },
     "engagement": {
       "method": "prophet",
-      "historical_weeks": 43,
+      "historical_weeks": 44,
       "current_weekly_avg": 19527,
       "trend_direction": "up",
       "forecast": [],
@@ -1958,7 +1958,7 @@
     },
     "followers": {
       "method": "prophet",
-      "historical_weeks": 43,
+      "historical_weeks": 44,
       "current_weekly_avg": 112,
       "trend_direction": "up",
       "forecast": [],
@@ -1973,10 +1973,10 @@
     "instagram_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-05-11T03:49:33.740495",
+      "generated_at": "2026-05-18T03:58:15.552936",
       "reach": {
         "method": "prophet",
-        "historical_weeks": 40,
+        "historical_weeks": 41,
         "current_weekly_avg": 13014,
         "trend_direction": "up",
         "forecast": [],
@@ -1984,7 +1984,7 @@
       },
       "engagement": {
         "method": "prophet",
-        "historical_weeks": 40,
+        "historical_weeks": 41,
         "current_weekly_avg": 2893,
         "trend_direction": "up",
         "forecast": [],
@@ -1992,7 +1992,7 @@
       },
       "followers": {
         "method": "prophet",
-        "historical_weeks": 40,
+        "historical_weeks": 41,
         "current_weekly_avg": 112,
         "trend_direction": "up",
         "forecast": [],
@@ -2009,7 +2009,7 @@
     "tiktok_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-05-11T03:49:34.055458",
+      "generated_at": "2026-05-18T03:58:15.829891",
       "reach": {
         "method": "linear_trend_ma",
         "historical_weeks": 5,
