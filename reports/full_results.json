@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-21T03:59:17.583703",
+  "generated_at": "2026-09-28T04:22:14.123240",
   "analysis": {
     "meta": {
-      "generated_at": "2026-09-21T03:58:58.333587",
+      "generated_at": "2026-09-28T04:21:54.975925",
       "total_posts": 143,
       "platforms": [
         "instagram",
@@ -1215,7 +1215,7 @@
       {
         "priority": "high",
         "category": "content",
-        "message": "Viral content on Instagram: Image, Carousel, Short Video. Create more content in these formats."
+        "message": "Viral content on Instagram: Carousel, Short Video, Image. Create more content in these formats."
       },
       {
         "priority": "high",
@@ -1939,7 +1939,7 @@
   "forecast": {
     "horizon_days": 0,
     "method_used": "prophet",
-    "generated_at": "2026-09-21T03:58:59.082253",
+    "generated_at": "2026-09-28T04:21:55.741841",
     "reach": {
       "method": "prophet",
       "historical_weeks": 44,
@@ -1973,7 +1973,7 @@
     "instagram_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-09-21T03:58:59.502500",
+      "generated_at": "2026-09-28T04:21:56.198860",
       "reach": {
         "method": "prophet",
         "historical_weeks": 41,
@@ -2009,7 +2009,7 @@
     "tiktok_forecast": {
       "horizon_days": 0,
       "method_used": "prophet",
-      "generated_at": "2026-09-21T03:58:59.788984",
+      "generated_at": "2026-09-28T04:21:56.494621",
       "reach": {
         "method": "linear_trend_ma",
         "historical_weeks": 5,
